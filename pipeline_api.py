@@ -35,6 +35,7 @@ from src.nodes.compile_latex import compile_latex
 from src.nodes.qa_critic import qa_critic
 from src.loader import load_source_bank
 from src.trace import start_pipeline, log_step, render_trace, finish_pipeline
+from langsmith import traceable
 
 app = FastAPI(title="ResumeGenie Pipeline API", version="0.1.0")
 
@@ -132,6 +133,7 @@ def health():
 
 
 @app.post("/step/parse-jd")
+@traceable(run_type="chain", name="web_parse_jd")
 def step_parse_jd(req: ParseJDRequest):
     """Step 1: Parse the job description."""
     session = _get_or_create_session()
@@ -165,6 +167,7 @@ def step_parse_jd(req: ParseJDRequest):
 
 
 @app.post("/step/select-entries")
+@traceable(run_type="chain", name="web_select_entries")
 def step_select_entries(req: SelectEntriesRequest):
     """Step 1.5: Select which entries to include."""
     session = _get_or_create_session()
@@ -209,6 +212,7 @@ def step_select_entries(req: SelectEntriesRequest):
 
 
 @app.post("/step/select-bullets")
+@traceable(run_type="chain", name="web_select_bullets")
 def step_select_bullets(req: SelectBulletsRequest):
     """Step 2: Select bullets for each confirmed entry."""
     session = _get_or_create_session()
@@ -244,6 +248,7 @@ def step_select_bullets(req: SelectBulletsRequest):
 
 
 @app.post("/step/suggest")
+@traceable(run_type="chain", name="web_suggest")
 def step_suggest(req: SuggestRequest):
     """Step 2.5: Generate AI suggestions."""
     session = _get_or_create_session()
@@ -270,6 +275,7 @@ def step_suggest(req: SuggestRequest):
 
 
 @app.post("/step/compile")
+@traceable(run_type="chain", name="web_compile")
 def step_compile(req: CompileRequest):
     """Steps 3-5: Assemble LaTeX, compile PDF, run QA. Then finalize the run."""
     session = _get_or_create_session()

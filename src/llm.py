@@ -3,6 +3,7 @@ AI Resume Tailor — OpenRouter LLM Client
 
 Single module that initializes the OpenAI SDK pointed at OpenRouter.
 The model is configurable via OPENROUTER_MODEL env var — no code change needed to swap models.
+All LLM calls are traced via LangSmith when LANGCHAIN_TRACING_V2=true.
 """
 
 import json
@@ -10,6 +11,7 @@ import os
 import time
 from openai import OpenAI
 from dotenv import load_dotenv
+from langsmith import traceable
 
 load_dotenv()
 
@@ -34,6 +36,7 @@ def get_model() -> str:
     return _model
 
 
+@traceable(run_type="llm", name="openrouter_chat")
 def chat(messages: list[dict], temperature: float = 0.2, **kwargs) -> str:
     """
     Wrapper around chat completions with automatic retry on truncated/invalid responses.
