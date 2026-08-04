@@ -655,6 +655,36 @@ a { color: inherit; text-decoration: none; }
   width: 24px;
 }
 
+/* ── Side Navigation Arrows ───────────────────────────── */
+.wizard-arrow {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 30;
+  width: 40px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.85);
+  border: 1px solid var(--light-gray);
+  cursor: pointer;
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--gray);
+  transition: all 0.25s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.wizard-arrow:hover {
+  background: var(--white);
+  color: var(--jet);
+  border-color: var(--cobalt);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+.wizard-arrow-left { left: 12px; }
+.wizard-arrow-right { right: 12px; }
+
 /* ── "Go to current step" button ───────────────────────── */
 .go-to-current {
   position: fixed;

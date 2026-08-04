@@ -15,16 +15,59 @@ const STEP_LABELS = ["Paste JD", "Parsed", "Entries", "Bullets", "Suggestions", 
 export default function TailorPage() {
   const { currentStep, maxReachedStep, setStep } = useTailorStore();
   const scrollRef = useRef<HTMLDivElement>(null);
+  // Prevent observer from fighting with programmatic scroll
+  const isScrollingProgrammatically = useRef(false);
 
-  // Scroll to current step
+  // Scroll to current step when it changes via store (button clicks, advanceStep)
   useEffect(() => {
     if (!scrollRef.current) return;
     const container = scrollRef.current;
     const target = container.children[currentStep] as HTMLElement;
     if (target) {
+      isScrollingProgrammatically.current = true;
       target.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+      // Reset flag after scroll completes
+      setTimeout(() => {
+        isScrollingProgrammatically.current = false;
+      }, 600);
     }
   }, [currentStep]);
+
+  // Sync dots when user manually scrolls/swipes (IntersectionObserver)
+  useEffect(() => {
+    if (!scrollRef.current) return;
+    const container = scrollRef.current;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Don't interfere with programmatic scrolls
+        if (isScrollingProgrammatically.current) return;
+
+        for (const entry of entries) {
+          if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+            const stepAttr = (entry.target as HTMLElement).dataset.step;
+            if (stepAttr != null) {
+              const step = parseInt(stepAttr, 10) as WizardStep;
+              const store = useTailorStore.getState();
+              if (step !== store.currentStep && step <= store.maxReachedStep) {
+                store.setStep(step);
+              }
+            }
+          }
+        }
+      },
+      {
+        root: container,
+        threshold: 0.5,
+      }
+    );
+
+    // Observe all wizard pages
+    const pages = container.querySelectorAll(".wizard-page");
+    pages.forEach((page) => observer.observe(page));
+
+    return () => observer.disconnect();
+  }, [maxReachedStep]); // Re-observe when new pages appear
 
   const goToStep = useCallback(
     (step: WizardStep) => {
@@ -32,6 +75,9 @@ export default function TailorPage() {
     },
     [maxReachedStep, setStep]
   );
+
+  const canGoBack = currentStep > 0;
+  const canGoForward = currentStep < maxReachedStep;
 
   return (
     <div className="tailor-page">
@@ -63,6 +109,26 @@ export default function TailorPage() {
           onClick={() => setStep(maxReachedStep)}
         >
           Go to current step →
+        </button>
+      )}
+
+      {/* ── Side navigation arrows ── */}
+      {canGoBack && (
+        <button
+          className="wizard-arrow wizard-arrow-left"
+          onClick={() => goToStep((currentStep - 1) as WizardStep)}
+          aria-label="Previous step"
+        >
+          ‹
+        </button>
+      )}
+      {canGoForward && (
+        <button
+          className="wizard-arrow wizard-arrow-right"
+          onClick={() => goToStep((currentStep + 1) as WizardStep)}
+          aria-label="Next step"
+        >
+          ›
         </button>
       )}
 
