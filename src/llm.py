@@ -12,6 +12,7 @@ import time
 from openai import OpenAI
 from dotenv import load_dotenv
 from langsmith import traceable
+from langsmith.run_helpers import get_current_run_tree
 
 load_dotenv()
 
@@ -65,6 +66,21 @@ def chat(messages: list[dict], temperature: float = 0.2, **kwargs) -> str:
             **kwargs,
         )
         content = response.choices[0].message.content
+
+        # Attach token usage to LangSmith trace for cost monitoring
+        try:
+            rt = get_current_run_tree()
+            if rt and response.usage:
+                rt.extra = rt.extra or {}
+                rt.extra["metadata"] = rt.extra.get("metadata", {})
+                rt.extra["metadata"]["token_usage"] = {
+                    "prompt_tokens": response.usage.prompt_tokens,
+                    "completion_tokens": response.usage.completion_tokens,
+                    "total_tokens": response.usage.total_tokens,
+                    "model": _model,
+                }
+        except Exception:
+            pass  # Don't fail the pipeline on tracing errors
 
         # If JSON mode, validate the response is parseable before returning
         if is_json_mode:

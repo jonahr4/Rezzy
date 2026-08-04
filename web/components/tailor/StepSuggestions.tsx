@@ -2,6 +2,7 @@
 
 import { useTailorStore } from "@/lib/tailorStore";
 import { useState } from "react";
+import WordBudget, { WordDelta } from "./WordBudget";
 
 const API_URL = "/api/pipeline";
 
@@ -136,6 +137,7 @@ export default function StepSuggestions() {
 
   return (
     <div className="step-inner step-suggestions-v2">
+      <WordBudget />
       <div className="step-header-bar">
         <div>
           <h2 className="step-title">Review Suggestions</h2>
@@ -278,6 +280,10 @@ export default function StepSuggestions() {
                             />
                           </div>
                           <div className="sug-bullet-toggle">
+                            <WordDelta
+                              originalText={bullet.text}
+                              suggestedText={suggestion.text}
+                            />
                             <div
                               className={`sug-switch ${
                                 suggestion.accepted ? "on" : ""

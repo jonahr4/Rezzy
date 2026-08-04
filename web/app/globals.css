@@ -1013,6 +1013,130 @@ a { color: inherit; text-decoration: none; }
   opacity: 0.7;
 }
 
+/* ── Word Budget Bar ──────────────────────────────────────── */
+.word-budget {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--white);
+  border-bottom: 1px solid var(--light-gray);
+  padding: 12px 24px 14px;
+  margin-bottom: 16px;
+}
+.word-budget-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.word-budget-stats {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.word-budget-count {
+  font-family: var(--mono);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--jet);
+}
+.word-budget-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--gray);
+}
+.word-budget-page-est {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 4px 10px;
+  border-radius: 2px;
+  transition: all 0.4s ease;
+}
+.word-budget-page-est.safe { color: #2E7D32; background: rgba(46,125,50,0.08); }
+.word-budget-page-est.warn { color: #E65100; background: rgba(230,81,0,0.08); }
+.word-budget-page-est.danger { color: #C62828; background: rgba(198,40,40,0.08); }
+.word-budget-page-est.critical { color: #B71C1C; background: rgba(183,28,28,0.12); }
+.page-est-emoji { font-size: 12px; }
+.word-budget-pct {
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  color: var(--jet);
+  min-width: 56px;
+  text-align: right;
+}
+
+/* Progress bar track */
+.word-budget-bar-track {
+  position: relative;
+  height: 10px;
+  background: rgba(0,0,0,0.04);
+  overflow: visible;
+}
+.bar-zone {
+  position: absolute;
+  top: 0;
+  height: 100%;
+}
+.bar-zone-safe { left: 0; background: rgba(46,125,50,0.06); }
+.bar-zone-warn { background: rgba(230,81,0,0.06); }
+
+/* Animated fill */
+.word-budget-bar-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 1;
+}
+.word-budget-bar-fill.safe {
+  background: linear-gradient(90deg, #43A047, #66BB6A);
+}
+.word-budget-bar-fill.warn {
+  background: linear-gradient(90deg, #66BB6A, #FFB300, #E65100);
+}
+.word-budget-bar-fill.danger {
+  background: linear-gradient(90deg, #E65100, #C62828);
+}
+
+/* Threshold marker at 100% */
+.bar-threshold {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  z-index: 2;
+  transform: translateX(-1px);
+}
+.bar-threshold-line {
+  width: 2px;
+  height: 100%;
+  background: var(--jet);
+  opacity: 0.3;
+}
+
+/* Word delta badges on suggestions */
+.word-delta {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 2px 6px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+.word-delta.plus { color: #C62828; background: rgba(198,40,40,0.08); }
+.word-delta.minus { color: #2E7D32; background: rgba(46,125,50,0.08); }
+
 /* ── Step 4: Suggestions (Grammarly-style) ─────────────── */
 .step-suggestions-v2 { width: 100%; }
 
@@ -1172,6 +1296,10 @@ a { color: inherit; text-decoration: none; }
 .sug-bullet-toggle {
   flex-shrink: 0;
   padding-top: 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
 }
 
 /* Diff highlighting */

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTailorStore } from "@/lib/tailorStore";
+import WordBudget from "./WordBudget";
 
 const API_URL = "/api/pipeline";
 
@@ -65,6 +66,7 @@ export default function StepBulletSelect() {
 
   return (
     <div className="step-inner step-bullets">
+      <WordBudget />
       <div className="step-header-bar">
         <div>
           <h2 className="step-title">Select Bullets</h2>
