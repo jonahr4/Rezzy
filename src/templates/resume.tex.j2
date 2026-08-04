@@ -1,0 +1,163 @@
+% ResumeGenie — Auto-generated tailored resume
+\documentclass[letterpaper,10pt]{article}
+
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Adjust margins
+\addtolength{\oddsidemargin}{-0.55in}
+\addtolength{\evensidemargin}{-0.55in}
+\addtolength{\textwidth}{1.1in}
+\addtolength{\topmargin}{-.7in}
+\addtolength{\textheight}{1.4in}
+
+\urlstyle{same}
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+% Section formatting
+\titleformat{\section}{
+  \vspace{-6.0mm}\scshape\raggedright\large
+}{}{0em}{}[\color{black}\titlerule \vspace{-2.25mm}]
+
+
+% Custom commands
+\newcommand{\resumeItem}[1]{
+  \item\small{
+    {#1 \vspace{-2pt}}
+  }
+}
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeProjectHeading}[3]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \small#1 & #2 \\
+      \textit{\small #3} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+
+% ─── DOCUMENT ────────────────────────────────────
+
+\begin{document}
+
+% ─── HEADER ──────────────────────────────────────
+\begin{center}
+    \textbf{\fontsize{20}{20}\selectfont \scshape (( personal.name | latex ))} \\[5pt]
+    \small
+    (( personal.phone | latex )) $|$
+    \href{mailto:(( personal.email ))}{\underline{(( personal.email | latex ))}} $|$
+    \href{https://(( personal.website ))}{\underline{(( personal.website | latex ))}} $|$
+    \href{https://(( personal.linkedin ))}{\underline{(( personal.linkedin | latex ))}} $|$
+    \href{https://(( personal.github ))}{\underline{(( personal.github | latex ))}}
+\end{center}
+
+% ─── EDUCATION ───────────────────────────────────
+\section{Education}
+  \resumeSubHeadingListStart
+  (% for edu in education %)
+    \item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{(( edu.institution | latex ))} & (( edu.location | latex )) \\
+      \textit{\small (( edu.degree | latex ))(% if edu.minor %); Minor in (( edu.minor | latex ))(% endif %)} & \textit{\small (( edu.start_date )) -- (( edu.end_date ))} \\
+      (% if edu.gpa %)
+      \textit{\small GPA: (( edu.gpa )) | (( edu.honors | latex ))} \\
+      (% endif %)
+    \end{tabular*}\vspace{-7pt}
+  (% endfor %)
+  \resumeSubHeadingListEnd
+
+% ─── TECHNICAL SKILLS ────────────────────────────
+\section{Technical Skills}
+ \begin{itemize}[leftmargin=0.15in, label={}]
+    \small{\item{
+    (% for cat in skill_categories %)
+     \textbf{(( cat['label'] ))}{: (( cat['items'] | join(', ') | latex ))} \\
+    (% endfor %)
+    }}
+ \end{itemize}
+
+% ─── EXPERIENCE ──────────────────────────────────
+(% if jobs %)
+\section{Experience}
+  \resumeSubHeadingListStart
+  (% for job in jobs %)
+    \resumeSubheading
+      {(( job.title | latex ))}{(( job.start_date )) -- (( job.end_date ))}
+      {(( job.company | latex ))}{(( job.location | latex ))}
+    \resumeItemListStart
+    (% for bullet in job.selected_bullets %)
+      \resumeItem{(( bullet.text | latex ))}
+    (% endfor %)
+    \resumeItemListEnd
+  (% endfor %)
+  \resumeSubHeadingListEnd
+(% endif %)
+
+% ─── PROJECTS ────────────────────────────────────
+(% if projects %)
+\section{Personal Projects}
+  \resumeSubHeadingListStart
+  (% for proj in projects %)
+    (% set link_parts = [] %)
+    (% if proj.links %)
+      (% if proj.links.get('repo') %)
+        (% set _ = link_parts.append('\\href{' ~ proj.links.repo ~ '}{\\underline{GitHub}}') %)
+      (% endif %)
+      (% if proj.links.get('web_repo') %)
+        (% set _ = link_parts.append('\\href{' ~ proj.links.web_repo ~ '}{\\underline{GitHub}}') %)
+      (% endif %)
+      (% if proj.links.get('live') %)
+        (% set _ = link_parts.append('\\href{' ~ proj.links.live ~ '}{\\underline{Live}}') %)
+      (% endif %)
+      (% if proj.links.get('app_store') %)
+        (% set _ = link_parts.append('\\href{' ~ proj.links.app_store ~ '}{\\underline{App Store}}') %)
+      (% endif %)
+      (% if proj.links.get('demo') %)
+        (% set _ = link_parts.append('\\href{' ~ proj.links.demo ~ '}{\\underline{Demo}}') %)
+      (% endif %)
+    (% endif %)
+    (% set link_str = ' $|$ '.join(link_parts) if link_parts else '' %)
+    (% set title_str = '\\textbf{' ~ (proj.title | latex) ~ '}' ~ (' $|$ ' ~ link_str if link_str else '') %)
+    \resumeProjectHeading
+      {(( title_str ))}
+      {(( proj.start_date )) -- (( proj.end_date ))}
+      {(( proj.tagline | latex ))}
+    \resumeItemListStart
+    (% for bullet in proj.selected_bullets %)
+      \resumeItem{(( bullet.text | latex ))}
+    (% endfor %)
+    \resumeItemListEnd
+  (% endfor %)
+  \resumeSubHeadingListEnd
+(% endif %)
+
+\end{document}
