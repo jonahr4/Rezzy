@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ResumeGenie — Source Bank</title>
+  <meta name="description" content="AI Resume Tailor source bank viewer — browse your career data, bullet variants, and skills." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=General+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    @font-face {
+      font-family: 'General Sans';
+      src: local('General Sans');
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:       #E3E2DE;
+      --cobalt:      #1351AA;
+      --jet:         #141414;
+      --deep-gray:   #444343;
+      --gray:        #7A7A7A;
+      --light-gray:  #C7C7C7;
+      --white:       #FAFAF8;
+      --font:        'General Sans', 'Inter', system-ui, -apple-system, sans-serif;
+      --mono:        'JetBrains Mono', 'SF Mono', monospace;
+      --grid-cols:   12;
+      --col-gap:     0px;
+      --nav-h:       80px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      background: var(--cream);
+      color: var(--jet);
+      min-height: 100vh;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ── NAV ── */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: var(--nav-h);
+      background: rgba(227, 226, 222, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--light-gray);
+      display: flex;
+      align-items: center;
+      padding: 0 clamp(20px, 4vw, 56px);
+    }
+    .nav-inner {
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      font-weight: 900;
+      font-size: 18px;
+      letter-spacing: -0.03em;
+      text-transform: uppercase;
+      color: var(--jet);
+    }
+    .nav-logo span { color: var(--cobalt); }
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--deep-gray);
+      text-decoration: none;
+      transition: color 0.3s linear;
+    }
+    .nav-links a:hover { color: var(--cobalt); }
+
+    /* ── CONTAINER ── */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 clamp(20px, 4vw, 56px);
+    }
+
+    /* ── GRID SYSTEM ── */
+    .grid-12 {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 0;
+    }
+    .sidebar { grid-column: 1 / 4; }
+    .main-col { grid-column: 4 / 13; }
+
+    /* ── SIDEBAR LABEL ── */
+    .sidebar-label {
+      position: sticky;
+      top: calc(var(--nav-h) + 32px);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--gray);
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      padding-top: 48px;
+      padding-right: 32px;
+    }
+    .sidebar-label .label-icon {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      background: var(--jet);
+      margin-bottom: 12px;
+    }
+    .sidebar-label .label-text { display: block; }
+    .sidebar-border {
+      border-right: 1px solid var(--light-gray);
+      min-height: 100%;
+    }
+
+    /* ── SECTION DIVIDER ── */
+    .section { border-top: 1px solid var(--light-gray); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 70vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 80px 0 64px;
+    }
+    .hero-headline {
+      font-size: clamp(3.5rem, 8vw, 7.5rem);
+      font-weight: 900;
+      line-height: 0.88;
+      letter-spacing: -0.04em;
+      margin-bottom: 40px;
+    }
+    .hero-headline .accent { color: var(--cobalt); }
+    .hero-sub {
+      display: grid;
+      grid-template-columns: minmax(300px, 440px) 1fr;
+      gap: 48px;
+      align-items: end;
+    }
+    .hero-desc {
+      font-size: 16px;
+      color: var(--deep-gray);
+      line-height: 1.6;
+    }
+    .hero-stats {
+      display: flex;
+      gap: 40px;
+      justify-content: flex-end;
+    }
+    .stat { text-align: center; }
+    .stat-num {
+      font-size: 42px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      color: var(--jet);
+      line-height: 1;
+    }
+    .stat-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--gray);
+      margin-top: 6px;
+    }
+
+    /* ── CONTACT ROW ── */
+    .contact-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      padding: 20px 0;
+      border-top: 1px solid var(--light-gray);
+      margin-top: 40px;
+    }
+    .contact-item {
+      font-size: 13px;
+      color: var(--deep-gray);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s linear;
+    }
+    .contact-item:hover { color: var(--cobalt); }
+    .contact-sep { color: var(--light-gray); font-size: 13px; user-select: none; }
+
+    /* ── SKILLS ── */
+    .skills-section { padding: 48px 0 56px; }
+    .skills-categories { display: flex; flex-direction: column; gap: 20px; }
+    .skill-category-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--gray);
+      margin-bottom: 8px;
+    }
+    .skill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .skill-chip {
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border: 1px solid var(--light-gray);
+      color: var(--deep-gray);
+      cursor: default;
+      transition: border-color 0.3s linear, color 0.3s linear, background 0.3s linear;
+    }
+    .skill-chip:hover {
+      border-color: var(--cobalt);
+      color: var(--cobalt);
+      background: rgba(19, 81, 170, 0.06);
+    }
+
+    /* ── EDUCATION ── */
+    .edu-section { padding: 48px 0 56px; }
+    .edu-card {
+      border: 1px solid var(--light-gray);
+      padding: 24px 28px;
+    }
+    .edu-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .edu-inst { font-weight: 800; font-size: 20px; letter-spacing: -0.02em; }
+    .edu-date {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--gray);
+      white-space: nowrap;
+    }
+    .edu-degree {
+      font-size: 14px;
+      color: var(--cobalt);
+      font-weight: 600;
+      margin-top: 4px;
+    }
+    .edu-gpa {
+      font-size: 13px;
+      color: var(--deep-gray);
+      margin-top: 4px;
+      font-weight: 500;
+    }
+    .edu-courses {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--light-gray);
+      font-size: 13px;
+      color: var(--gray);
+      line-height: 1.8;
+    }
+    .edu-courses strong {
+      font-family: var(--mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--gray);
+      font-weight: 500;
+    }
+
+    /* ── ENTRIES TAB BAR ── */
+    .tab-bar {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--light-gray);
+      margin-bottom: 0;
+    }
+    .tab-btn {
+      padding: 14px 24px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--gray);
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: color 0.3s linear, border-color 0.3s linear;
+      margin-bottom: -1px;
+    }
+    .tab-btn:hover { color: var(--deep-gray); }
+    .tab-btn.active {
+      color: var(--cobalt);
+      border-bottom-color: var(--cobalt);
+    }
+
+    /* ── ENTRY LIST ── */
+    .entries-list { padding-bottom: 56px; }
+
+    .entry-item {
+      border-bottom: 1px solid var(--light-gray);
+      transition: background 0.3s linear;
+    }
+    .entry-item:hover { background: rgba(19, 81, 170, 0.02); }
+    .entry-item.pinned { border-left: 3px solid var(--cobalt); }
+
+    .entry-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 28px 24px;
+      cursor: pointer;
+      gap: 24px;
+    }
+
+    .entry-left { flex: 1; min-width: 0; }
+    .entry-index {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--gray);
+      margin-bottom: 6px;
+    }
+    .entry-title {
+      font-size: clamp(1.5rem, 3vw, 2.5rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      transition: color 0.3s linear;
+    }
+    .entry-item:hover .entry-title,
+    .entry-item.open .entry-title { color: var(--cobalt); }
+
+    .entry-role {
+      font-size: 14px;
+      color: var(--cobalt);
+      font-weight: 600;
+      margin-top: 6px;
+    }
+    .entry-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 8px;
+    }
+    .entry-meta-item {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--gray);
+      letter-spacing: 0.05em;
+    }
+
+    .entry-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .pin-badge {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--white);
+      background: var(--cobalt);
+      padding: 3px 10px;
+    }
+    .bullet-count-badge {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--gray);
+      border: 1px solid var(--light-gray);
+      padding: 3px 10px;
+    }
+    .toggle-arrow {
+      font-size: 18px;
+      color: var(--gray);
+      transition: transform 0.3s linear;
+      margin-top: 4px;
+    }
+    .entry-item.open .toggle-arrow { transform: rotate(180deg); }
+
+    /* ── ENTRY EXPAND ── */
+    .entry-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .entry-item.open .entry-body {
+      max-height: 6000px;
+    }
+
+    .entry-body-inner {
+      padding: 0 24px 32px;
+    }
+
+    /* Summary */
+    .entry-summary {
+      font-size: 14px;
+      color: var(--deep-gray);
+      line-height: 1.7;
+      padding: 20px 24px;
+      border: 1px solid var(--light-gray);
+      margin-bottom: 24px;
+      background: rgba(250, 250, 248, 0.6);
+    }
+    .entry-summary-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--gray);
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    /* Skills row */
+    .entry-skills-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 24px;
+    }
+    .entry-skill-chip {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border: 1px solid var(--light-gray);
+      color: var(--gray);
+    }
+
+    /* Links row */
+    .entry-links-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .entry-link {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 14px;
+      border: 1px solid var(--cobalt);
+      color: var(--cobalt);
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      transition: background 0.3s linear, color 0.3s linear;
+    }
+    .entry-link:hover {
+      background: var(--cobalt);
+      color: var(--white);
+    }
+
+    /* Bullets */
+    .bullets-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--gray);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .bullet-item {
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      gap: 12px;
+      padding: 14px 0;
+      border-top: 1px solid rgba(199, 199, 199, 0.4);
+      align-items: start;
+    }
+    .bullet-item:last-child { border-bottom: 1px solid rgba(199, 199, 199, 0.4); }
+    .bullet-num {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--gray);
+      padding-top: 2px;
+    }
+    .bullet-text {
+      font-size: 14px;
+      color: var(--deep-gray);
+      line-height: 1.65;
+    }
+    .bullet-id {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--light-gray);
+      margin-top: 4px;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      border-top: 1px solid var(--light-gray);
+      padding: 32px 0;
+      text-align: center;
+    }
+    .footer-text {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--gray);
+      letter-spacing: 0.1em;
+    }
+
+    /* ── VIEW TOGGLE ── */
+    .view-toggle {
+      display: flex;
+      gap: 0;
+    }
+    .view-btn {
+      padding: 8px 20px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      border: 1px solid var(--light-gray);
+      background: transparent;
+      color: var(--gray);
+      cursor: pointer;
+      transition: all 0.3s linear;
+    }
+    .view-btn:first-child { border-right: none; }
+    .view-btn.active {
+      background: var(--jet);
+      color: var(--white);
+      border-color: var(--jet);
+    }
+    .view-btn:hover:not(.active) { color: var(--cobalt); border-color: var(--cobalt); }
+    .view-source-bank, .view-runs { display: none; }
+    .view-source-bank.active, .view-runs.active { display: block; }
+
+    /* ── RUNS ── */
+    .runs-header {
+      padding: 48px 0 32px;
+    }
+    .runs-title {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+    .runs-subtitle {
+      font-size: 14px;
+      color: var(--gray);
+    }
+    .runs-grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 0;
+      min-height: 60vh;
+    }
+    @media (max-width: 900px) {
+      .runs-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Run list sidebar */
+    .runs-list {
+      border-right: 1px solid var(--light-gray);
+      overflow-y: auto;
+      max-height: calc(100vh - 200px);
+    }
+    .run-item {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--light-gray);
+      cursor: pointer;
+      transition: background 0.3s linear;
+    }
+    .run-item:hover { background: rgba(19, 81, 170, 0.03); }
+    .run-item.active { background: rgba(19, 81, 170, 0.06); border-left: 3px solid var(--cobalt); }
+    .run-item-target {
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    .run-item-date {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--gray);
+    }
+    .run-item-status {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 2px 8px;
+      margin-top: 6px;
+    }
+    .run-item-status.complete { background: #E8F5E9; color: #2E7D32; }
+    .run-item-status.failed { background: #FFEBEE; color: #C62828; }
+    .run-item-status.running { background: #E3F2FD; color: var(--cobalt); animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+    .runs-empty {
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--gray);
+      font-size: 14px;
+    }
+
+    /* Run detail */
+    .run-detail {
+      padding: 24px 32px;
+    }
+    .run-detail-header {
+      margin-bottom: 24px;
+    }
+    .run-detail-title {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+    .run-detail-meta {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--gray);
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .run-detail-outputs {
+      display: flex;
+      gap: 8px;
+      margin: 16px 0 24px;
+    }
+    .run-output-link {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 16px;
+      border: 1px solid var(--cobalt);
+      color: var(--cobalt);
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      transition: background 0.3s linear, color 0.3s linear;
+    }
+    .run-output-link:hover { background: var(--cobalt); color: var(--white); }
+
+    /* Pipeline timeline */
+    .timeline {
+      position: relative;
+      padding-left: 24px;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: var(--light-gray);
+    }
+    .timeline-step {
+      position: relative;
+      padding: 12px 0 12px 20px;
+    }
+    .timeline-dot {
+      position: absolute;
+      left: -20px;
+      top: 16px;
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--light-gray);
+      background: var(--cream);
+    }
+    .timeline-step.done .timeline-dot { background: var(--cobalt); border-color: var(--cobalt); }
+    .timeline-step.active .timeline-dot { background: var(--white); border-color: var(--cobalt); animation: pulse 1.5s infinite; }
+    .timeline-node {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--gray);
+    }
+    .timeline-step.done .timeline-node { color: var(--jet); }
+    .timeline-summary {
+      font-size: 13px;
+      color: var(--deep-gray);
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+    .timeline-time {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--light-gray);
+      margin-top: 2px;
+    }
+    .run-select-prompt {
+      padding: 80px 32px;
+      text-align: center;
+      color: var(--gray);
+      font-size: 14px;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .grid-12 { display: block; }
+      .sidebar { display: none; }
+      .hero-sub { grid-template-columns: 1fr; gap: 32px; }
+      .hero-stats { justify-content: flex-start; }
+      .entry-header { padding: 20px 16px; }
+      .entry-body-inner { padding: 0 16px 24px; }
+      .nav-links { gap: 20px; }
+    }
+
+    @media (max-width: 600px) {
+      .hero-headline { font-size: 2.8rem; }
+      .hero-stats { flex-wrap: wrap; gap: 24px; }
+      .stat-num { font-size: 32px; }
+      .entry-title { font-size: 1.4rem; }
+      .entry-meta { flex-direction: column; gap: 4px; }
+      .nav-links { display: none; }
+      .contact-row { flex-direction: column; gap: 8px; }
+      .contact-sep { display: none; }
+    }
+
+    /* ── DOC MODAL ── */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(20,20,20,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .modal {
+      background: var(--white);
+      width: min(92vw, 1000px);
+      height: min(88vh, 860px);
+      display: flex;
+      flex-direction: column;
+      transform: translateY(16px);
+      transition: transform 0.25s ease;
+    }
+    .modal-backdrop.open .modal {
+      transform: translateY(0);
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--light-gray);
+      flex-shrink: 0;
+    }
+    .modal-title {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--deep-gray);
+    }
+    .modal-close {
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--light-gray);
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: var(--gray);
+      transition: all 0.2s linear;
+    }
+    .modal-close:hover { background: var(--jet); color: var(--white); border-color: var(--jet); }
+    .modal-body {
+      flex: 1;
+      overflow: auto;
+      position: relative;
+    }
+    .modal-body iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+    .modal-body pre {
+      margin: 0;
+      padding: 24px;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: var(--jet);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .modal-body .md-content {
+      padding: 28px 32px;
+      font-size: 13.5px;
+      line-height: 1.75;
+      color: var(--deep-gray);
+    }
+    .modal-body .md-content h1, .modal-body .md-content h2 {
+      color: var(--jet);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin: 24px 0 8px;
+    }
+    .modal-body .md-content h1 { font-size: 20px; }
+    .modal-body .md-content h2 { font-size: 15px; border-bottom: 1px solid var(--light-gray); padding-bottom: 4px; }
+    .modal-body .md-content h3 { font-size: 13px; font-weight: 700; color: var(--jet); margin: 16px 0 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .modal-body .md-content code {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      background: var(--cream);
+      padding: 1px 5px;
+    }
+    .modal-body .md-content strong { color: var(--jet); }
+    .modal-body .md-content hr { border: none; border-top: 1px solid var(--light-gray); margin: 16px 0; }
+    .modal-body .md-content ul { padding-left: 20px; }
+    .modal-body .md-content li { margin-bottom: 4px; }
+    .modal-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--gray);
+      letter-spacing: 0.1em;
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--cream); }
+    ::-webkit-scrollbar-thumb { background: var(--light-gray); }
+
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-logo">Resume<span>Genie</span></div>
+    <div style="display:flex;align-items:center;gap:32px;">
+      <div class="view-toggle">
+        <button class="view-btn active" onclick="switchView('source-bank')">Source Bank</button>
+        <button class="view-btn" onclick="switchView('runs')">Pipeline Runs</button>
+      </div>
+      <ul class="nav-links" id="source-bank-nav">
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="#education">Education</a></li>
+        <li><a href="#entries">Entries</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- DOC VIEWER MODAL -->
+<div class="modal-backdrop" id="doc-modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">Document</span>
+      <button class="modal-close" onclick="closeModal(true)">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body">
+      <div class="modal-loading">Loading…</div>
+    </div>
+  </div>
+</div>
+
+<!-- SOURCE BANK VIEW -->
+<div class="view-source-bank active" id="view-source-bank">
+<div class="container">
+
+  <!-- HERO -->
+  <section class="grid-12 section" id="hero-section">
+    <div class="sidebar sidebar-border">
+      <div class="sidebar-label">
+        <span class="label-icon"></span>
+        <span class="label-text">Source Bank</span>
+      </div>
+    </div>
+    <div class="main-col">
+      <div class="hero">
+        <h1 class="hero-headline" id="hero-name">
+          Loading<span class="accent">…</span>
+        </h1>
+        <div class="hero-sub">
+          <p class="hero-desc">
+            Your complete career data bank. Every experience, every bullet variant, every skill — oversupplied and ready for AI-powered tailoring.
+          </p>
+          <div class="hero-stats" id="hero-stats"></div>
+        </div>
+        <div class="contact-row" id="contact-row"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section class="grid-12 section" id="skills">
+    <div class="sidebar sidebar-border">
+      <div class="sidebar-label">
+        <span class="label-icon"></span>
+        <span class="label-text">Skills</span>
+      </div>
+    </div>
+    <div class="main-col">
+      <div class="skills-section" id="skills-area"></div>
+    </div>
+  </section>
+
+  <!-- EDUCATION -->
+  <section class="grid-12 section" id="education">
+    <div class="sidebar sidebar-border">
+      <div class="sidebar-label">
+        <span class="label-icon"></span>
+        <span class="label-text">Education</span>
+      </div>
+    </div>
+    <div class="main-col">
+      <div class="edu-section" id="edu-area"></div>
+    </div>
+  </section>
+
+  <!-- ENTRIES -->
+  <section class="grid-12 section" id="entries">
+    <div class="sidebar sidebar-border">
+      <div class="sidebar-label">
+        <span class="label-icon"></span>
+        <span class="label-text">Entries</span>
+      </div>
+    </div>
+    <div class="main-col">
+      <div class="tab-bar" id="tab-bar">
+        <button class="tab-btn active" data-filter="all">All</button>
+        <button class="tab-btn" data-filter="job">Experience</button>
+        <button class="tab-btn" data-filter="project">Projects</button>
+        <button class="tab-btn" data-filter="pinned">Pinned</button>
+      </div>
+      <div class="entries-list" id="entries-list"></div>
+    </div>
+  </section>
+
+</div>
+</div>
+
+<!-- RUNS VIEW -->
+<div class="view-runs" id="view-runs">
+<div class="container">
+  <div class="runs-header">
+    <h2 class="runs-title">Pipeline <span style="color:var(--cobalt)">Runs</span></h2>
+    <p class="runs-subtitle">Every tailoring run, timestamped and stored. Select a run to audit the full pipeline trace.</p>
+  </div>
+  <div class="runs-grid">
+    <div class="runs-list" id="runs-list">
+      <div class="runs-empty">Loading runs...</div>
+    </div>
+    <div id="run-detail">
+      <div class="run-select-prompt">Select a run from the list to view details.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer container">
+  <div class="footer-text">ResumeGenie · Source Bank & Pipeline Viewer · Phase 1</div>
+</footer>
+
+<script>
+fetch('../data/source_bank.json')
+  .then(r => r.json())
+  .then(render)
+  .catch(() => {
+    document.getElementById('entries-list').innerHTML =
+      '<div style="padding:60px 24px;text-align:center;color:var(--gray);font-size:14px;">Could not load source_bank.json.<br><small>Serve with <code>python3 -m http.server 8080</code> from repo root.</small></div>';
+  });
+
+function render(bank) {
+  const { personal, skills, education, entries } = bank;
+
+  // Hero name
+  const nameParts = personal.name.split(' ');
+  document.getElementById('hero-name').innerHTML =
+    `${nameParts.slice(0, -1).join(' ')} <span class="accent">${nameParts[nameParts.length - 1]}</span>`;
+
+  // Stats
+  const jobs = entries.filter(e => e.type === 'job');
+  const projs = entries.filter(e => e.type === 'project');
+  const totalBullets = entries.reduce((s, e) => s + e.bullets.length, 0);
+  document.getElementById('hero-stats').innerHTML = [
+    { num: jobs.length, label: 'Jobs' },
+    { num: projs.length, label: 'Projects' },
+    { num: totalBullets, label: 'Bullets' },
+    { num: entries.filter(e => e.pinned).length, label: 'Pinned' },
+  ].map(s => `<div class="stat"><div class="stat-num">${s.num}</div><div class="stat-label">${s.label}</div></div>`).join('');
+
+  // Contact
+  const contactItems = [
+    { text: personal.email, href: `mailto:${personal.email}` },
+    { text: personal.phone, href: null },
+    { text: personal.website, href: `https://${personal.website}` },
+    { text: personal.linkedin, href: `https://${personal.linkedin}` },
+    { text: personal.github, href: `https://${personal.github}` },
+    { text: personal.location, href: null },
+  ];
+  document.getElementById('contact-row').innerHTML = contactItems.map((c, i) => {
+    const sep = i > 0 ? '<span class="contact-sep">·</span>' : '';
+    const el = c.href
+      ? `<a class="contact-item" href="${c.href}" target="_blank">${c.text}</a>`
+      : `<span class="contact-item">${c.text}</span>`;
+    return sep + el;
+  }).join('');
+
+  // Skills — group them
+  const skillGroups = groupSkills(skills);
+  document.getElementById('skills-area').innerHTML = `
+    <div class="skills-categories">
+      ${skillGroups.map(g => `
+        <div>
+          <div class="skill-category-label">${g.label}</div>
+          <div class="skill-list">
+            ${g.items.map(s => `<span class="skill-chip">${s}</span>`).join('')}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  // Education
+  document.getElementById('edu-area').innerHTML = education.map(e => `
+    <div class="edu-card">
+      <div class="edu-top">
+        <div>
+          <div class="edu-inst">${e.institution}</div>
+          <div class="edu-degree">${e.degree}${e.minor ? ` · Minor in ${e.minor}` : ''}</div>
+          ${e.gpa ? `<div class="edu-gpa">GPA ${e.gpa} · ${e.honors || ''}</div>` : ''}
+        </div>
+        <div class="edu-date">${e.start_date} – ${e.end_date}</div>
+      </div>
+      ${e.relevant_coursework ? `
+        <div class="edu-courses">
+          <strong>Coursework</strong><br>
+          ${e.relevant_coursework.join(' · ')}
+        </div>
+      ` : ''}
+    </div>
+  `).join('');
+
+  // Entries
+  const list = document.getElementById('entries-list');
+
+  function renderEntries(filter) {
+    let filtered = entries;
+    if (filter === 'job') filtered = entries.filter(e => e.type === 'job');
+    if (filter === 'project') filtered = entries.filter(e => e.type === 'project');
+    if (filter === 'pinned') filtered = entries.filter(e => e.pinned);
+
+    if (!filtered.length) {
+      list.innerHTML = '<div style="padding:48px 24px;text-align:center;color:var(--gray);font-size:14px;">No entries match this filter.</div>';
+      return;
+    }
+
+    list.innerHTML = filtered.map((entry, idx) => {
+      const isJob = entry.type === 'job';
+      const displayName = isJob ? entry.company : entry.title;
+      const subtitle = isJob ? entry.title : (entry.tagline || '');
+      const indexStr = String(idx + 1).padStart(2, '0');
+
+      const linksHtml = entry.links
+        ? Object.entries(entry.links)
+            .filter(([, v]) => v)
+            .map(([k, v]) => `<a class="entry-link" href="${v}" target="_blank">${formatLinkKey(k)} ↗</a>`)
+            .join('')
+        : '';
+
+      return `
+        <div class="entry-item${entry.pinned ? ' pinned' : ''}" data-id="${entry.id}">
+          <div class="entry-header" onclick="toggleEntry('${entry.id}')">
+            <div class="entry-left">
+              <div class="entry-index">${indexStr} / ${isJob ? 'Experience' : 'Project'}</div>
+              <div class="entry-title">${displayName}</div>
+              <div class="entry-role">${subtitle}</div>
+              <div class="entry-meta">
+                <span class="entry-meta-item">${entry.start_date} – ${entry.end_date || 'Present'}</span>
+                ${entry.location ? `<span class="entry-meta-item">${entry.location}</span>` : ''}
+              </div>
+            </div>
+            <div class="entry-right">
+              ${entry.pinned ? '<span class="pin-badge">Pinned</span>' : ''}
+              <span class="bullet-count-badge">${entry.bullets.length} bullets</span>
+              <span class="toggle-arrow">▾</span>
+            </div>
+          </div>
+          <div class="entry-body">
+            <div class="entry-body-inner">
+              ${linksHtml ? `<div class="entry-links-row">${linksHtml}</div>` : ''}
+              <div class="entry-summary">
+                <span class="entry-summary-label">Summary</span>
+                ${entry.summary}
+              </div>
+              ${entry.skills && entry.skills.length ? `
+                <div class="entry-skills-row">
+                  ${entry.skills.map(s => `<span class="entry-skill-chip">${s}</span>`).join('')}
+                </div>
+              ` : ''}
+              <div class="bullets-label">
+                <span>Bullet Bank</span>
+                <span>${entry.bullets.length} variants</span>
+              </div>
+              ${entry.bullets.map((b, bi) => `
+                <div class="bullet-item">
+                  <div class="bullet-num">${String(bi + 1).padStart(2, '0')}</div>
+                  <div>
+                    <div class="bullet-text">${b.text}</div>
+                    <div class="bullet-id">${b.id}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  renderEntries('all');
+
+  // Tabs
+  document.getElementById('tab-bar').addEventListener('click', e => {
+    const btn = e.target.closest('.tab-btn');
+    if (!btn) return;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderEntries(btn.dataset.filter);
+  });
+}
+
+function toggleEntry(id) {
+  const el = document.querySelector(`[data-id="${id}"]`);
+  if (el) el.classList.toggle('open');
+}
+
+function formatLinkKey(key) {
+  return { repo: 'Repo', web_repo: 'Web Repo', mobile_repo: 'Mobile Repo', live: 'Live Site', app_store: 'App Store', demo: 'Demo' }[key] || key;
+}
+
+function groupSkills(skills) {
+  const languages = ['Java', 'Python', 'C/C++', 'JavaScript', 'TypeScript', 'SQL', 'HTML/CSS', 'Kotlin', 'Swift', 'OCaml'];
+  const frameworks = ['React', 'React Native', 'Next.js', 'Node.js', 'Express.js', 'Expo', 'TailwindCSS', 'Vite', 'Mongoose', 'Flask', 'Jetpack Compose'];
+  const testing = ['Playwright', 'Cypress', 'Selenium', 'Jest', 'Maestro', 'GitHub Actions', 'Azure DevOps', 'Git', 'Jira', 'Confluence', 'CI/CD', 'EAS Build'];
+  const cloud = ['AWS', 'Microsoft Azure', 'Azure Blob Storage', 'Azure OpenAI', 'Firebase', 'Firestore', 'MongoDB Atlas', 'PostgreSQL', 'Supabase', 'Vercel', 'DigitalOcean', 'Neon'];
+  const aiml = ['PyTorch', 'scikit-learn', 'pandas', 'NumPy', 'Matplotlib', 'OpenAI API', 'Claude API', 'RAG', 'prompt engineering', 'embeddings', 'LLM ranking'];
+
+  const groups = [
+    { label: 'Languages', items: skills.filter(s => languages.includes(s)) },
+    { label: 'Frameworks & Libraries', items: skills.filter(s => frameworks.includes(s)) },
+    { label: 'Testing & DevOps', items: skills.filter(s => testing.includes(s)) },
+    { label: 'Cloud & Databases', items: skills.filter(s => cloud.includes(s)) },
+    { label: 'AI / ML & Data', items: skills.filter(s => aiml.includes(s)) },
+  ];
+
+  const categorized = new Set(groups.flatMap(g => g.items));
+  const uncategorized = skills.filter(s => !categorized.has(s));
+  if (uncategorized.length) groups.push({ label: 'Other', items: uncategorized });
+
+  return groups.filter(g => g.items.length > 0);
+}
+
+// ─── VIEW TOGGLE ─────────────────────────────
+function switchView(view) {
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-source-bank').classList.remove('active');
+  document.getElementById('view-runs').classList.remove('active');
+  document.getElementById('source-bank-nav').style.display = view === 'source-bank' ? '' : 'none';
+
+  if (view === 'source-bank') {
+    document.querySelector('.view-btn:first-child').classList.add('active');
+    document.getElementById('view-source-bank').classList.add('active');
+    if (_pollTimer) { clearInterval(_pollTimer); _pollTimer = null; }
+  } else {
+    document.querySelector('.view-btn:last-child').classList.add('active');
+    document.getElementById('view-runs').classList.add('active');
+    loadRuns();
+  }
+}
+
+// ─── RUNS ────────────────────────────────────
+let _runsData = null;
+let _selectedRunId = null;
+let _pollTimer = null;
+
+function loadRuns() {
+  fetch('../output/runs_index.json')
+    .then(r => r.json())
+    .then(data => {
+      _runsData = data;
+      renderRunsList(data.runs);
+      // Auto-select first run
+      if (data.runs.length && !_selectedRunId) {
+        selectRun(data.runs[0].id);
+      }
+      // If any run is "running", start polling
+      const hasRunning = data.runs.some(r => r.status === 'running');
+      if (hasRunning && !_pollTimer) {
+        _pollTimer = setInterval(() => loadRuns(), 3000);
+      } else if (!hasRunning && _pollTimer) {
+        clearInterval(_pollTimer);
+        _pollTimer = null;
+      }
+    })
+    .catch(() => {
+      document.getElementById('runs-list').innerHTML =
+        '<div class="runs-empty">No runs yet.<br><small>Run <code>python main.py --jd data/sample_jd_backend.txt</code> to generate one.</small></div>';
+    });
+}
+
+function renderRunsList(runs) {
+  const list = document.getElementById('runs-list');
+  if (!runs.length) {
+    list.innerHTML = '<div class="runs-empty">No runs yet.</div>';
+    return;
+  }
+
+  list.innerHTML = runs.map(run => {
+    const isActive = run.id === _selectedRunId ? ' active' : '';
+    const dateStr = formatRunDate(run.started_at);
+    const target = `${run.company || 'Unknown'} — ${run.role || 'Unknown'}`;
+    return `
+      <div class="run-item${isActive}" onclick="selectRun('${run.id}')">
+        <div class="run-item-target">${target}</div>
+        <div class="run-item-date">${dateStr} · ${run.elapsed_s || '?'}s</div>
+        <span class="run-item-status ${run.status}">${run.status}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function selectRun(runId) {
+  _selectedRunId = runId;
+  // Update active state in list
+  document.querySelectorAll('.run-item').forEach(el => el.classList.remove('active'));
+  const items = document.querySelectorAll('.run-item');
+  items.forEach(el => {
+    if (el.querySelector('.run-item-target') && el.onclick.toString().includes(runId)) {
+      el.classList.add('active');
+    }
+  });
+
+  // Find run data
+  const run = _runsData.runs.find(r => r.id === runId);
+  if (!run) return;
+
+  // Load the run's status.json for timeline
+  fetch(`../${run.dir}/status.json`)
+    .then(r => r.json())
+    .then(status => renderRunDetail(run, status))
+    .catch(() => renderRunDetail(run, null));
+}
+
+function renderRunDetail(run, status) {
+  const detail = document.getElementById('run-detail');
+  const target = `${run.company || 'Unknown'} — ${run.role || 'Unknown'}`;
+  const dateStr = formatRunDate(run.started_at);
+
+  // Output links — open in modal for in-page viewing
+  let outputLinks = '';
+  if (run.pdf_path) {
+    outputLinks += `<button class="run-output-link" onclick="openModal('PDF Resume', '../${run.pdf_path}', 'pdf')">PDF ↗</button>`;
+  }
+  outputLinks += `<button class="run-output-link" onclick="openModal('Pipeline Trace', '../${run.dir}/pipeline_trace.md', 'md')">Trace</button>`;
+  outputLinks += `<button class="run-output-link" onclick="openModal('Selection Report', '../${run.dir}/selection_report.json', 'json')">Report</button>`;
+  outputLinks += `<button class="run-output-link" onclick="openModal('LaTeX Source', '../${run.dir}/resume.tex', 'text')">LaTeX</button>`;
+  outputLinks += `<button class="run-output-link" onclick="openModal('Input JD', '../${run.dir}/input_jd.txt', 'text')">Input JD</button>`;
+
+
+  // Timeline steps
+  let timelineHtml = '<div class="timeline">';
+  if (status && status.steps) {
+    status.steps.forEach((step, i) => {
+      const isLast = i === status.steps.length - 1;
+      const stepClass = isLast && status.status === 'running' ? 'active' : 'done';
+      timelineHtml += `
+        <div class="timeline-step ${stepClass}">
+          <div class="timeline-dot"></div>
+          <div class="timeline-node">${step.node}</div>
+          <div class="timeline-summary">${step.summary}</div>
+          <div class="timeline-time">+${step.elapsed_s}s</div>
+        </div>
+      `;
+    });
+  } else {
+    timelineHtml += '<div style="padding:20px;color:var(--gray);font-size:13px;">No step data available for this run.</div>';
+  }
+  timelineHtml += '</div>';
+
+  // Status details
+  const statusBadge = `<span class="run-item-status ${run.status}">${run.status}</span>`;
+  const pageInfo = run.page_count ? ` · ${run.page_count} page${run.page_count > 1 ? 's' : ''}` : '';
+  const retryInfo = run.retry_count > 0 ? ` · ${run.retry_count} retries` : '';
+
+  detail.innerHTML = `
+    <div class="run-detail">
+      <div class="run-detail-header">
+        <div class="run-detail-title">${target}</div>
+        <div class="run-detail-meta">
+          <span>${dateStr}</span>
+          <span>${run.elapsed_s || '?'}s${pageInfo}${retryInfo}</span>
+          ${statusBadge}
+        </div>
+      </div>
+      <div class="run-detail-outputs">${outputLinks}</div>
+      <div style="font-family:var(--mono);font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.2em;color:var(--gray);margin-bottom:16px;">
+        Pipeline Timeline
+      </div>
+      ${timelineHtml}
+    </div>
+  `;
+
+  // Re-mark active in list
+  document.querySelectorAll('.run-item').forEach((el, i) => {
+    el.classList.toggle('active', _runsData.runs[i]?.id === _selectedRunId);
+  });
+
+  // If run is still running, poll its status
+  if (run.status === 'running') {
+    if (!_pollTimer) {
+      _pollTimer = setInterval(() => {
+        loadRuns();
+        if (_selectedRunId) selectRun(_selectedRunId);
+      }, 2000);
+    }
+  }
+}
+
+function formatRunDate(iso) {
+  if (!iso) return 'Unknown';
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) +
+      ' ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return iso;
+  }
+}
+
+// ─── DOC VIEWER MODAL ─────────────────────────
+function openModal(title, url, type) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = '<div class="modal-loading">Loading…</div>';
+  document.getElementById('doc-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  if (type === 'pdf') {
+    document.getElementById('modal-body').innerHTML = `<iframe src="${url}"></iframe>`;
+    return;
+  }
+
+  fetch(url)
+    .then(r => r.text())
+    .then(text => {
+      const body = document.getElementById('modal-body');
+      if (type === 'json') {
+        try {
+          const parsed = JSON.parse(text);
+          body.innerHTML = `<pre>${JSON.stringify(parsed, null, 2)}</pre>`;
+        } catch {
+          body.innerHTML = `<pre>${text}</pre>`;
+        }
+      } else if (type === 'md') {
+        body.innerHTML = `<div class="md-content">${renderMarkdown(text)}</div>`;
+      } else {
+        body.innerHTML = `<pre>${escapeHtml(text)}</pre>`;
+      }
+    })
+    .catch(() => {
+      document.getElementById('modal-body').innerHTML =
+        '<div class="modal-loading">Could not load file.</div>';
+    });
+}
+
+function closeModal(e) {
+  if (e === true || e.target === document.getElementById('doc-modal')) {
+    document.getElementById('doc-modal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal(true);
+});
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Minimal markdown → HTML (handles headers, bold, hr, ul, code)
+function renderMarkdown(md) {
+  return md
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/^---$/gm, '<hr>')
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
+    .replace(/\n{2,}/g, '<br><br>')
+    .replace(/\n/g, '<br>');
+}
+</script>
+</body>
+</html>
