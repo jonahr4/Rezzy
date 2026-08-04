@@ -1014,36 +1014,186 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* ── Step 4: Suggestions (Grammarly-style) ─────────────── */
-.suggestion-list {
-  width: 100%;
-  max-width: 960px;
-  margin: 0 auto;
+.step-suggestions-v2 { width: 100%; }
+
+/* Entry tabs */
+.sug-entry-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 24px;
+  margin-bottom: 20px;
+  overflow-x: auto;
 }
-.suggestion-entry { margin-bottom: 32px; }
-.suggestion-entry-header {
+.sug-tab {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--light-gray);
-}
-.suggestion-entry-name { font-size: 15px; font-weight: 700; }
-.suggestion-card {
-  display: grid;
-  grid-template-columns: 48px 1fr;
-  gap: 12px;
-  padding: 16px;
-  margin-bottom: 8px;
+  gap: 8px;
+  padding: 8px 16px;
   background: var(--white);
   border: 1px solid var(--light-gray);
   cursor: pointer;
+  font-family: var(--body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray);
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.sug-tab:hover { border-color: var(--cobalt); color: var(--jet); }
+.sug-tab.active {
+  background: var(--cobalt);
+  border-color: var(--cobalt);
+  color: var(--white);
+}
+.entry-type-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gray);
+  flex-shrink: 0;
+}
+.entry-type-dot.job { background: var(--cobalt); }
+.entry-type-dot.project { background: #7C4DFF; }
+.sug-tab-count {
+  font-family: var(--mono);
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+/* Side-by-side columns */
+.sug-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  padding: 0 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.sug-col-header {
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--light-gray);
+}
+.sug-col-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--gray);
+}
+.sug-col-label.suggested { color: var(--cobalt); }
+
+/* Resume-like cards */
+.sug-resume-card {
+  background: var(--white);
+  border: 1px solid var(--light-gray);
+  padding: 20px;
+  position: relative;
+}
+.sug-resume-card.suggested {
+  border-color: var(--cobalt);
+  border-width: 2px;
+}
+.sug-resume-title {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 2px;
+}
+.sug-resume-company {
+  font-size: 12px;
+  font-style: italic;
+  color: var(--gray);
+  margin-bottom: 12px;
+}
+.sug-resume-bullets {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sug-bullet {
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--jet);
+  padding: 8px 10px;
+  border-left: 3px solid transparent;
   transition: all 0.3s;
 }
-.suggestion-card:hover:not(.readonly) { border-color: var(--cobalt); }
-.suggestion-card.accepted { border-color: var(--cobalt); background: rgba(19,81,170,0.02); }
-.suggestion-card.readonly { cursor: default; }
-.suggestion-toggle { display: flex; justify-content: center; padding-top: 4px; }
+.sug-bullet::before {
+  content: "•";
+  margin-right: 8px;
+  color: var(--gray);
+}
+/* Current column: bullets with suggestions get yellow left border */
+.sug-bullet.has-suggestion {
+  border-left-color: #FFB300;
+  background: rgba(255, 179, 0, 0.04);
+}
+.sug-bullet.replaced {
+  text-decoration: line-through;
+  text-decoration-color: rgba(199,199,199,0.6);
+  color: var(--gray);
+  border-left-color: var(--light-gray);
+}
+/* Suggested column: suggestion items */
+.sug-bullet.suggestion-item {
+  cursor: pointer;
+  border-left-color: var(--cobalt);
+  background: rgba(19,81,170,0.03);
+}
+.sug-bullet.suggestion-item:hover:not(.readonly) {
+  background: rgba(19,81,170,0.08);
+}
+.sug-bullet.suggestion-item.accepted {
+  background: rgba(19,81,170,0.06);
+  border-left-color: var(--cobalt);
+}
+.sug-bullet.suggestion-item.pending {
+  border-left-color: var(--light-gray);
+  opacity: 0.7;
+}
+.sug-bullet.suggestion-item.readonly { cursor: default; }
+.sug-bullet.unchanged {
+  color: var(--gray);
+  opacity: 0.5;
+}
+
+/* Bullet row with toggle */
+.sug-bullet-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.sug-bullet-text { flex: 1; }
+.sug-bullet-toggle {
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+/* Diff highlighting */
+.diff-highlight {
+  background: rgba(19,81,170,0.12);
+  color: var(--cobalt);
+  font-weight: 600;
+  padding: 1px 2px;
+  border-radius: 2px;
+}
+
+/* Reason text under suggestion */
+.sug-bullet-reason {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--cobalt);
+  opacity: 0.7;
+  line-height: 1.4;
+  margin-top: 4px;
+}
+
+/* Toggle switch (reused from old) */
 .sug-switch {
   width: 32px; height: 18px;
   background: var(--light-gray);
@@ -1059,46 +1209,8 @@ a { color: inherit; text-decoration: none; }
   transition: transform 0.3s;
 }
 .sug-switch.on .sug-switch-thumb { transform: translateX(14px); }
-.suggestion-content { display: flex; flex-direction: column; gap: 8px; }
-.sug-original { position: relative; }
-.sug-original p {
-  font-size: 13px;
-  color: var(--gray);
-  line-height: 1.6;
-  margin: 0;
-  text-decoration: line-through;
-  text-decoration-color: rgba(199,199,199,0.6);
-}
-.sug-label {
-  font-family: var(--mono);
-  font-size: 9px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: var(--gray);
-  margin-bottom: 2px;
-  display: block;
-}
-.sug-label.proposed { color: var(--cobalt); }
-.sug-arrow {
-  font-size: 14px;
-  color: var(--cobalt);
-  font-weight: 700;
-}
-.sug-proposed p {
-  font-size: 13.5px;
-  color: var(--jet);
-  line-height: 1.6;
-  margin: 0;
-  font-weight: 500;
-}
-.sug-reason {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--cobalt);
-  opacity: 0.7;
-  line-height: 1.4;
-}
+
+
 
 /* ── Step 5: Compiling ─────────────────────────────────── */
 .step-compiling { display: flex; align-items: center; justify-content: center; }

@@ -1,8 +1,42 @@
 "use client";
 
 import { useTailorStore } from "@/lib/tailorStore";
+import { useState } from "react";
 
 const API_URL = "/api/pipeline";
+
+/** Highlight words that differ between original and suggested text */
+function DiffHighlight({
+  original,
+  suggested,
+}: {
+  original: string;
+  suggested: string;
+}) {
+  const origWords = original.split(/\s+/);
+  const sugWords = suggested.split(/\s+/);
+
+  // Simple word-level diff: highlight words in suggested that aren't in original
+  const origSet = new Set(origWords.map((w) => w.toLowerCase()));
+
+  return (
+    <span>
+      {sugWords.map((word, i) => {
+        const isNew = !origSet.has(word.toLowerCase());
+        return (
+          <span key={i}>
+            {i > 0 ? " " : ""}
+            {isNew ? (
+              <mark className="diff-highlight">{word}</mark>
+            ) : (
+              word
+            )}
+          </span>
+        );
+      })}
+    </span>
+  );
+}
 
 export default function StepSuggestions() {
   const {
@@ -17,6 +51,8 @@ export default function StepSuggestions() {
     advanceStep,
     currentStep,
   } = useTailorStore();
+
+  const [activeEntry, setActiveEntry] = useState<string | null>(null);
 
   const acceptedCount = suggestions.reduce(
     (sum, es) => sum + es.suggestions.filter((s) => s.accepted).length,
@@ -41,7 +77,6 @@ export default function StepSuggestions() {
       let bullets = [...entry.selected_bullets];
       for (const sug of entrySuggestions.suggestions) {
         if (!sug.accepted) continue;
-        // Replace the bullet(s) that this suggestion targets
         for (const replaceId of sug.replaces_bullet_ids) {
           const idx = bullets.findIndex((b) => b.id === replaceId);
           if (idx !== -1) {
@@ -94,14 +129,19 @@ export default function StepSuggestions() {
 
   const isReadOnly = currentStep > 4;
 
+  // Build entries that have suggestions
+  const entriesWithSuggestions = suggestions.filter(
+    (es) => es.suggestions.length > 0
+  );
+
   return (
-    <div className="step-inner step-suggestions">
+    <div className="step-inner step-suggestions-v2">
       <div className="step-header-bar">
         <div>
-          <h2 className="step-title">AI Suggestions</h2>
+          <h2 className="step-title">Review Suggestions</h2>
           <p className="step-desc">
-            {totalSuggestions} improvements proposed. Accept the ones you like
-            — {acceptedCount} accepted so far.
+            {acceptedCount} of {totalSuggestions} improvements accepted.
+            Toggle suggestions on the right to apply them.
           </p>
         </div>
         {!isReadOnly && (
@@ -111,67 +151,154 @@ export default function StepSuggestions() {
         )}
       </div>
 
-      <div className="suggestion-list">
-        {suggestions.map((entrySugs) => {
-          if (entrySugs.suggestions.length === 0) return null;
+      {/* Entry tabs */}
+      <div className="sug-entry-tabs">
+        {entriesWithSuggestions.map((es) => {
           const entry = selectedContent.find(
-            (e) => e.entry_id === entrySugs.entry_id
+            (e) => e.entry_id === es.entry_id
           );
+          const acceptedInEntry = es.suggestions.filter(
+            (s) => s.accepted
+          ).length;
+          const isActive =
+            activeEntry === es.entry_id ||
+            (!activeEntry && entriesWithSuggestions[0]?.entry_id === es.entry_id);
 
           return (
-            <div key={entrySugs.entry_id} className="suggestion-entry">
-              <div className="suggestion-entry-header">
-                <span className={`entry-type-pill ${entry?.type}`}>
-                  {entry?.type}
-                </span>
-                <span className="suggestion-entry-name">
-                  {entry?.company ? `${entry.company} — ` : ""}
-                  {entry?.title}
-                </span>
-              </div>
-
-              {entrySugs.suggestions.map((sug, i) => {
-                const originalBullet = entry?.selected_bullets.find((b) =>
-                  sug.replaces_bullet_ids.includes(b.id)
-                );
-
-                return (
-                  <div
-                    key={i}
-                    className={`suggestion-card ${sug.accepted ? "accepted" : ""} ${isReadOnly ? "readonly" : ""}`}
-                    onClick={() =>
-                      !isReadOnly &&
-                      toggleSuggestion(entrySugs.entry_id, i)
-                    }
-                  >
-                    <div className="suggestion-toggle">
-                      <div
-                        className={`sug-switch ${sug.accepted ? "on" : ""}`}
-                      >
-                        <div className="sug-switch-thumb" />
-                      </div>
-                    </div>
-                    <div className="suggestion-content">
-                      {originalBullet && (
-                        <div className="sug-original">
-                          <span className="sug-label">Current</span>
-                          <p>{originalBullet.text}</p>
-                        </div>
-                      )}
-                      <div className="sug-arrow">↓</div>
-                      <div className="sug-proposed">
-                        <span className="sug-label proposed">Suggested</span>
-                        <p>{sug.text}</p>
-                      </div>
-                      <div className="sug-reason">{sug.reason}</div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <button
+              key={es.entry_id}
+              className={`sug-tab ${isActive ? "active" : ""}`}
+              onClick={() => setActiveEntry(es.entry_id)}
+            >
+              <span className={`entry-type-dot ${entry?.type}`} />
+              <span className="sug-tab-name">
+                {entry?.company || entry?.title}
+              </span>
+              <span className="sug-tab-count">
+                {acceptedInEntry}/{es.suggestions.length}
+              </span>
+            </button>
           );
         })}
       </div>
+
+      {/* Side-by-side resume columns */}
+      {entriesWithSuggestions.map((entrySugs) => {
+        const entry = selectedContent.find(
+          (e) => e.entry_id === entrySugs.entry_id
+        );
+        const isActive =
+          activeEntry === entrySugs.entry_id ||
+          (!activeEntry &&
+            entriesWithSuggestions[0]?.entry_id === entrySugs.entry_id);
+
+        if (!isActive || !entry) return null;
+
+        return (
+          <div key={entrySugs.entry_id} className="sug-columns">
+            {/* LEFT: Current resume */}
+            <div className="sug-col sug-col-current">
+              <div className="sug-col-header">
+                <span className="sug-col-label">Current</span>
+              </div>
+              <div className="sug-resume-card">
+                <div className="sug-resume-title">{entry.title}</div>
+                <div className="sug-resume-company">
+                  {entry.company}
+                </div>
+                <ul className="sug-resume-bullets">
+                  {entry.selected_bullets.map((bullet) => {
+                    const hasSuggestion = entrySugs.suggestions.some(
+                      (s) => s.replaces_bullet_ids.includes(bullet.id)
+                    );
+                    const isAccepted = entrySugs.suggestions.some(
+                      (s) =>
+                        s.replaces_bullet_ids.includes(bullet.id) &&
+                        s.accepted
+                    );
+
+                    return (
+                      <li
+                        key={bullet.id}
+                        className={`sug-bullet ${
+                          hasSuggestion ? "has-suggestion" : ""
+                        } ${isAccepted ? "replaced" : ""}`}
+                      >
+                        {bullet.text}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            </div>
+
+            {/* RIGHT: Suggested resume */}
+            <div className="sug-col sug-col-suggested">
+              <div className="sug-col-header">
+                <span className="sug-col-label suggested">Suggested</span>
+              </div>
+              <div className="sug-resume-card suggested">
+                <div className="sug-resume-title">{entry.title}</div>
+                <div className="sug-resume-company">
+                  {entry.company}
+                </div>
+                <ul className="sug-resume-bullets">
+                  {entry.selected_bullets.map((bullet) => {
+                    const suggestion = entrySugs.suggestions.find((s) =>
+                      s.replaces_bullet_ids.includes(bullet.id)
+                    );
+
+                    if (!suggestion) {
+                      // No suggestion for this bullet — show as-is
+                      return (
+                        <li key={bullet.id} className="sug-bullet unchanged">
+                          {bullet.text}
+                        </li>
+                      );
+                    }
+
+                    const sugIndex = entrySugs.suggestions.indexOf(suggestion);
+
+                    return (
+                      <li
+                        key={bullet.id}
+                        className={`sug-bullet suggestion-item ${
+                          suggestion.accepted ? "accepted" : "pending"
+                        } ${isReadOnly ? "readonly" : ""}`}
+                        onClick={() =>
+                          !isReadOnly &&
+                          toggleSuggestion(entrySugs.entry_id, sugIndex)
+                        }
+                      >
+                        <div className="sug-bullet-row">
+                          <div className="sug-bullet-text">
+                            <DiffHighlight
+                              original={bullet.text}
+                              suggested={suggestion.text}
+                            />
+                          </div>
+                          <div className="sug-bullet-toggle">
+                            <div
+                              className={`sug-switch ${
+                                suggestion.accepted ? "on" : ""
+                              }`}
+                            >
+                              <div className="sug-switch-thumb" />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="sug-bullet-reason">
+                          {suggestion.reason}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
