@@ -1,0 +1,29 @@
+# Environment
+.env
+
+# Generated output
+output/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# Tectonic cache
+.cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Node / Next.js
+node_modules/
+web/.next/
+web/node_modules/
+.langgraph_api/
