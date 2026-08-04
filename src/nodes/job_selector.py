@@ -18,9 +18,16 @@ You will receive:
 1. The parsed job description (skills, responsibilities, keywords, seniority)
 2. A list of career entries with their IDs, titles, companies, dates, summaries, and skills
 
+PAGE BUDGET — use this math to select ENOUGH entries to fill the page:
+- A one-page resume body holds roughly 580-650 words of content (after header ~30w, education ~50w, skills ~80w)
+- Each JOB entry uses roughly: header (15w) + 3-4 bullets × 28w = 100-125 words
+- Each PROJECT entry uses roughly: header (25w) + 3-4 bullets × 28w = 110-135 words
+- Target: 2-3 JOBS + 3-4 PROJECTS = 5-6 total entries to fill the page properly
+- Under-selecting leaves embarrassing whitespace. When in doubt, include more.
+
 Rules:
-- Select 3-5 entries total (mix of jobs and projects) that are MOST relevant to the target JD
-- Entries marked "pinned": true MUST always be included (don't count against your limit)
+- Select 5-6 entries total. AIM for 2-3 jobs AND 3-4 projects.
+- Entries marked "pinned": true MUST always be included (they don't count against your minimum)
 - Prefer recent entries over older ones when relevance is similar
 - Consider skill overlap, responsibility match, and domain relevance
 - For each selected entry, provide a one-line rationale
