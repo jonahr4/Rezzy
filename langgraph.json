@@ -1,0 +1,7 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "resume_genie": "./src/graph.py:app"
+  },
+  "env": ".env"
+}
