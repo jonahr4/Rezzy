@@ -1,0 +1,38 @@
+Software Engineer, Intern
+Meridian Systems — San Francisco, CA
+June 2024 – August 2024 (12 weeks, full-time)
+
+About Meridian Systems:
+Meridian Systems is a Series B infrastructure company building observability tooling for distributed systems teams. We serve mid-market and enterprise engineering organizations and process over 50 billion log events per day across our ingestion pipeline.
+
+Role Overview:
+We're looking for a backend-focused software engineering intern to join our Core Infrastructure team for Summer 2024. You'll work alongside senior engineers on real production systems — not toy projects — and own meaningful pieces of our data ingestion and storage infrastructure.
+
+Responsibilities:
+- Design and implement improvements to our log ingestion and processing pipeline (Python, Go)
+- Optimize storage and query performance for our time-series log database
+- Write and maintain integration and load tests for high-throughput components
+- Participate in on-call rotations (shadow only for interns) and incident post-mortems
+- Collaborate with the SRE and product teams to define reliability SLOs
+
+Required Skills:
+- Strong proficiency in Python or Go
+- Solid understanding of distributed systems concepts (replication, consistency, partitioning)
+- Experience with relational or time-series databases (PostgreSQL, ClickHouse, InfluxDB, or similar)
+- Familiarity with REST API design
+- Comfortable with Linux/Unix environments and shell scripting
+
+Nice to Have:
+- Experience with message queues or stream processing (Kafka, Kinesis, Pulsar)
+- Exposure to container orchestration (Kubernetes, Docker Swarm)
+- Understanding of observability concepts (metrics, traces, logs — the "three pillars")
+- Prior internship or open-source contribution in a systems or infrastructure context
+
+What We're Looking For:
+- A strong systems thinker who cares about performance and reliability
+- Someone who takes ownership and doesn't wait to be told what to do next
+- Clear technical communicator — written and verbal
+- Comfortable operating in ambiguity and iterating quickly
+
+Compensation: $45–50/hr depending on year in school
+Location: San Francisco, CA (on-site preferred, hybrid possible)

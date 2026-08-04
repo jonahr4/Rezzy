@@ -1,0 +1,39 @@
+Machine Learning Engineer, Intern
+Lumina AI — New York, NY (hybrid)
+Summer 2024
+
+About Lumina AI:
+Lumina AI is an applied ML company building recommendation and personalization systems for e-commerce and media platforms. Our models run inference on over 200M users daily. We're a team of 60, backed by Tier 1 VCs, and growing fast.
+
+Role Overview:
+We're looking for a Machine Learning Engineering intern to work on our model training infrastructure, feature engineering pipelines, and evaluation frameworks. This is a high-ownership role — you'll ship real changes to systems that affect production model quality.
+
+Responsibilities:
+- Build and maintain feature engineering pipelines for our recommendation models (Python, Spark)
+- Design and run offline A/B experiments to evaluate model quality
+- Improve model training infrastructure: job scheduling, experiment tracking, hyperparameter tuning
+- Collaborate with research scientists to productionize experimental models
+- Write clear documentation and present findings to cross-functional stakeholders
+
+Required Skills:
+- Strong Python skills, including data manipulation libraries (pandas, NumPy, scikit-learn)
+- Experience training and evaluating ML models (classification, regression, or ranking)
+- Familiarity with ML experiment tracking tools (MLflow, Weights & Biases, or similar)
+- Understanding of feature engineering and data preprocessing best practices
+- Comfortable working with large datasets
+
+Nice to Have:
+- Experience with deep learning frameworks (PyTorch, TensorFlow, JAX)
+- Exposure to recommendation systems, collaborative filtering, or LLMs
+- Familiarity with distributed data processing (Spark, Dask, Ray)
+- Experience with cloud ML platforms (AWS SageMaker, GCP Vertex AI)
+- Prior research experience or published work (even workshop papers count)
+
+What We're Looking For:
+- Intellectual curiosity about how ML systems work end-to-end
+- Strong analytical mindset — you reason carefully about metrics and experimental validity
+- A good communicator who can explain model behavior to non-technical stakeholders
+- Self-starter who thrives in a fast-paced, research-adjacent environment
+
+Compensation: $48–52/hr
+Location: New York, NY (hybrid, 3 days/week in office)

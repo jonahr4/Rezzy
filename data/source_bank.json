@@ -1,0 +1,641 @@
+{
+  "personal": {
+    "name": "Jonah Rothman",
+    "email": "jonahr@bu.edu",
+    "phone": "781-366-5290",
+    "linkedin": "linkedin.com/in/jonah-rothman/",
+    "github": "github.com/jonahr4/",
+    "website": "jonahrothman.com",
+    "location": "Boston, MA"
+  },
+  "skills": [
+    "Java", "Python", "C/C++", "JavaScript", "TypeScript", "SQL", "HTML/CSS", "Kotlin", "Swift", "OCaml",
+    "React", "React Native", "Next.js", "Node.js", "Express.js", "Expo", "TailwindCSS", "Vite", "Mongoose", "Flask", "Jetpack Compose",
+    "Playwright", "Cypress", "Selenium", "Jest", "Maestro", "GitHub Actions", "Azure DevOps", "Git", "Jira", "Confluence", "CI/CD", "EAS Build",
+    "AWS", "Microsoft Azure", "Azure Blob Storage", "Azure OpenAI", "Firebase", "Firestore", "MongoDB Atlas", "PostgreSQL", "Supabase", "Vercel", "DigitalOcean", "Neon",
+    "PyTorch", "scikit-learn", "pandas", "NumPy", "Matplotlib", "OpenAI API", "Claude API", "RAG", "prompt engineering", "embeddings", "LLM ranking"
+  ],
+  "education": [
+    {
+      "id": "edu_1",
+      "institution": "Boston University",
+      "degree": "MS in Computer Science, BA in Computer Science",
+      "minor": "Economics",
+      "location": "Boston, MA",
+      "start_date": "Sep 2022",
+      "end_date": "Jan 2027",
+      "gpa": "3.75",
+      "honors": "Dean's List all terms",
+      "relevant_coursework": [
+        "Natural Language Processing",
+        "Machine Learning",
+        "Image & Video Computing",
+        "Analysis of Algorithms",
+        "Foundations of Data Science",
+        "Distributed Systems",
+        "Full-Stack Development",
+        "Software Engineering",
+        "Artificial Intelligence",
+        "Computer Systems",
+        "Microeconomics",
+        "Macroeconomics"
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "job_mlb",
+      "type": "job",
+      "company": "Major League Baseball (MLB)",
+      "title": "Software Engineer Intern, Test Engineering",
+      "start_date": "Jun 2026",
+      "end_date": "Aug 2026",
+      "location": "New York, NY",
+      "pinned": true,
+      "summary": "Worked on the Test Engineering team at Major League Baseball in Summer 2026, building automated test infrastructure for MLB's MyProVenue ticketing and venue web platform — which serves 70M+ annual fans across all 30 MLB ballparks and is embedded in the Ballpark mobile app via WebViews. My primary project was building out Playwright end-to-end test suites in TypeScript/JavaScript integrated into GitHub Actions CI/CD, covering revenue-critical purchase flows like ticket vouchers, exchanges, and forwarding. I also architected an AI-assisted test generation pipeline using Claude and GPT agents (Author, Explorer, and Self-healing agents) that could auto-draft Playwright specs and Page Object Models directly from Jira tickets and product requirement documents. Additionally, I led the migration of legacy Selenium suites to Playwright across the NY, LA, and Boulder offices, achieving a 60%+ reduction in full regression runtime, and built automation scripts to provision 140+ test accounts for data setup.",
+      "skills": ["Playwright", "TypeScript", "JavaScript", "Selenium", "GitHub Actions", "CI/CD", "AI agents", "Claude API", "OpenAI API", "test automation", "Page Object Model", "Jira"],
+      "bullets": [
+        {
+          "id": "job_mlb_b1",
+          "text": "Engineered automated test coverage for MLB's ticketing and venue web platform serving 70M+ annual fans across all 30 MLB ballparks, embedded directly within the Ballpark mobile app via WebViews"
+        },
+        {
+          "id": "job_mlb_b2",
+          "text": "Built 100+ end-to-end test cases in Playwright with TypeScript, integrated with the team's GitHub Actions CI/CD pipeline to gate every production deploy and prevent regressions in revenue-critical purchase flows"
+        },
+        {
+          "id": "job_mlb_b3",
+          "text": "Authored 80+ E2E test cases in Playwright with JavaScript, building new page coverage utilizing best POM standards"
+        },
+        {
+          "id": "job_mlb_b4",
+          "text": "Architected AI-assisted test generation workflows using Claude and GPT-based agents to auto-draft Playwright specs from product requirement docs, accelerating test authoring while maintaining a firewalled validation layer independent of the AI-generated implementation"
+        },
+        {
+          "id": "job_mlb_b5",
+          "text": "Architected an AI pipeline (Author, Explorer, Self-healing agents) to create Playwright specs and POMs from Jira tickets"
+        },
+        {
+          "id": "job_mlb_b6",
+          "text": "Migrated legacy Selenium suites to Playwright across NY, LA, and Boulder offices, leveraging native auto-waiting and parallel execution to reduce full regression runtime by over 60%"
+        },
+        {
+          "id": "job_mlb_b7",
+          "text": "Created automation scripts to improve test data maintainability and creation, rapidly provisioning 140+ test accounts"
+        },
+        {
+          "id": "job_mlb_b8",
+          "text": "Integrated test suites into GitHub Actions CI/CD to catch bugs across ticket voucher, exchanges, and forwarding flows"
+        },
+        {
+          "id": "job_mlb_b9",
+          "text": "Engineered automated test coverage for MLB's MyProVenue Ticketing platform, ensuring reliability for 70M+ annual fans"
+        }
+      ]
+    },
+    {
+      "id": "job_spark",
+      "type": "job",
+      "company": "BU Spark!",
+      "title": "Software Engineering Consultant",
+      "start_date": "Jan 2026",
+      "end_date": "May 2026",
+      "location": "Boston, MA",
+      "pinned": false,
+      "summary": "Worked as a Software Engineering Consultant through the BU Spark! program, building a full-stack schema-mapping platform called 'ReMatch' for a client with heterogeneous SaaS data sources including ServiceNow and AuditBoard. The core AI feature was a hybrid pipeline using embeddings and LLM ranking with OpenAI to automatically match database tables, fields, and relationships across systems with confidence scoring and human-readable reasoning. I built the full stack: a visual mapping interface using React Flow for the frontend, real-time model output streaming via Server-Sent Events, Next.js backend APIs for schema introspection and matching workflows, NextAuth for Google and GitHub OAuth, and Supabase/Postgres for data storage. We delivered the prototype across four agile sprints.",
+      "skills": ["Next.js", "React", "TypeScript", "TailwindCSS", "OpenAI API", "embeddings", "LLM ranking", "Supabase", "PostgreSQL", "Server-Sent Events", "NextAuth", "React Flow", "REST APIs", "agile"],
+      "bullets": [
+        {
+          "id": "job_spark_b1",
+          "text": "Built a full-stack schema-mapping platform that aligns heterogeneous SaaS data, including ServiceNow and AuditBoard, to a unified canonical ontology"
+        },
+        {
+          "id": "job_spark_b2",
+          "text": "Developed a hybrid AI pipeline, \"ReMatch,\" using embeddings and LLM ranking with OpenAI to automatically match tables, fields, and relationships with confidence scoring and reasoning"
+        },
+        {
+          "id": "job_spark_b3",
+          "text": "Implemented real-time streaming of model outputs to the frontend using Server-Sent Events for an interactive user experience"
+        },
+        {
+          "id": "job_spark_b4",
+          "text": "Designed and shipped a visual mapping interface using React Flow, enabling users to review and connect schemas through an interactive canvas"
+        },
+        {
+          "id": "job_spark_b5",
+          "text": "Built backend APIs in Next.js to handle schema introspection, matching workflows, and authentication"
+        },
+        {
+          "id": "job_spark_b6",
+          "text": "Implemented authentication with NextAuth using Google and GitHub OAuth"
+        },
+        {
+          "id": "job_spark_b7",
+          "text": "Integrated Supabase/Postgres for data storage and schema metadata extraction via custom RPCs"
+        },
+        {
+          "id": "job_spark_b8",
+          "text": "Collaborated in an agile sprint environment across four sprints to deliver a production-ready prototype, including dashboard UI, matching pipeline, and data connectors"
+        },
+        {
+          "id": "job_spark_b9",
+          "text": "Worked across a modern tech stack including Next.js, React, TypeScript, Tailwind, OpenAI APIs, and Supabase"
+        }
+      ]
+    },
+    {
+      "id": "job_panelclaw",
+      "type": "job",
+      "company": "PanelClaw",
+      "title": "Junior Front End Development Intern",
+      "start_date": "May 2025",
+      "end_date": "Aug 2025",
+      "location": "North Andover, MA",
+      "pinned": false,
+      "summary": "Worked as a Junior Front End Development Intern at PanelClaw, a solar panel mounting systems company, during Summer 2025. As essentially their first QA-focused intern, I independently researched, introduced, and implemented Cypress as the company's first automated testing framework — from scratch with no prior automation infrastructure. I rebuilt their manual front-end smoke test suite using Cypress parallel automation, cutting test execution time from a full day to about an hour (5x faster, saving 6+ engineering hours daily). I also wrote and maintained hundreds of Jest JavaScript unit tests for backend coverage and leveraged GitHub Copilot to accelerate development.",
+      "skills": ["Cypress", "Jest", "JavaScript", "GitHub Copilot", "CI/CD", "Jira", "Confluence", "test automation", "QA"],
+      "bullets": [
+        {
+          "id": "job_pclaw_b1",
+          "text": "Led the adoption of Cypress, independently researching and implementing the company's first fully automated test framework"
+        },
+        {
+          "id": "job_pclaw_b2",
+          "text": "Identified inefficiencies in the existing QA process and led the adoption of Cypress, independently researching, implementing, and demoing the company's first automated test framework"
+        },
+        {
+          "id": "job_pclaw_b3",
+          "text": "Rebuilt the manual front-end smoke test suite with Cypress parallel automation, reducing test time from a full day to ~1 hour, saving the QA team 6+ manual hours a day (5x faster)"
+        },
+        {
+          "id": "job_pclaw_b4",
+          "text": "Redesigned the manual smoke testing process using Cypress parallel automation, reducing test execution time from a full day to ~1 hour and saving 6+ engineering hours daily"
+        },
+        {
+          "id": "job_pclaw_b5",
+          "text": "Automated the manual QA smoke test suite using Cypress with parallel execution, reducing test time from a full day to ~1 hour"
+        },
+        {
+          "id": "job_pclaw_b6",
+          "text": "Wrote and maintained hundreds of Jest JavaScript unit tests, improving backend test coverage and catching critical bugs"
+        },
+        {
+          "id": "job_pclaw_b7",
+          "text": "Developed and maintained hundreds of Jest unit tests, improving backend reliability and enabling earlier detection of critical issues across the development lifecycle"
+        },
+        {
+          "id": "job_pclaw_b8",
+          "text": "Leveraged GitHub Copilot to accelerate daily development workflows and consistently enhance automated test script quality"
+        },
+        {
+          "id": "job_pclaw_b9",
+          "text": "Tracked tasks in Jira and documented wiki pages in Confluence to support team collaboration"
+        },
+        {
+          "id": "job_pclaw_b10",
+          "text": "Innovated QA smoke testing in JavaScript by discovering faster, more efficient testing techniques"
+        }
+      ]
+    },
+    {
+      "id": "job_clearwatt",
+      "type": "job",
+      "company": "ClearWatt",
+      "title": "Software Development Intern",
+      "start_date": "Feb 2025",
+      "end_date": "Apr 2025",
+      "location": "London, UK",
+      "pinned": false,
+      "summary": "Worked as a Software Development Intern at ClearWatt, a London-based startup providing electric vehicle battery health transparency for the used EV market. I built their first automated UI testing suite using Maestro, a mobile test automation framework, creating 60+ YAML test flows covering app-wide regression. I integrated the suite into Azure DevOps CI/CD across staging, UAT, and production environments, tagged UI elements throughout the React Native codebase to support testability, and diagnosed and helped fix bugs uncovered during automation. Also contributed to web development work using React.",
+      "skills": ["Maestro", "React Native", "Azure DevOps", "CI/CD", "mobile testing", "React", "Git", "test automation", "YAML", "agile"],
+      "bullets": [
+        {
+          "id": "job_cw_b1",
+          "text": "Spearheaded ClearWatt's first automated UI testing suite by independently building a Maestro test suite with 60+ YAML flows, giving the team consistent app-wide regression coverage for the first time"
+        },
+        {
+          "id": "job_cw_b2",
+          "text": "Designed and implemented the company's first automated UI testing framework using Maestro, building 60+ test flows to establish consistent regression coverage across the mobile application"
+        },
+        {
+          "id": "job_cw_b3",
+          "text": "Spearheaded ClearWatt's first implementation of automated testing by independently building a full UI testing suite using Maestro to ensure app-wide stability in a fast-paced startup environment"
+        },
+        {
+          "id": "job_cw_b4",
+          "text": "Improved app stability by tagging UI elements and diagnosing React Native bugs uncovered during automation"
+        },
+        {
+          "id": "job_cw_b5",
+          "text": "Tagged UI elements and debugged issues within the React Native codebase to support and improve test coverage"
+        },
+        {
+          "id": "job_cw_b6",
+          "text": "Diagnosed React Native UI issues by analyzing automated test failures and collaborating with engineers on fixes"
+        },
+        {
+          "id": "job_cw_b7",
+          "text": "Integrated the UI test suite into Azure DevOps CI/CD, ensuring every deployment triggered full regression checks"
+        },
+        {
+          "id": "job_cw_b8",
+          "text": "Integrated automated testing into Azure DevOps CI/CD pipelines for staging, UAT, and production validation"
+        },
+        {
+          "id": "job_cw_b9",
+          "text": "Developed tests across staging, UAT, and production environments within an agile Git-based workflow"
+        },
+        {
+          "id": "job_cw_b10",
+          "text": "Worked on web development using frameworks like React to improve platform functionality"
+        },
+        {
+          "id": "job_cw_b11",
+          "text": "Contributed to the company's app-based solution to provide car battery health transparency in the used EV market"
+        }
+      ]
+    },
+    {
+      "id": "job_realty",
+      "type": "job",
+      "company": "First Cambridge Realty Corporation",
+      "title": "Information and Technology Intern",
+      "start_date": "May 2022",
+      "end_date": "Aug 2022",
+      "location": "Cambridge, MA",
+      "pinned": false,
+      "summary": "Worked as an IT intern at First Cambridge Realty Corporation during Summer 2022, supporting their office infrastructure. Deployed a new office network, replaced aging hardware, built new workstations, and optimized network performance by configuring fiber optic networking hardware — achieving a 50% improvement in data processing efficiency and network speed.",
+      "skills": ["networking", "hardware setup", "fiber optic", "IT support"],
+      "bullets": [
+        {
+          "id": "job_realty_b1",
+          "text": "Deployed a new office network, replaced old hardware, built new workstations, and ensured secure data transfers"
+        },
+        {
+          "id": "job_realty_b2",
+          "text": "Optimized network performance by configuring fiber optic networking hardware, leading to a 50% increase in data processing efficiency and network speed"
+        },
+        {
+          "id": "job_realty_b3",
+          "text": "Ensured secure data transfers and efficiently completed technical projects while developing problem-solving skills in a professional office environment"
+        }
+      ]
+    },
+    {
+      "id": "job_housing",
+      "type": "job",
+      "company": "Massachusetts Housing Coalition",
+      "title": "Database Assistant",
+      "start_date": "Jun 2020",
+      "end_date": "Aug 2020",
+      "location": "Virtual",
+      "pinned": false,
+      "summary": "Worked as a Database Assistant at the Massachusetts Housing Coalition, a nonprofit advocating for affordable housing policy. Built a database of Massachusetts city councilors and mayors by conducting extensive research across 100+ public web pages to support the organization's legislative outreach efforts.",
+      "skills": ["data collection", "research", "database management"],
+      "bullets": [
+        {
+          "id": "job_housing_b1",
+          "text": "Constructed a database of Massachusetts city councilors and mayors in an effort to support affordable housing in Massachusetts"
+        },
+        {
+          "id": "job_housing_b2",
+          "text": "Conducted extensive research on city councils, collecting data from 100+ public web pages"
+        }
+      ]
+    },
+    {
+      "id": "proj_taskapp",
+      "type": "project",
+      "company": null,
+      "title": "TaskApp (Web + Mobile)",
+      "start_date": "Jan 2026",
+      "end_date": "Present",
+      "location": null,
+      "pinned": true,
+      "links": {
+        "web_repo": "https://github.com/jonahr4/TheTaskApp",
+        "mobile_repo": "https://github.com/jonahr4/TaskApp-Mobile",
+        "live": "https://the-task-app.vercel.app",
+        "app_store": "https://apps.apple.com/in/app/the-task-app/id6759473470"
+      },
+      "tagline": "AI-powered productivity platform with cross-platform task management and intelligent prioritization",
+      "summary": "TaskApp is my flagship personal project — a full-stack, cross-platform task management system with a Next.js web app and a React Native iOS mobile app. Tasks sync across devices via Firebase. Key features: a drag-and-drop Eisenhower Matrix for prioritization, AI-powered task creation from natural language and voice input using Azure OpenAI GPT-4o, native iOS widgets via Swift/WidgetKit, live iCal calendar feeds, and automated CI/CD builds using EAS and Fastlane. Currently supports 500+ users and 2000+ tasks. Available on the App Store.",
+      "skills": ["Next.js", "React Native", "TypeScript", "Firebase", "Firestore", "Azure OpenAI", "Swift", "WidgetKit", "Vercel", "EAS Build", "Fastlane", "CI/CD"],
+      "bullets": [
+        {
+          "id": "proj_task_b1",
+          "text": "Developed a cross-platform application using Next.js and React Native, featuring a drag-and-drop Eisenhower Matrix"
+        },
+        {
+          "id": "proj_task_b2",
+          "text": "Developed a full-stack task management system with Next.js web app and React Native iOS mobile app, syncing tasks across devices via Firebase"
+        },
+        {
+          "id": "proj_task_b3",
+          "text": "Supporting 500+ users and 2000+ tasks with device sync powered by Firebase Auth, Firestore, and Vercel serverless APIs"
+        },
+        {
+          "id": "proj_task_b4",
+          "text": "Integrated Azure OpenAI (GPT-4o) to convert natural language and voice inputs into prioritized, scheduled tasks"
+        },
+        {
+          "id": "proj_task_b5",
+          "text": "Built an AI assistant using Azure OpenAI that converts natural-language reminders into structured tasks"
+        },
+        {
+          "id": "proj_task_b6",
+          "text": "Shipped native iOS widgets via Swift/WidgetKit, live iCal feeds, and automated CI/CD builds using EAS and Fastlane"
+        },
+        {
+          "id": "proj_task_b7",
+          "text": "Developed backend infrastructure with Firebase Auth, Firestore, and serverless APIs deployed on Vercel"
+        }
+      ]
+    },
+    {
+      "id": "proj_internatlas",
+      "type": "project",
+      "company": null,
+      "title": "InternAtlas",
+      "start_date": "Dec 2025",
+      "end_date": "Jan 2026",
+      "location": null,
+      "pinned": false,
+      "links": {
+        "repo": "https://github.com/jonahr4/internatlas",
+        "live": "https://internatlas.tech/"
+      },
+      "tagline": "Search thousands of tech company job boards in one place, with filtering and automated updates",
+      "summary": "InternAtlas is a job aggregation platform I built and shipped in December 2025–January 2026. It crawls 3,100+ tech companies across 5 ATS platforms (Greenhouse, Lever, Workday, etc.) and normalizes 1,650,000+ internship job listings into a unified PostgreSQL schema for large-scale labor market search. Features a live Next.js frontend on Vercel with real-time full-text search and advanced filters, and automated daily data refreshes via GitHub Actions. PostgreSQL database hosted on DigitalOcean.",
+      "skills": ["Next.js", "PostgreSQL", "Python", "GitHub Actions", "web scraping", "Vercel", "DigitalOcean", "full-text search"],
+      "bullets": [
+        {
+          "id": "proj_ia_b1",
+          "text": "Built and deployed a custom aggregate job board crawling 2,500+ companies across multiple ATS systems, normalizing 1,000,000+ internship-focused listings into a unified PostgreSQL schema"
+        },
+        {
+          "id": "proj_ia_b2",
+          "text": "Built and deployed a job aggregation platform crawling 2,500+ companies and normalizing 1,000,000+ internship listings into a unified PostgreSQL schema for large-scale labor market analysis"
+        },
+        {
+          "id": "proj_ia_b3",
+          "text": "Deployed a live Next.js job board on Vercel featuring real-time full-text search, advanced filters, and application tracking"
+        },
+        {
+          "id": "proj_ia_b4",
+          "text": "Built scripts to crawl 3,100+ companies across 5 ATS platforms, normalizing 1,650,000+ job listings into PostgreSQL"
+        },
+        {
+          "id": "proj_ia_b5",
+          "text": "Automated large-scale crawling via GitHub Actions on a 12-hour schedule, powering a live job board hosted on Vercel with a DigitalOcean PostgreSQL database with full-text search and filters"
+        },
+        {
+          "id": "proj_ia_b6",
+          "text": "Automated large-scale data ingestion via GitHub Actions on a daily schedule to populate a DigitalOcean PostgreSQL database"
+        }
+      ]
+    },
+    {
+      "id": "proj_studybuddy",
+      "type": "project",
+      "company": null,
+      "title": "The Study Buddy",
+      "start_date": "Nov 2025",
+      "end_date": "Dec 2025",
+      "location": null,
+      "pinned": false,
+      "links": {
+        "repo": "https://github.com/jonahr4/TheStudyBuddy",
+        "live": "https://thestudybuddy.app"
+      },
+      "tagline": "Upload your notes, get AI-generated flashcards, and chat with an AI tutor that knows your content",
+      "summary": "The Study Buddy is a web-based study platform where users upload their notes or PDFs and get AI-generated flashcards and an AI tutor chat interface that has full context of their uploaded content. Built with React/TypeScript frontend, Express.js backend using Azure Blob Storage for file handling and Azure OpenAI (GPT-4) for AI features, MongoDB Atlas for data storage, and deployed across Azure App Services, DigitalOcean, and Firebase with GitHub Actions CI/CD. Supports 50+ users.",
+      "skills": ["React", "TypeScript", "Express.js", "Azure Blob Storage", "Azure OpenAI", "MongoDB Atlas", "Firebase", "DigitalOcean", "GitHub Actions", "CI/CD"],
+      "bullets": [
+        {
+          "id": "proj_sb_b1",
+          "text": "Launched a study platform to solve inefficient manual studying, built with React, TypeScript, and an Express backend and deployed across Azure App Services, DigitalOcean, and Firebase to support 50+ users"
+        },
+        {
+          "id": "proj_sb_b2",
+          "text": "Deployed a React and TypeScript study platform across Azure and DigitalOcean, supporting 50+ users via Firebase Auth"
+        },
+        {
+          "id": "proj_sb_b3",
+          "text": "Architected an Express.js API using Azure Blob Storage and Azure OpenAI (GPT-4) for chat and flashcard generation"
+        },
+        {
+          "id": "proj_sb_b4",
+          "text": "Configured a scalable Express.js backend that processes uploaded notes via Azure Blob Storage and uses Azure OpenAI to generate context-aware flashcards and tutor-style chat responses"
+        },
+        {
+          "id": "proj_sb_b5",
+          "text": "Structured a MongoDB Atlas data model with 7 collections and optimized indexes powering 100+ notes, 50+ flashcard sets, and 200+ chat messages"
+        },
+        {
+          "id": "proj_sb_b6",
+          "text": "Designed a MongoDB Atlas schema with 7 indexed collections powering 100+ notes, 50+ flashcard sets, and 200+ chat messages"
+        },
+        {
+          "id": "proj_sb_b7",
+          "text": "Implemented CI/CD with GitHub Actions for automated deployments, enabling updates to the platform"
+        }
+      ]
+    },
+    {
+      "id": "proj_nba",
+      "type": "project",
+      "company": null,
+      "title": "NBA Team Outcome Prediction",
+      "start_date": "Sep 2025",
+      "end_date": "Dec 2025",
+      "location": null,
+      "pinned": false,
+      "links": {
+        "repo": "https://github.com/justin9668/nba-team-outcome-prediction"
+      },
+      "tagline": "Machine learning project predicting NBA game outcomes using team performance data",
+      "summary": "A machine learning course project where I trained regression models to predict NBA game outcomes using historical team performance data. Used Linear Regression, Ridge/Lasso, and Random Forest models, evaluated with MAE/RMSE metrics against baselines, and visualized prediction accuracy across a full season.",
+      "skills": ["Python", "scikit-learn", "pandas", "NumPy", "Matplotlib", "machine learning", "regression", "data analysis"],
+      "bullets": [
+        {
+          "id": "proj_nba_b1",
+          "text": "Trained regression models including Linear Regression, Ridge/Lasso, and Random Forest to predict team scores and game winners"
+        },
+        {
+          "id": "proj_nba_b2",
+          "text": "Evaluated models using MAE/RMSE against baselines and visualized prediction accuracy across a season"
+        }
+      ]
+    },
+    {
+      "id": "proj_mealmap",
+      "type": "project",
+      "company": null,
+      "title": "MealMap",
+      "start_date": "Sep 2025",
+      "end_date": "Dec 2025",
+      "location": null,
+      "pinned": false,
+      "links": {
+        "repo": "https://github.com/jonahr4/CS501-FinalProject",
+        "demo": "https://www.youtube.com/watch?v=SQnV2oUZETA"
+      },
+      "tagline": "Android app for recipe discovery, meal planning, and nutrition tracking in a connected flow",
+      "summary": "A Jetpack Compose Android app built for my mobile development course that unifies recipe discovery, meal planning, and nutrition tracking in one seamless flow. Features MVVM architecture, 5+ Compose screens, barcode scanning for nutrition lookup, weekly meal plans, and data stored in Firebase Firestore. Integrates TheMealDB and OpenFoodFacts APIs via Retrofit.",
+      "skills": ["Kotlin", "Jetpack Compose", "Android", "MVVM", "Firebase", "Retrofit", "Room"],
+      "bullets": [
+        {
+          "id": "proj_mm_b1",
+          "text": "Built a Jetpack Compose Android app using an MVVM architecture and 5+ Compose screens to unify recipe discovery, meal planning, and nutrition tracking using metrics calculated from target weight and activity level"
+        },
+        {
+          "id": "proj_mm_b2",
+          "text": "Integrated TheMealDB and OpenFoodFacts APIs with Retrofit and Room to power barcode scanning, recipe lookup, and weekly meal plans, all stored in Google Firebase Firestore"
+        }
+      ]
+    },
+    {
+      "id": "proj_vibescape",
+      "type": "project",
+      "company": null,
+      "title": "VibeScape",
+      "start_date": "Aug 2025",
+      "end_date": "Aug 2025",
+      "location": null,
+      "pinned": false,
+      "links": {
+        "repo": "https://github.com/jonahr4/VibeScape",
+        "demo": "https://youtu.be/t3ctIOSU4p0"
+      },
+      "tagline": "Visualize your Spotify playlists, create custom blends with friends, and search playlists with AI",
+      "summary": "VibeScape is a Spotify visualization and social music app built in August 2025. It renders a user's Spotify library as an interactive song-graph showing playlist relationships and enables friend-to-friend music taste comparisons and custom blended playlists. Also features an AI playlist-search and ranking engine built on prompt engineering and GenAI tools. Built with Next.js and React, leveraged Codex CLI during development.",
+      "skills": ["Next.js", "React", "TypeScript", "Spotify API", "OpenAI API", "prompt engineering", "data visualization"],
+      "bullets": [
+        {
+          "id": "proj_vs_b1",
+          "text": "Engineered an interactive song-graph system in Next.js and React, iterating through multiple prototypes to reveal playlist relationships and friend-to-friend music comparisons, helping users understand their listening patterns"
+        },
+        {
+          "id": "proj_vs_b2",
+          "text": "Built a Next.js and React-powered interactive Spotify song map that visualizes a user's library as clusters of songs and playlists with the ability to compare music with friends and create custom blended playlists"
+        },
+        {
+          "id": "proj_vs_b3",
+          "text": "Built an interactive Spotify song map that visualizes a user's library as clusters of songs and playlists with the ability to compare music with friends and create custom blended playlists"
+        },
+        {
+          "id": "proj_vs_b4",
+          "text": "Developed an AI playlist-search and ranking engine, experimenting with scoring formulas and GenAI tools to deliver accurate, transparent recommendations"
+        },
+        {
+          "id": "proj_vs_b5",
+          "text": "Created an AI-powered playlist chooser via prompt and designed a unique ranking model for Top Songs"
+        },
+        {
+          "id": "proj_vs_b6",
+          "text": "Harnessed SOTA AI tools like OpenAI Codex CLI to accelerate development time and enhance the UI/UX"
+        }
+      ]
+    },
+    {
+      "id": "proj_javagame",
+      "type": "project",
+      "company": null,
+      "title": "Java Terminal Game Engine",
+      "start_date": "Sep 2024",
+      "end_date": "Dec 2024",
+      "location": null,
+      "pinned": false,
+      "links": {
+        "repo": "https://github.com/jonahr4/CS611-Terminal-Based-Games"
+      },
+      "tagline": "Engine for terminal-based games ranging from simple tic-tac-toe to turn-based DnD-style battles",
+      "summary": "Built for my Object-Oriented Design course (Fall 2024), a terminal-based game engine in Java supporting multiple games from simple Tic-Tac-Toe to complex turn-based DnD-style RPG combat. Implemented 50+ Java classes using Strategy, Factory, and Singleton design patterns and an inheritance-based architecture designed for easy extension.",
+      "skills": ["Java", "OOP", "design patterns", "software architecture"],
+      "bullets": [
+        {
+          "id": "proj_jg_b1",
+          "text": "Developed a terminal-based game engine ranging from simple games to complex turn-based gameplay, including DnD-style mechanics"
+        },
+        {
+          "id": "proj_jg_b2",
+          "text": "Authored 50+ Java classes to build a scalable, object-oriented architecture"
+        },
+        {
+          "id": "proj_jg_b3",
+          "text": "Utilized Strategy, Factory, and Singleton design patterns to enhance flexibility and reduce code duplication"
+        },
+        {
+          "id": "proj_jg_b4",
+          "text": "Designed an inheritance-based structure to enable seamless expansion for additional games"
+        }
+      ]
+    },
+    {
+      "id": "proj_stockbot",
+      "type": "project",
+      "company": null,
+      "title": "StockBot",
+      "start_date": "Aug 2024",
+      "end_date": "Aug 2024",
+      "location": null,
+      "pinned": false,
+      "links": {
+        "repo": "https://github.com/jonahr4/StockBot",
+        "live": "http://jonahrothman.com/StockBot"
+      },
+      "tagline": "OpenAI-powered chatbot for stock advice and financial information",
+      "summary": "A chatbot built in August 2024 using the OpenAI API that provides users with stock advice and financial information, integrating economic principles and trained on data from 100,000+ stock and price combinations. Deployed with Node.js and Render.com.",
+      "skills": ["OpenAI API", "Node.js", "JavaScript", "HTML/CSS", "Render.com"],
+      "bullets": [
+        {
+          "id": "proj_sb2_b1",
+          "text": "Constructed a chatbot utilizing the OpenAI API to provide users with stock advice and financial information"
+        },
+        {
+          "id": "proj_sb2_b2",
+          "text": "Integrated economic principles to create stock advice trained on data from 100,000+ stock and price combinations"
+        },
+        {
+          "id": "proj_sb2_b3",
+          "text": "Configured Node.js and Render.com to deploy the web app and run a secure local server and backend"
+        },
+        {
+          "id": "proj_sb2_b4",
+          "text": "Designed an intuitive user interface using HTML and CSS, enhancing user experience and engagement"
+        }
+      ]
+    },
+    {
+      "id": "proj_rainorshine",
+      "type": "project",
+      "company": null,
+      "title": "Rain or Shine",
+      "start_date": "Sep 2023",
+      "end_date": "Dec 2023",
+      "location": null,
+      "pinned": false,
+      "links": {
+        "repo": null
+      },
+      "tagline": "Full-stack app for local event recommendations based on location, date, and weather",
+      "summary": "A full-stack web application built for a course project (Fall 2023) that gives users local event recommendations based on location, date, and weather conditions. Built with Python/Flask backend, JavaScript frontend, MongoDB for storage, and integrates RapidAPI and Tomorrow.io APIs for events and weather data. Includes Google OAuth for authentication.",
+      "skills": ["Python", "Flask", "JavaScript", "MongoDB", "HTML/CSS", "REST APIs", "OAuth"],
+      "bullets": [
+        {
+          "id": "proj_ros_b1",
+          "text": "Developed a full-stack web application giving users local event recommendations based on location and date"
+        },
+        {
+          "id": "proj_ros_b2",
+          "text": "Pulled data from RapidAPI and Tomorrow.io API to read local events and weather data"
+        },
+        {
+          "id": "proj_ros_b3",
+          "text": "Implemented Google OAuth to gather data from users and configured MongoDB connection to store user data"
+        }
+      ]
+    }
+  ]
+}
