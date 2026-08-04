@@ -22,7 +22,12 @@ export default function Nav() {
             </Link>
             <Link href="/runs">
               <button className={clsx("view-btn", { active: pathname === "/runs" })}>
-                Pipeline Runs
+                Runs
+              </button>
+            </Link>
+            <Link href="/tailor">
+              <button className={clsx("view-btn", { active: pathname === "/tailor" })}>
+                Tailor
               </button>
             </Link>
           </div>

@@ -20,7 +20,7 @@ export default function DocModal({ open, onClose, title, url, type }: DocModalPr
 
   useEffect(() => {
     if (!open) return;
-    if (type === "pdf") return; // handled by iframe
+    if (type === "pdf") return;
 
     setLoading(true);
     setContent(null);
@@ -44,8 +44,20 @@ export default function DocModal({ open, onClose, title, url, type }: DocModalPr
   return (
     <Dialog.Root open={open} onOpenChange={(o) => !o && onClose()}>
       <Dialog.Portal>
+        {/* Overlay: full-screen dim + blur */}
         <Dialog.Overlay className="modal-overlay" />
-        <Dialog.Content className="modal-content" aria-describedby={undefined}>
+        {/* Content: positioned independently (Radix siblings, not nested) */}
+        <Dialog.Content
+          className="modal-content"
+          aria-describedby={undefined}
+          style={{
+            position: "fixed",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            zIndex: 1001,
+          }}
+        >
           <div className="modal-header">
             <Dialog.Title className="modal-title">{title}</Dialog.Title>
             <Dialog.Close className="modal-close">✕</Dialog.Close>
@@ -62,10 +74,7 @@ export default function DocModal({ open, onClose, title, url, type }: DocModalPr
                 <ReactMarkdown>{content}</ReactMarkdown>
               </div>
             )}
-            {type === "json" && content && (
-              <pre>{content}</pre>
-            )}
-            {type === "text" && content && (
+            {(type === "json" || type === "text") && content && (
               <pre>{content}</pre>
             )}
           </div>
