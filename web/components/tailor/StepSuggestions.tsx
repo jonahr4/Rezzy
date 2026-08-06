@@ -43,12 +43,10 @@ export default function StepSuggestions() {
   const {
     suggestions,
     selectedContent,
-    parsedJD,
     loading,
     loadingMessage,
     toggleSuggestion,
-    setLoading,
-    setResult,
+    setSelectedContent,
     advanceStep,
     currentStep,
   } = useTailorStore();
@@ -64,13 +62,11 @@ export default function StepSuggestions() {
     0
   );
 
-  const handleCompile = async () => {
-    setLoading(true, "Assembling and compiling your resume...");
-    advanceStep(); // Go to step 5 (compiling)
-
-    // Merge accepted suggestions into selected_content
-    const mergedContent = selectedContent.map((entry) => {
-      const entrySuggestions = suggestions.find(
+  const handleContinue = () => {
+    // Merge accepted suggestions into selected_content before advancing to Preview
+    const { selectedContent: currentContent, suggestions: currentSugs } = useTailorStore.getState();
+    const mergedContent = currentContent.map((entry) => {
+      const entrySuggestions = currentSugs.find(
         (es) => es.entry_id === entry.entry_id
       );
       if (!entrySuggestions) return entry;
@@ -92,31 +88,8 @@ export default function StepSuggestions() {
       return { ...entry, selected_bullets: bullets };
     });
 
-    try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          step: "compile",
-          selected_content: mergedContent,
-          parsed_jd: parsedJD,
-        }),
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      setResult({
-        pdf_path: data.pdf_path,
-        page_count: data.page_count,
-        qa_feedback: data.qa_feedback,
-        run_dir: data.run_dir,
-        latex_source: data.latex_source,
-      });
-      advanceStep(); // Go to step 6 (done)
-    } catch (err) {
-      console.error("Compile failed:", err);
-    } finally {
-      setLoading(false);
-    }
+    setSelectedContent(mergedContent);
+    advanceStep(); // → step 6 (Preview)
   };
 
   if (loading && suggestions.length === 0) {
@@ -128,7 +101,7 @@ export default function StepSuggestions() {
     );
   }
 
-  const isReadOnly = currentStep > 4;
+  const isReadOnly = currentStep > 6;
 
   // Build entries that have suggestions
   const entriesWithSuggestions = suggestions.filter(
@@ -147,8 +120,8 @@ export default function StepSuggestions() {
           </p>
         </div>
         {!isReadOnly && (
-          <button className="step-cta" onClick={handleCompile}>
-            Finalize & Compile →
+          <button className="step-cta" onClick={handleContinue}>
+            Continue to Preview →
           </button>
         )}
       </div>
