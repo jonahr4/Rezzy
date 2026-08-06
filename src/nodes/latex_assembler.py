@@ -66,7 +66,17 @@ def latex_assembler(state: dict) -> dict:
     projects = [s for s in selected_content if s["type"] == "project"]
 
     # Group skills into categories for the template
-    skill_categories = _categorize_skills(skills)
+    # Use user-arranged skill_rows from the UI if available, else fall back to hardcoded categories
+    if "skill_rows" in state and state["skill_rows"]:
+        # Convert from UI format to template format (they're already {label, items})
+        skill_categories = [
+            {"label": r["label"].replace("&", "\\&"), "items": r["items"]}
+            for r in state["skill_rows"]
+            if r["items"]  # skip empty rows
+        ]
+    else:
+        skills = source_bank.get("skills", [])
+        skill_categories = _categorize_skills(skills)
 
     # Render template
     env = _get_template_env()

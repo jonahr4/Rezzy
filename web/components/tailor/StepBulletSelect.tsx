@@ -62,7 +62,7 @@ export default function StepBulletSelect() {
     );
   }
 
-  const isReadOnly = currentStep > 3;
+  const isReadOnly = currentStep > 4;
 
   return (
     <div className="step-inner step-bullets">

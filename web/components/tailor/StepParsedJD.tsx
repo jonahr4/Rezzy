@@ -11,31 +11,31 @@ export default function StepParsedJD() {
     loading,
     loadingMessage,
     setLoading,
-    setEntries,
+    setSkillsData,
     advanceStep,
   } = useTailorStore();
 
-  // Auto-advance: once parsed JD is loaded, call select-entries
+  // Auto-advance: once parsed JD is loaded, call skills endpoint
   useEffect(() => {
     if (!parsedJD || loading) return;
 
     const timer = setTimeout(async () => {
-      setLoading(true, "Selecting best entries for your resume...");
+      setLoading(true, "Organizing skills for this role...");
       try {
         const res = await fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            step: "select-entries",
+            step: "skills",
             parsed_jd: parsedJD,
           }),
         });
         const data = await res.json();
         if (data.error) throw new Error(data.error);
-        setEntries(data.all_entries, data.confirmed_entries);
-        advanceStep(); // Go to step 2
+        setSkillsData(data.skill_rows, data.available_skills, data.suggested_skills);
+        advanceStep(); // Go to step 2 (Skills)
       } catch (err) {
-        console.error("Select entries failed:", err);
+        console.error("Skills step failed:", err);
       } finally {
         setLoading(false);
       }

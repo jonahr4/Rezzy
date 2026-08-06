@@ -9,17 +9,19 @@ import { useTailorStore } from "@/lib/tailorStore";
  * A 1-page resume with our LaTeX template is ~886 rendered words.
  * We use 830 as the "safe" max and 900 as the "tight" threshold.
  *
- * FIXED OVERHEAD: ~175 words from sections the user doesn't control:
+ * FIXED OVERHEAD: ~45 words from sections the user doesn't control:
  *   - Header (name, contact info): ~15 words
  *   - Education (degree, GPA, honors): ~30 words
- *   - Skills (all categories listed): ~70 words  ← NOTE: if skills become AI-selectable, this moves to dynamic
- *   - Section headers + entry titles/dates: ~60 words (varies by entry count)
+ *   - Section headers + entry titles/dates: ~12 words per entry
  *
- * The "content budget" is MAX_WORDS - FIXED_OVERHEAD = words available for bullets only.
+ * DYNAMIC:
+ *   - Skills: counted from active skillRows (each skill ~1-2 words + category labels)
+ *   - Bullets: counted from selectedContent + accepted suggestions
  */
 
-const FIXED_OVERHEAD_BASE = 115; // header + education + skills words
+const FIXED_OVERHEAD_BASE = 45; // header + education only (skills are now dynamic)
 const WORDS_PER_ENTRY_HEADER = 12; // title, company, dates, location per entry
+const WORDS_PER_SKILL_CATEGORY = 2; // category label word cost (e.g., "Languages:", "AI/ML:")
 const MAX_WORDS_1_PAGE = 830;
 const TIGHT_THRESHOLD = 900;
 const TWO_PAGE_THRESHOLD = 1100;
@@ -84,9 +86,16 @@ function AnimatedNumber({ value, duration = 400 }: { value: number; duration?: n
 }
 
 export default function WordBudget() {
-  const { selectedContent, suggestions } = useTailorStore();
+  const { selectedContent, suggestions, skillRows } = useTailorStore();
 
-  // Calculate fixed overhead: base + per-entry headers
+  // Skills word count (dynamic)
+  let skillWords = 0;
+  for (const row of skillRows) {
+    skillWords += WORDS_PER_SKILL_CATEGORY; // category label
+    skillWords += row.items.reduce((sum, skill) => sum + countWords(skill), 0);
+  }
+
+  // Fixed overhead: base + per-entry headers
   const entryCount = selectedContent.length;
   const fixedOverhead = FIXED_OVERHEAD_BASE + entryCount * WORDS_PER_ENTRY_HEADER;
 
@@ -95,7 +104,6 @@ export default function WordBudget() {
   for (const entry of selectedContent) {
     const entrySugs = suggestions.find((es) => es.entry_id === entry.entry_id);
     for (const bullet of entry.selected_bullets) {
-      // If there's an accepted suggestion replacing this bullet, count the suggestion words
       const activeSuggestion = entrySugs?.suggestions.find(
         (s) => s.accepted && s.replaces_bullet_ids.includes(bullet.id)
       );
@@ -107,7 +115,7 @@ export default function WordBudget() {
     }
   }
 
-  const totalWords = fixedOverhead + bulletWords;
+  const totalWords = fixedOverhead + skillWords + bulletWords;
   const percentage = Math.round((totalWords / MAX_WORDS_1_PAGE) * 100);
   const barWidth = Math.min(percentage, 120); // cap visual at 120%
   const pageEstimate = getPageEstimate(totalWords);
