@@ -8,6 +8,7 @@ export async function POST(req: NextRequest) {
 
   const stepMap: Record<string, string> = {
     "parse-jd": "/step/parse-jd",
+    skills: "/step/skills",
     "select-entries": "/step/select-entries",
     "select-bullets": "/step/select-bullets",
     suggest: "/step/suggest",
@@ -32,6 +33,17 @@ export async function POST(req: NextRequest) {
         { error: `Pipeline API error: ${errText}` },
         { status: res.status }
       );
+    }
+
+    // For compile step, proxy the SSE stream directly through
+    if (step === "compile" && res.body) {
+      return new Response(res.body, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+        },
+      });
     }
 
     const data = await res.json();
