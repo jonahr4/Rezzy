@@ -4,21 +4,21 @@ import { useRef, useEffect, useCallback } from "react";
 import { useTailorStore, type WizardStep } from "@/lib/tailorStore";
 import StepPasteJD from "@/components/tailor/StepPasteJD";
 import StepParsedJD from "@/components/tailor/StepParsedJD";
+import StepSkills from "@/components/tailor/StepSkills";
 import StepEntrySelect from "@/components/tailor/StepEntrySelect";
 import StepBulletSelect from "@/components/tailor/StepBulletSelect";
 import StepSuggestions from "@/components/tailor/StepSuggestions";
+import StepPreview from "@/components/tailor/StepPreview";
 import StepCompiling from "@/components/tailor/StepCompiling";
 import StepDone from "@/components/tailor/StepDone";
 
-const STEP_LABELS = ["Paste JD", "Parsed", "Entries", "Bullets", "Suggestions", "Compiling", "Done"];
+const STEP_LABELS = ["Paste JD", "Parsed", "Skills", "Entries", "Bullets", "Suggestions", "Preview", "Compiling", "Done"];
 
 export default function TailorPage() {
   const { currentStep, maxReachedStep, setStep } = useTailorStore();
   const scrollRef = useRef<HTMLDivElement>(null);
-  // Prevent observer from fighting with programmatic scroll
   const isScrollingProgrammatically = useRef(false);
 
-  // Scroll to current step when it changes via store (button clicks, advanceStep)
   useEffect(() => {
     if (!scrollRef.current) return;
     const container = scrollRef.current;
@@ -26,23 +26,19 @@ export default function TailorPage() {
     if (target) {
       isScrollingProgrammatically.current = true;
       target.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
-      // Reset flag after scroll completes
       setTimeout(() => {
         isScrollingProgrammatically.current = false;
       }, 600);
     }
   }, [currentStep]);
 
-  // Sync dots when user manually scrolls/swipes (IntersectionObserver)
   useEffect(() => {
     if (!scrollRef.current) return;
     const container = scrollRef.current;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        // Don't interfere with programmatic scrolls
         if (isScrollingProgrammatically.current) return;
-
         for (const entry of entries) {
           if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
             const stepAttr = (entry.target as HTMLElement).dataset.step;
@@ -56,18 +52,13 @@ export default function TailorPage() {
           }
         }
       },
-      {
-        root: container,
-        threshold: 0.5,
-      }
+      { root: container, threshold: 0.5 }
     );
 
-    // Observe all wizard pages
     const pages = container.querySelectorAll(".wizard-page");
     pages.forEach((page) => observer.observe(page));
-
     return () => observer.disconnect();
-  }, [maxReachedStep]); // Re-observe when new pages appear
+  }, [maxReachedStep]);
 
   const goToStep = useCallback(
     (step: WizardStep) => {
@@ -98,7 +89,7 @@ export default function TailorPage() {
         ))}
         <div
           className="progress-fill"
-          style={{ width: `${(currentStep / 6) * 100}%` }}
+          style={{ width: `${(currentStep / 8) * 100}%` }}
         />
       </div>
 
@@ -144,26 +135,36 @@ export default function TailorPage() {
         )}
         {maxReachedStep >= 2 && (
           <div className="wizard-page" data-step={2}>
-            <StepEntrySelect />
+            <StepSkills />
           </div>
         )}
         {maxReachedStep >= 3 && (
           <div className="wizard-page" data-step={3}>
-            <StepBulletSelect />
+            <StepEntrySelect />
           </div>
         )}
         {maxReachedStep >= 4 && (
           <div className="wizard-page" data-step={4}>
-            <StepSuggestions />
+            <StepBulletSelect />
           </div>
         )}
         {maxReachedStep >= 5 && (
           <div className="wizard-page" data-step={5}>
-            <StepCompiling />
+            <StepSuggestions />
           </div>
         )}
         {maxReachedStep >= 6 && (
           <div className="wizard-page" data-step={6}>
+            <StepPreview />
+          </div>
+        )}
+        {maxReachedStep >= 7 && (
+          <div className="wizard-page" data-step={7}>
+            <StepCompiling />
+          </div>
+        )}
+        {maxReachedStep >= 8 && (
+          <div className="wizard-page" data-step={8}>
             <StepDone />
           </div>
         )}
