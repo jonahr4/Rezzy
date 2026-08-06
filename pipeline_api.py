@@ -116,6 +116,7 @@ class SuggestRequest(BaseModel):
 class CompileRequest(BaseModel):
     selected_content: list[dict]
     parsed_jd: dict
+    skill_rows: list[dict] | None = None
 
 
 # ── Helpers ───────────────────────────────────────────────
@@ -166,6 +167,80 @@ def step_parse_jd(req: ParseJDRequest):
     }
 
 
+class SkillsRequest(BaseModel):
+    parsed_jd: dict
+
+
+@app.post("/step/skills")
+@traceable(run_type="chain", name="web_skills")
+def step_skills(req: SkillsRequest):
+    """Step 1.5: Organize and suggest skills for the resume."""
+    session = _get_or_create_session()
+    bank = _load_bank()
+    all_skills = bank.get("skills", [])
+
+    from src.llm import chat
+
+    prompt = f"""You are a resume skills organizer. Given a job description and a candidate's full skill list,
+do THREE things:
+
+1. **Categorize** the candidate's existing skills into 4-5 resume categories (e.g., "Languages", "Frameworks & Libraries", "Tools & DevOps", "Cloud & Databases", "AI/ML").
+   - Sort skills within each category by relevance to the job description (most relevant first).
+   - Only include skills that are RELEVANT to this role. Leave irrelevant ones out (they'll go to the "available" pool).
+
+2. **Identify available skills** — skills from the candidate's bank that you did NOT place into any category. These are less relevant but the user can manually add them.
+
+3. **Suggest 3-6 NEW skills** — skills the candidate likely has (inferable from their experience) but aren't explicitly listed, AND are important keywords for this specific job description. These should be the most impactful ATS keywords.
+
+Job Description:
+Company: {req.parsed_jd.get('company_name', 'Unknown')}
+Role: {req.parsed_jd.get('role_title', 'Unknown')}
+Required Skills: {', '.join(req.parsed_jd.get('required_skills', []))}
+Nice to Have: {', '.join(req.parsed_jd.get('nice_to_have_skills', []))}
+Keywords: {', '.join(req.parsed_jd.get('keywords', []))}
+
+Candidate's Skills:
+{', '.join(all_skills)}
+
+Return JSON:
+{{
+  "skill_rows": [
+    {{"id": "row_1", "label": "Languages", "items": ["Python", "JavaScript", ...]}},
+    {{"id": "row_2", "label": "Frameworks & Libraries", "items": ["React", "Next.js", ...]}},
+    ...
+  ],
+  "available_skills": ["OCaml", "Kotlin", ...],
+  "suggested_skills": ["Docker", "Kubernetes", "GraphQL", ...]
+}}"""
+
+    response = chat(
+        [{"role": "user", "content": prompt}],
+        temperature=0.2,
+        response_format={"type": "json_object"},
+    )
+
+    import json as _json
+    data = _json.loads(response)
+
+    log_step(
+        node="skills_organizer",
+        summary=f"Organized {sum(len(r['items']) for r in data['skill_rows'])} skills into {len(data['skill_rows'])} categories",
+        outputs={
+            "categories": [r["label"] for r in data["skill_rows"]],
+            "available_count": len(data.get("available_skills", [])),
+            "suggested_count": len(data.get("suggested_skills", [])),
+        },
+    )
+
+    session["skill_rows"] = data["skill_rows"]
+    return {
+        "skill_rows": data["skill_rows"],
+        "available_skills": data.get("available_skills", []),
+        "suggested_skills": data.get("suggested_skills", []),
+        "status": "[skills_organizer] OK",
+    }
+
+
 @app.post("/step/select-entries")
 @traceable(run_type="chain", name="web_select_entries")
 def step_select_entries(req: SelectEntriesRequest):
@@ -178,10 +253,14 @@ def step_select_entries(req: SelectEntriesRequest):
     }
     result = job_selector(state)
 
+    rationales = result.get("rationales", {})
+    excluded_reasons = result.get("excluded", {})
+
     entries = bank["entries"]
     all_entries = []
     for entry in entries:
         is_selected = entry["id"] in result["confirmed_entries"]
+        rationale = rationales.get(entry["id"], "") if is_selected else excluded_reasons.get(entry["id"], "")
         all_entries.append({
             "id": entry["id"],
             "type": entry["type"],
@@ -194,7 +273,7 @@ def step_select_entries(req: SelectEntriesRequest):
             "selected": is_selected,
             "bullet_count": len(entry["bullets"]),
             "tags": entry.get("tags", []),
-            "summary": entry.get("summary", ""),
+            "summary": rationale,
         })
 
     log_step(
@@ -277,110 +356,138 @@ def step_suggest(req: SuggestRequest):
 @app.post("/step/compile")
 @traceable(run_type="chain", name="web_compile")
 def step_compile(req: CompileRequest):
-    """Steps 3-5: Assemble LaTeX, compile PDF, run QA. Then finalize the run."""
-    session = _get_or_create_session()
-    run_dir = session["run_dir"]
+    """Steps 3-5: Assemble LaTeX, compile PDF, run QA with SSE progress."""
+    from starlette.responses import StreamingResponse
 
-    # Assemble
-    state: dict = {
-        "selected_content": req.selected_content,
-        "parsed_jd": req.parsed_jd,
-        "source_bank": _load_bank(),
-    }
-    state.update(latex_assembler(state))
+    def generate():
+        def send_event(event: str, data: dict | str = ""):
+            payload = json.dumps(data) if isinstance(data, dict) else data
+            yield f"event: {event}\ndata: {payload}\n\n"
 
-    log_step(
-        node="latex_assembler",
-        summary=f"Rendered {len(req.selected_content)} entries",
-        outputs={"latex_chars": len(state.get("latex_source", ""))},
-    )
+        session = _get_or_create_session()
+        run_dir = session["run_dir"]
 
-    # Compile
-    state["run_dir"] = str(run_dir)
-    state.update(compile_latex(state))
+        # Assemble
+        yield from send_event("progress", {"stage": "assembling", "message": "Assembling LaTeX..."})
+        skill_rows = req.skill_rows or session.get("skill_rows")
+        state: dict = {
+            "selected_content": req.selected_content,
+            "parsed_jd": req.parsed_jd,
+            "source_bank": _load_bank(),
+            "confirmed_entries": session.get("confirmed_entries", [e["entry_id"] for e in req.selected_content]),
+        }
+        if skill_rows:
+            state["skill_rows"] = skill_rows
+        state.update(latex_assembler(state))
 
-    log_step(
-        node="compile_latex",
-        summary=f"PDF compiled ({state.get('page_count', '?')} page(s))",
-        outputs={"pdf_path": state.get("pdf_path")},
-    )
+        log_step(
+            node="latex_assembler",
+            summary=f"Rendered {len(req.selected_content)} entries",
+            outputs={"latex_chars": len(state.get("latex_source", ""))},
+        )
 
-    # QA
-    state.update(qa_critic(state))
+        # Compile
+        yield from send_event("progress", {"stage": "compiling", "message": "Compiling PDF..."})
+        state["run_dir"] = str(run_dir)
+        state.update(compile_latex(state))
 
-    log_step(
-        node="qa_critic",
-        summary=state.get("status", ""),
-        outputs={
+        log_step(
+            node="compile_latex",
+            summary=f"PDF compiled ({state.get('page_count', '?')} page(s))",
+            outputs={"pdf_path": state.get("pdf_path")},
+        )
+
+        # QA feedback loop
+        max_retries = 3
+        for attempt in range(max_retries):
+            yield from send_event("progress", {
+                "stage": "qa_checking",
+                "message": f"QA critic reviewing (attempt {attempt + 1}/{max_retries})...",
+                "attempt": attempt + 1,
+            })
+            state.update(qa_critic(state))
+
+            log_step(
+                node="qa_critic",
+                summary=state.get("status", ""),
+                outputs={
+                    "page_count": state.get("page_count"),
+                    "qa_feedback": state.get("qa_feedback"),
+                    "attempt": attempt + 1,
+                },
+            )
+
+            if not state.get("qa_feedback"):
+                yield from send_event("progress", {"stage": "qa_pass", "message": "QA passed ✓"})
+                break
+
+            if attempt < max_retries - 1:
+                yield from send_event("progress", {
+                    "stage": f"qa_retry",
+                    "message": f"QA found issues, retrying ({attempt + 1}/{max_retries})...",
+                    "feedback": state.get("qa_feedback", ""),
+                    "attempt": attempt + 1,
+                })
+                state["retry_count"] = attempt + 1
+                state["qa_fix_instructions"] = state["qa_feedback"]
+                state.update(bullet_selector(state))
+                state.update(latex_assembler(state))
+                state.update(compile_latex(state))
+                log_step(
+                    node="retry",
+                    summary=f"Retry {attempt + 1}/{max_retries}: {state.get('qa_feedback', '')[:80]}",
+                )
+
+        # Save all output files
+        report = {
+            "parsed_jd": session.get("parsed_jd", req.parsed_jd),
+            "confirmed_entries": session.get("confirmed_entries", []),
+            "selected_content": req.selected_content,
+            "ai_suggestions": session.get("ai_suggestions", []),
+            "page_count": state.get("page_count"),
+            "retry_count": state.get("retry_count", 0),
+            "status": state.get("status", ""),
+        }
+        (run_dir / "selection_report.json").write_text(json.dumps(report, indent=2))
+
+        if state.get("latex_source"):
+            (run_dir / "resume.tex").write_text(state["latex_source"])
+
+        if state.get("pdf_path"):
+            src_pdf = Path(state["pdf_path"])
+            if src_pdf.exists():
+                dst_pdf = run_dir / "resume.pdf"
+                shutil.move(str(src_pdf), str(dst_pdf))
+                state["pdf_path"] = str(dst_pdf)
+
+        (run_dir / "pipeline_trace.md").write_text(render_trace())
+
+        finish_pipeline(
+            status="complete" if state.get("page_count") == 1 else "failed",
+            final_state=state,
+        )
+
+        elapsed = time.time() - session.get("start_time", time.time())
+        _update_runs_index(
+            run_dir=run_dir,
+            jd_source="[web] interactive",
+            final_state={**state, "parsed_jd": session.get("parsed_jd", req.parsed_jd)},
+            elapsed=elapsed,
+        )
+
+        _reset_session()
+
+        # Final done event with result data
+        yield from send_event("done", {
+            "pdf_path": state.get("pdf_path"),
             "page_count": state.get("page_count"),
             "qa_feedback": state.get("qa_feedback"),
-        },
-    )
+            "latex_source": state.get("latex_source", ""),
+            "run_dir": str(run_dir),
+            "status": state.get("status"),
+        })
 
-    # If QA fails, retry once
-    if state.get("qa_feedback") and state.get("retry_count", 0) < 1:
-        state["retry_count"] = 1
-        state.update(bullet_selector(state))
-        state.update(latex_assembler(state))
-        state.update(compile_latex(state))
-        state.update(qa_critic(state))
-        log_step(node="retry", summary="Retried with fewer bullets")
-
-    # ── Save all output files (same as main.py) ──
-
-    # Selection report
-    report = {
-        "parsed_jd": session.get("parsed_jd", req.parsed_jd),
-        "confirmed_entries": session.get("confirmed_entries", []),
-        "selected_content": req.selected_content,
-        "ai_suggestions": session.get("ai_suggestions", []),
-        "page_count": state.get("page_count"),
-        "retry_count": state.get("retry_count", 0),
-        "status": state.get("status", ""),
-    }
-    (run_dir / "selection_report.json").write_text(json.dumps(report, indent=2))
-
-    # LaTeX source
-    if state.get("latex_source"):
-        (run_dir / "resume.tex").write_text(state["latex_source"])
-
-    # Move PDF to run directory
-    if state.get("pdf_path"):
-        src_pdf = Path(state["pdf_path"])
-        if src_pdf.exists():
-            dst_pdf = run_dir / "resume.pdf"
-            shutil.move(str(src_pdf), str(dst_pdf))
-            state["pdf_path"] = str(dst_pdf)
-
-    # Pipeline trace
-    (run_dir / "pipeline_trace.md").write_text(render_trace())
-
-    # Finalize status for frontend polling
-    finish_pipeline(
-        status="complete" if state.get("page_count") == 1 else "failed",
-        final_state=state,
-    )
-
-    # Update runs index
-    elapsed = time.time() - session.get("start_time", time.time())
-    _update_runs_index(
-        run_dir=run_dir,
-        jd_source="[web] interactive",
-        final_state={**state, "parsed_jd": session.get("parsed_jd", req.parsed_jd)},
-        elapsed=elapsed,
-    )
-
-    # Reset session for next run
-    _reset_session()
-
-    return {
-        "pdf_path": state.get("pdf_path"),
-        "page_count": state.get("page_count"),
-        "qa_feedback": state.get("qa_feedback"),
-        "latex_source": state.get("latex_source", ""),
-        "run_dir": str(run_dir),
-        "status": state.get("status"),
-    }
+    return StreamingResponse(generate(), media_type="text/event-stream")
 
 
 @app.get("/source-bank")

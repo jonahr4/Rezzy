@@ -10,11 +10,25 @@ export default function StepEntrySelect() {
     confirmedEntryIds,
     parsedJD,
     toggleEntry,
+    loading,
+    loadingMessage,
     setLoading,
     setSelectedContent,
     advanceStep,
     currentStep,
   } = useTailorStore();
+
+  // Show loading while entries are being fetched
+  if (allEntries.length === 0 && loading) {
+    return (
+      <div className="step-inner step-loading">
+        <div className="loading-spinner" />
+        <p className="loading-text">{loadingMessage}</p>
+      </div>
+    );
+  }
+
+  if (allEntries.length === 0) return null;
 
   const selectedCount = confirmedEntryIds.length;
   const jobCount = allEntries.filter(
@@ -47,7 +61,7 @@ export default function StepEntrySelect() {
     }
   };
 
-  const isReadOnly = currentStep > 2;
+  const isReadOnly = currentStep > 3;
 
   return (
     <div className="step-inner step-entries">
@@ -109,11 +123,7 @@ export default function StepEntrySelect() {
                 )}
               </div>
               <div className={`entry-rationale ${isSelected ? "selected" : "excluded"}`}>
-                {isSelected
-                  ? entry.summary
-                    ? entry.summary.slice(0, 120) + "…"
-                    : "Selected for relevance to JD"
-                  : "Excluded — less relevant to this role"}
+                {entry.summary || (isSelected ? "Selected for relevance" : "Less relevant to this role")}
               </div>
             </div>
           );

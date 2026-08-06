@@ -130,6 +130,8 @@ def job_selector(state: dict) -> dict:
 
     return {
         "confirmed_entries": selected_ids,
+        "rationales": rationales,
+        "excluded": excluded,
         "user_overrides": {},  # empty in Phase 1
         "status": f"[job_selector] Selected {len(selected_ids)} entries",
     }
