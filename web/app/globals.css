@@ -986,6 +986,258 @@ a { color: inherit; text-decoration: none; }
   color: var(--gray);
 }
 
+/* ── Step 2.5: Skills Playground ──────────────────────── */
+.step-skills { width: 100%; }
+
+.skills-zone {
+  margin-bottom: 16px;
+  border: 1px solid var(--light-gray);
+  background: var(--white);
+  padding: 12px 16px;
+}
+.skills-zone-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--gray);
+  margin-bottom: 10px;
+}
+.skills-zone-available { border-left: 3px solid #90A4AE; }
+.skills-zone-active { border-left: 3px solid var(--cobalt); }
+.skills-zone-suggested { border-left: 3px solid #66BB6A; }
+
+.skills-chip-area {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 36px;
+  padding: 4px;
+  transition: background 0.2s;
+}
+.skills-chip-area.drop-target-active {
+  background: rgba(66,133,244,0.06);
+}
+.skills-empty {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--gray);
+  padding: 6px 12px;
+  opacity: 0.6;
+}
+
+/* ── Skill Chip ── */
+.skill-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: grab;
+  user-select: none;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  touch-action: none;
+}
+.skill-chip-grip {
+  font-size: 8px;
+  color: var(--gray);
+  opacity: 0.4;
+  line-height: 1;
+}
+.skill-chip:hover .skill-chip-grip { opacity: 0.8; }
+
+.skill-chip-active {
+  background: var(--cream);
+  border: 1px solid var(--cobalt);
+  color: var(--jet);
+}
+.skill-chip-available {
+  background: rgba(0,0,0,0.03);
+  border: 1px dashed var(--light-gray);
+  color: var(--gray);
+}
+.skill-chip-suggested {
+  background: rgba(46,125,50,0.06);
+  border: 1px dashed #66BB6A;
+  color: #2E7D32;
+}
+.skill-chip.dragging {
+  opacity: 0.3;
+}
+.skill-chip-overlay {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  cursor: grabbing;
+  z-index: 100;
+}
+
+/* ── Chip X delete button ── */
+.skill-chip-x {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  margin-left: 2px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--gray);
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.skill-chip:hover .skill-chip-x { display: inline-flex; }
+.skill-chip-x:hover { color: #C62828; }
+
+/* ── Chip inline edit ── */
+.skill-chip-edit-input {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--cobalt);
+  background: var(--white);
+  padding: 2px 6px;
+  width: 90px;
+  outline: none;
+}
+
+/* ── Skill Rows ── */
+.skill-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  margin-bottom: 8px;
+  border: 1px solid var(--light-gray);
+  background: var(--white);
+}
+.skill-row-left {
+  flex: 0 0 160px;
+  border-right: 1px solid var(--light-gray);
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  background: rgba(0,0,0,0.015);
+}
+.skill-row-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--jet);
+  letter-spacing: 0.02em;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.skill-row-edit-icon {
+  font-size: 10px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  color: var(--gray);
+}
+.skill-row-label:hover .skill-row-edit-icon { opacity: 1; }
+
+.skill-row-label-input {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid var(--cobalt);
+  background: var(--white);
+  padding: 2px 6px;
+  width: 100%;
+  outline: none;
+}
+.skill-row-right {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 10px;
+  min-height: 42px;
+  transition: background 0.2s;
+}
+.skill-row-right.drop-target-active {
+  background: rgba(66,133,244,0.06);
+}
+.skill-row-remove {
+  flex: 0 0 32px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-left: 1px solid var(--light-gray);
+  background: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: var(--gray);
+  transition: all 0.15s;
+}
+.skill-row-remove:hover {
+  background: rgba(198,40,40,0.06);
+  color: #C62828;
+}
+
+/* ── Add row / inline add ── */
+.skill-row-add {
+  display: block;
+  width: 100%;
+  padding: 8px 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gray);
+  border: 1px dashed var(--light-gray);
+  background: none;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.skill-row-add:hover {
+  border-color: var(--cobalt);
+  color: var(--cobalt);
+}
+.skill-add-inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray);
+  border: 1px dashed var(--light-gray);
+  background: none;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.skill-add-inline:hover {
+  border-color: var(--cobalt);
+  color: var(--cobalt);
+}
+.skill-add-input {
+  font-family: var(--mono);
+  font-size: 11px;
+  border: 1px solid var(--cobalt);
+  padding: 3px 8px;
+  width: 100px;
+  outline: none;
+  background: var(--white);
+}
+
 /* ── Step 3: Bullet Selection ──────────────────────────── */
 .bullet-entries {
   width: 100%;
@@ -1273,14 +1525,16 @@ a { color: inherit; text-decoration: none; }
   font-size: 12.5px;
   line-height: 1.6;
   color: var(--jet);
-  padding: 8px 10px;
+  padding: 8px 10px 8px 22px;
+  text-indent: -12px;
   border-left: 3px solid transparent;
   transition: all 0.3s;
 }
 .sug-bullet::before {
   content: "•";
-  margin-right: 8px;
+  margin-right: 6px;
   color: var(--gray);
+  text-indent: 0;
 }
 /* Current column: bullets with suggestions get yellow left border */
 .sug-bullet.has-suggestion {
@@ -1404,8 +1658,138 @@ a { color: inherit; text-decoration: none; }
 }
 .compile-step.done { color: var(--cobalt); }
 .compile-step.active { color: var(--jet); animation: pulse 1.5s infinite; }
+.compile-hint {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--gray);
+  text-align: center;
+  margin-top: 16px;
+  opacity: 0.7;
+}
+.compile-step.retry {
+  color: #E65100;
+  font-style: italic;
+}
+.retry-hint {
+  color: #E65100 !important;
+  opacity: 0.9 !important;
+}
 
-/* ── Step 6: Done ──────────────────────────────────────── */
+/* ── Step 6: Preview & Edit ────────────────────────────── */
+.step-preview { width: 100%; }
+.preview-resume {
+  max-width: 800px;
+  margin: 0 auto;
+  background: var(--white);
+  border: 1px solid var(--light-gray);
+  padding: 32px 40px;
+  font-family: "Times New Roman", Georgia, serif;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--jet);
+}
+
+/* Section headers */
+.preview-section { margin-bottom: 12px; }
+.preview-section-header {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  border-bottom: 1.5px solid var(--jet);
+  padding-bottom: 2px;
+  margin-bottom: 6px;
+  font-family: var(--body);
+}
+
+/* Skills */
+.preview-skills { margin-bottom: 4px; }
+.preview-skill-line {
+  font-size: 11px;
+  line-height: 1.4;
+  margin-bottom: 1px;
+}
+.preview-skill-label {
+  font-weight: 700;
+  font-family: var(--body);
+  font-size: 10.5px;
+}
+.preview-skill-items {
+  font-family: "Times New Roman", Georgia, serif;
+}
+
+/* Entry headers */
+.preview-entry {
+  margin-bottom: 10px;
+}
+.preview-entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2px;
+}
+.preview-entry-title {
+  font-weight: 800;
+  font-size: 12px;
+  font-family: var(--body);
+}
+.preview-entry-company {
+  font-style: italic;
+  font-size: 11px;
+  color: var(--gray);
+}
+.preview-entry-right { text-align: right; flex-shrink: 0; }
+.preview-entry-dates {
+  font-size: 11px;
+  font-family: var(--body);
+  font-weight: 600;
+}
+.preview-entry-location {
+  font-size: 10px;
+  color: var(--gray);
+  font-style: italic;
+}
+
+/* Bullets */
+.preview-bullets {
+  list-style: disc;
+  padding-left: 18px;
+  margin: 2px 0 0 0;
+}
+.preview-bullet {
+  font-size: 11.5px;
+  line-height: 1.5;
+  padding: 2px 4px;
+  margin-bottom: 1px;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background 0.15s;
+}
+.preview-bullet:hover {
+  background: rgba(19, 81, 170, 0.06);
+  outline: 1px dashed var(--cobalt);
+}
+
+/* Editing state */
+.preview-bullet.editing {
+  padding: 0;
+  list-style: none;
+  margin-left: -18px;
+  padding-left: 18px;
+}
+.preview-bullet-input {
+  width: 100%;
+  font-family: "Times New Roman", Georgia, serif;
+  font-size: 11.5px;
+  line-height: 1.5;
+  border: 1.5px solid var(--cobalt);
+  padding: 4px 6px;
+  resize: vertical;
+  outline: none;
+  background: rgba(19, 81, 170, 0.03);
+}
+
+/* ── Step 7: Done ──────────────────────────────────────── */
 .step-done { display: flex; align-items: center; justify-content: center; }
 .done-icon {
   width: 80px; height: 80px;

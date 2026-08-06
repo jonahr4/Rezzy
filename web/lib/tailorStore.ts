@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type WizardStep = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+export type WizardStep = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 export interface ParsedJD {
   company_name: string;
@@ -60,8 +60,20 @@ export interface EntrySuggestions {
   suggestions: Suggestion[];
 }
 
+/**
+ * Skill row for the drag-and-drop skills playground.
+ * Each row maps to a LaTeX skill category line:
+ *   \textbf{label}: item1, item2, item3 \\
+ */
+export interface SkillRow {
+  id: string;
+  label: string;
+  items: string[];
+}
+
 interface TailorState {
   // Wizard navigation
+  // Flow: Paste JD(0) → Parsed(1) → Skills(2) → Entries(3) → Bullets(4) → Suggestions(5) → Compiling(6) → Done(7)
   currentStep: WizardStep;
   maxReachedStep: WizardStep;
   setStep: (step: WizardStep) => void;
@@ -80,23 +92,40 @@ interface TailorState {
   parsedJD: ParsedJD | null;
   setParsedJD: (jd: ParsedJD) => void;
 
-  // Step 2: Entry selection
+  // Step 2: Skills playground
+  skillRows: SkillRow[];
+  availableSkills: string[];
+  suggestedSkills: string[];
+  setSkillsData: (rows: SkillRow[], available: string[], suggested: string[]) => void;
+  setSkillRows: (rows: SkillRow[]) => void;
+  setAvailableSkills: (skills: string[]) => void;
+  setSuggestedSkills: (skills: string[]) => void;
+  moveSkill: (skill: string, fromContainer: string, toContainer: string) => void;
+  addSkillRow: () => void;
+  removeSkillRow: (rowId: string) => void;
+  renameSkillRow: (rowId: string, newLabel: string) => void;
+  addCustomSkill: (rowId: string, skill: string) => void;
+
+  // Step 3: Entry selection
   allEntries: EntryInfo[];
   confirmedEntryIds: string[];
   setEntries: (entries: EntryInfo[], confirmed: string[]) => void;
   toggleEntry: (id: string) => void;
 
-  // Step 3: Bullet selection
+  // Step 4: Bullet selection
   selectedContent: SelectedEntry[];
   setSelectedContent: (content: SelectedEntry[]) => void;
   toggleBullet: (entryId: string, bulletId: string) => void;
 
-  // Step 4: AI Suggestions
+  // Step 5: AI Suggestions
   suggestions: EntrySuggestions[];
   setSuggestions: (suggestions: EntrySuggestions[]) => void;
   toggleSuggestion: (entryId: string, suggestionIndex: number) => void;
 
-  // Step 6: Result
+  // Step 6: Preview editing
+  updateBulletText: (entryId: string, bulletId: string, newText: string) => void;
+
+  // Step 7: Result
   result: {
     pdf_path: string | null;
     page_count: number | null;
@@ -110,6 +139,11 @@ interface TailorState {
   reset: () => void;
 }
 
+let _rowCounter = 0;
+function nextRowId() {
+  return `row_${++_rowCounter}`;
+}
+
 const initialState = {
   currentStep: 0 as WizardStep,
   maxReachedStep: 0 as WizardStep,
@@ -117,6 +151,9 @@ const initialState = {
   loadingMessage: "",
   jdText: "",
   parsedJD: null,
+  skillRows: [] as SkillRow[],
+  availableSkills: [] as string[],
+  suggestedSkills: [] as string[],
   allEntries: [],
   confirmedEntryIds: [],
   selectedContent: [],
@@ -131,7 +168,7 @@ export const useTailorStore = create<TailorState>((set, get) => ({
 
   advanceStep: () => {
     const { currentStep, maxReachedStep } = get();
-    const next = Math.min(currentStep + 1, 6) as WizardStep;
+    const next = Math.min(currentStep + 1, 8) as WizardStep;
     set({
       currentStep: next,
       maxReachedStep: Math.max(maxReachedStep, next) as WizardStep,
@@ -145,6 +182,110 @@ export const useTailorStore = create<TailorState>((set, get) => ({
 
   setParsedJD: (jd) => set({ parsedJD: jd }),
 
+  // Skills playground
+  setSkillsData: (rows, available, suggested) => {
+    // Deduplicate: a skill should only appear in ONE place
+    const seen = new Set<string>();
+    const dedupedRows = rows.map((r) => ({
+      ...r,
+      items: r.items.filter((s) => {
+        if (seen.has(s)) return false;
+        seen.add(s);
+        return true;
+      }),
+    }));
+    const dedupedAvailable = available.filter((s) => {
+      if (seen.has(s)) return false;
+      seen.add(s);
+      return true;
+    });
+    const dedupedSuggested = suggested.filter((s) => {
+      if (seen.has(s)) return false;
+      seen.add(s);
+      return true;
+    });
+    set({ skillRows: dedupedRows, availableSkills: dedupedAvailable, suggestedSkills: dedupedSuggested });
+  },
+
+  setSkillRows: (rows) => set({ skillRows: rows }),
+
+  setAvailableSkills: (skills) => set({ availableSkills: skills }),
+
+  setSuggestedSkills: (skills) => set({ suggestedSkills: skills }),
+
+  moveSkill: (skill, fromContainer, toContainer) => {
+    const { skillRows, availableSkills, suggestedSkills } = get();
+    // Build new state atomically — remove from source, add to target
+    let newRows = skillRows.map((r) => ({ ...r, items: [...r.items] }));
+    let newAvailable = [...availableSkills];
+    let newSuggested = [...suggestedSkills];
+
+    // Remove from source
+    if (fromContainer === "available") {
+      newAvailable = newAvailable.filter((s) => s !== skill);
+    } else if (fromContainer === "suggested") {
+      newSuggested = newSuggested.filter((s) => s !== skill);
+    } else {
+      newRows = newRows.map((r) =>
+        r.id === fromContainer ? { ...r, items: r.items.filter((s) => s !== skill) } : r
+      );
+    }
+
+    // Add to target (only if not already there)
+    if (toContainer === "available") {
+      if (!newAvailable.includes(skill)) newAvailable.push(skill);
+    } else if (toContainer === "suggested") {
+      if (!newSuggested.includes(skill)) newSuggested.push(skill);
+    } else {
+      newRows = newRows.map((r) =>
+        r.id === toContainer && !r.items.includes(skill)
+          ? { ...r, items: [...r.items, skill] }
+          : r
+      );
+    }
+
+    set({ skillRows: newRows, availableSkills: newAvailable, suggestedSkills: newSuggested });
+  },
+
+  addSkillRow: () => {
+    const { skillRows } = get();
+    set({
+      skillRows: [
+        ...skillRows,
+        { id: nextRowId(), label: "New Category", items: [] },
+      ],
+    });
+  },
+
+  removeSkillRow: (rowId) => {
+    const { skillRows, availableSkills } = get();
+    const row = skillRows.find((r) => r.id === rowId);
+    if (!row) return;
+    set({
+      skillRows: skillRows.filter((r) => r.id !== rowId),
+      availableSkills: [...availableSkills, ...row.items],
+    });
+  },
+
+  renameSkillRow: (rowId, newLabel) => {
+    const { skillRows } = get();
+    set({
+      skillRows: skillRows.map((r) =>
+        r.id === rowId ? { ...r, label: newLabel } : r
+      ),
+    });
+  },
+
+  addCustomSkill: (rowId, skill) => {
+    const { skillRows } = get();
+    set({
+      skillRows: skillRows.map((r) =>
+        r.id === rowId ? { ...r, items: [...r.items, skill] } : r
+      ),
+    });
+  },
+
+  // Entry selection
   setEntries: (entries, confirmed) =>
     set({ allEntries: entries, confirmedEntryIds: confirmed }),
 
@@ -203,6 +344,21 @@ export const useTailorStore = create<TailorState>((set, get) => ({
           ...es,
           suggestions: es.suggestions.map((s, i) =>
             i === suggestionIndex ? { ...s, accepted: !s.accepted } : s
+          ),
+        };
+      }),
+    });
+  },
+
+  updateBulletText: (entryId, bulletId, newText) => {
+    const { selectedContent } = get();
+    set({
+      selectedContent: selectedContent.map((entry) => {
+        if (entry.entry_id !== entryId) return entry;
+        return {
+          ...entry,
+          selected_bullets: entry.selected_bullets.map((b) =>
+            b.id === bulletId ? { ...b, text: newText } : b
           ),
         };
       }),
