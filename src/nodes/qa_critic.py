@@ -125,17 +125,15 @@ def _visual_inspect(pdf_path: str) -> str | None:
         return None
 
     try:
-        # Convert first page to PNG
+        # Convert first page to PNG at high resolution
         doc = fitz.open(pdf_path)
         page = doc[0]
-        # Render at 2x resolution for clarity
         pix = page.get_pixmap(dpi=200)
         img_bytes = pix.tobytes("png")
         doc.close()
 
         img_b64 = base64.b64encode(img_bytes).decode("utf-8")
 
-        # Use the LLM with vision to inspect
         from src.llm import chat
 
         response = chat(
@@ -143,22 +141,29 @@ def _visual_inspect(pdf_path: str) -> str | None:
                 {
                     "role": "system",
                     "content": (
-                        "You are a resume formatting QA inspector. "
-                        "Analyze this resume PDF image and check for visual defects. "
-                        "Look for: overlapping text, text cut off at margins, "
-                        "inconsistent spacing between sections, "
-                        "section headers overlapping with content, "
-                        "text running off the page edges, "
-                        "blank sections with no content. "
-                        "If the resume looks clean and well-formatted, respond with exactly: PASS "
-                        "If there are issues, respond with a brief description of the problems found. "
-                        "Be strict about overlapping text — even slight overlap is a FAIL."
+                        "You are a resume formatting QA inspector analyzing a rendered PDF image. "
+                        "Check for these specific visual defects:\n\n"
+                        "CRITICAL (must fix):\n"
+                        "1. OVERLAPPING TEXT: Any text lines that overlap or touch each other — "
+                        "especially in the Education section (degree + GPA), between bullet points, "
+                        "or where section headers meet content. Even 1px overlap is a FAIL.\n"
+                        "2. TEXT CUT OFF: Content cut off at page margins (left, right, or bottom).\n"
+                        "3. OVERFLOW: Content clearly extends beyond where the page should end.\n\n"
+                        "IMPORTANT (should fix):\n"
+                        "4. SPACING: Inconsistent spacing between sections or between bullets.\n"
+                        "5. CROWDING: Text packed too tightly with no visual breathing room.\n"
+                        "6. ORPHAN LINES: A single word wrapped to a new line at the end of a bullet.\n\n"
+                        "RESPONSE FORMAT:\n"
+                        "- If the resume looks clean and professional: respond with exactly 'PASS'\n"
+                        "- If there are CRITICAL issues: describe them briefly and suggest a fix "
+                        "(e.g., 'reduce bullets by 1 per entry' or 'shorten bullet about X').\n"
+                        "- Be concise — max 2-3 sentences."
                     ),
                 },
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": "Inspect this resume for visual formatting issues:"},
+                        {"type": "text", "text": "Inspect this resume PDF for visual formatting issues:"},
                         {
                             "type": "image_url",
                             "image_url": {"url": f"data:image/png;base64,{img_b64}"},
@@ -174,6 +179,7 @@ def _visual_inspect(pdf_path: str) -> str | None:
             print("   ✅ Visual QA: clean")
             return None
         else:
+            print(f"   ⚠ Visual QA feedback: {response[:120]}")
             return response
 
     except Exception as e:
