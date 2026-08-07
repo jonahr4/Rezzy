@@ -78,6 +78,7 @@ export default function StepPreview() {
 
   const handleCompile = async () => {
     setLoading(true, "Assembling LaTeX and compiling PDF...");
+    useTailorStore.setState({ qaAttempts: [] });
     advanceStep(); // → step 7 (Compiling)
 
     try {
@@ -118,6 +119,15 @@ export default function StepPreview() {
             const eventData = JSON.parse(dataMatch[1]);
 
             if (eventType === "progress") {
+              setLoading(true, eventData.message);
+            } else if (eventType === "qa_result") {
+              useTailorStore.getState().addQaAttempt({
+                attempt: eventData.attempt,
+                verdict: eventData.verdict,
+                message: eventData.message,
+                feedback: eventData.feedback,
+                preview: eventData.preview,
+              });
               setLoading(true, eventData.message);
             } else if (eventType === "done") {
               setResult({

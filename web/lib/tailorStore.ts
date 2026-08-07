@@ -71,6 +71,14 @@ export interface SkillRow {
   items: string[];
 }
 
+export interface QaAttempt {
+  attempt: number;
+  verdict: "PASS" | "FAIL" | "WARN";
+  message: string;
+  feedback?: string;
+  preview?: string; // base64 PNG
+}
+
 interface TailorState {
   // Wizard navigation
   // Flow: Paste JD(0) → Parsed(1) → Skills(2) → Entries(3) → Bullets(4) → Suggestions(5) → Compiling(6) → Done(7)
@@ -125,7 +133,11 @@ interface TailorState {
   // Step 6: Preview editing
   updateBulletText: (entryId: string, bulletId: string, newText: string) => void;
 
-  // Step 7: Result
+  // Step 7: Compiling & QA
+  qaAttempts: QaAttempt[];
+  addQaAttempt: (attempt: QaAttempt) => void;
+
+  // Step 8: Result
   result: {
     pdf_path: string | null;
     page_count: number | null;
@@ -158,6 +170,7 @@ const initialState = {
   confirmedEntryIds: [],
   selectedContent: [],
   suggestions: [],
+  qaAttempts: [] as QaAttempt[],
   result: null,
 };
 
@@ -364,6 +377,8 @@ export const useTailorStore = create<TailorState>((set, get) => ({
       }),
     });
   },
+
+  addQaAttempt: (attempt) => set((state) => ({ qaAttempts: [...state.qaAttempts, attempt] })),
 
   setResult: (result) => set({ result }),
 
