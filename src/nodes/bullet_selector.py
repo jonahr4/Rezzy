@@ -24,26 +24,28 @@ CRITICAL: You MUST return selected bullets for this entry — never return an em
 
 --- ATS BEST PRACTICES (use these as scoring criteria) ---
 
-BULLET COUNT TARGETS:
-- Primary job entry (most recent/relevant): prefer 4-5 bullets
-- Secondary job entry: prefer 3-4 bullets
-- Primary project: prefer 3-4 bullets
-- Secondary project: prefer 2-3 bullets
+BULLET COUNT TARGETS (for a 1-page resume):
+- Total across ALL entries: aim for 15-18 bullets
+- Most recent/relevant job: 4-5 bullets
+- Other jobs: 3-4 bullets
+- Most recent/relevant project: 3 bullets
+- Other projects: 2-3 bullets
 - NEVER fewer than 2 bullets per entry
-- If QA says "too long", reduce by 1 bullet across the board
+- If QA says "too long" or page overflow, drop to the lower end of each range
+- STRONGLY prefer concise 1-line bullets (15-22 words). Fewer long bullets wastes page space.
 
 BULLET QUALITY — rank candidates by these criteria:
 1. METRICS: Does it contain a specific number, percentage, user count, scale indicator? ("70M+ fans", "80+ tests", "50% faster") — highest priority
 2. ACTION VERB: Does it start with a strong verb? (Engineered, Architected, Built, Deployed, Reduced, Scaled, Automated, Spearheaded) — required
 3. TECHNOLOGY MATCH: Does it name specific tools/languages from the JD? Exact matches beat synonyms. — high priority
-4. LENGTH: Ideal is 15-25 words (1-2 lines). Bullets > 35 words are penalized.
+4. LENGTH: Ideal is 15-22 words (fits 1 line). Bullets > 30 words are penalized because they wrap and waste page space.
 5. XYZ STRUCTURE: "[Action verb] + [what you did] + [metric/scale] + [technology]" — Google's gold standard
 
 REJECT bullets that:
 - Start with "Responsible for", "Helped", "Worked on", "Was involved in", "Assisted with"
 - Are vague with no specific technology or metric
 - Duplicate the same achievement as another selected bullet
-- Exceed 35 words (3+ lines = wall of text, hurts ATS scan)
+- Exceed 30 words — prefer two concise bullets over one long one
 
 KEYWORD STRATEGY:
 - Prefer bullets that mirror EXACT terminology from the JD (not synonyms)
