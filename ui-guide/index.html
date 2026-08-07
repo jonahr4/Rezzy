@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResumeGenie V2 — UI Style Guide</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ════════════════════════════════════════════════════════
+       THEME SYSTEM — Light-mode color schemes via CSS vars
+       ════════════════════════════════════════════════════════ */
+
+    /* ── THEME: Warm Indigo (DEFAULT — warm backgrounds + indigo accent) ── */
+    :root, [data-theme="warm-indigo"] {
+      --bg-primary:    #FAF8F5;
+      --bg-secondary:  #F3F0EB;
+      --bg-card:       #FFFFFF;
+      --bg-elevated:   #EDEAE4;
+      --bg-input:      #FFFFFF;
+
+      --surface-hover: rgba(0,0,0,0.02);
+      --surface-active: rgba(99,102,241,0.06);
+
+      --accent:        #6366F1;
+      --accent-light:  #4F46E5;
+      --accent-glow:   rgba(99,102,241,0.15);
+      --accent-subtle: rgba(99,102,241,0.06);
+
+      --success:       #15803D;
+      --success-bg:    rgba(21,128,61,0.08);
+      --warning:       #C2410C;
+      --warning-bg:    rgba(194,65,12,0.08);
+      --danger:        #B91C1C;
+      --danger-bg:     rgba(185,28,28,0.08);
+      --info:          #4F46E5;
+      --info-bg:       rgba(79,70,229,0.06);
+
+      --text-primary:   #1C1917;
+      --text-secondary: #57534E;
+      --text-muted:     #A8A29E;
+      --text-accent:    #4F46E5;
+
+      --border:         #E7E5E4;
+      --border-strong:  #D6D3D1;
+      --border-accent:  rgba(99,102,241,0.30);
+
+      --shadow-sm:  0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md:  0 4px 12px rgba(0,0,0,0.06);
+      --shadow-lg:  0 8px 24px rgba(0,0,0,0.09);
+      --shadow-glow: 0 0 20px var(--accent-glow);
+    }
+
+    /* ── THEME: Warm Dusk (warm backgrounds + medium periwinkle) ── */
+    [data-theme="warm-dusk"] {
+      --bg-primary:    #FAF8F5;
+      --bg-secondary:  #F3F0EB;
+      --bg-card:       #FFFFFF;
+      --bg-elevated:   #EDEAE4;
+      --bg-input:      #FFFFFF;
+
+      --surface-hover: rgba(0,0,0,0.02);
+      --surface-active: rgba(103,109,204,0.06);
+
+      --accent:        #676DCC;
+      --accent-light:  #5B5DBB;
+      --accent-glow:   rgba(103,109,204,0.15);
+      --accent-subtle: rgba(103,109,204,0.06);
+
+      --success:       #2D9B5A;
+      --success-bg:    rgba(45,155,90,0.08);
+      --warning:       #C27A3A;
+      --warning-bg:    rgba(194,122,58,0.08);
+      --danger:        #B85450;
+      --danger-bg:     rgba(184,84,80,0.08);
+      --info:          #5B5DBB;
+      --info-bg:       rgba(91,93,187,0.06);
+
+      --text-primary:   #2D2A26;
+      --text-secondary: #5C5752;
+      --text-muted:     #A39E98;
+      --text-accent:    #5B5DBB;
+
+      --border:         #E7E5E4;
+      --border-strong:  #D6D3D1;
+      --border-accent:  rgba(103,109,204,0.25);
+
+      --shadow-sm:  0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md:  0 4px 12px rgba(0,0,0,0.06);
+      --shadow-lg:  0 8px 24px rgba(0,0,0,0.09);
+      --shadow-glow: 0 0 20px var(--accent-glow);
+    }
+
+    /* ── THEME: Classic (V1-inspired cream/cobalt) ── */
+    [data-theme="classic"] {
+      --bg-primary:    #E3E2DE;
+      --bg-secondary:  #DAD9D4;
+      --bg-card:       #FAFAF8;
+      --bg-elevated:   #F0EFEB;
+      --bg-input:      #FAFAF8;
+
+      --surface-hover: rgba(0,0,0,0.03);
+      --surface-active: rgba(19,81,170,0.06);
+
+      --accent:        #1351AA;
+      --accent-light:  #1863CC;
+      --accent-glow:   rgba(19,81,170,0.15);
+      --accent-subtle: rgba(19,81,170,0.06);
+
+      --success:       #2E7D32;
+      --success-bg:    rgba(46,125,50,0.08);
+      --warning:       #E65100;
+      --warning-bg:    rgba(230,81,0,0.08);
+      --danger:        #C62828;
+      --danger-bg:     rgba(198,40,40,0.08);
+      --info:          #1565C0;
+      --info-bg:       rgba(21,101,192,0.06);
+
+      --text-primary:   #141414;
+      --text-secondary: #444343;
+      --text-muted:     #7A7A7A;
+      --text-accent:    #1351AA;
+
+      --border:         rgba(0,0,0,0.08);
+      --border-strong:  rgba(0,0,0,0.15);
+      --border-accent:  rgba(19,81,170,0.25);
+
+      --shadow-sm:  0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md:  0 4px 12px rgba(0,0,0,0.08);
+      --shadow-lg:  0 8px 30px rgba(0,0,0,0.12);
+      --shadow-glow: 0 0 20px var(--accent-glow);
+    }
+
+    /* ── THEME: Clean White ── */
+    [data-theme="clean"] {
+      --bg-primary:    #FFFFFF;
+      --bg-secondary:  #F8F9FA;
+      --bg-card:       #FFFFFF;
+      --bg-elevated:   #F1F3F5;
+      --bg-input:      #FFFFFF;
+
+      --surface-hover: rgba(0,0,0,0.02);
+      --surface-active: rgba(59,130,246,0.06);
+
+      --accent:        #3B82F6;
+      --accent-light:  #2563EB;
+      --accent-glow:   rgba(59,130,246,0.15);
+      --accent-subtle: rgba(59,130,246,0.06);
+
+      --success:       #16A34A;
+      --success-bg:    rgba(22,163,74,0.08);
+      --warning:       #D97706;
+      --warning-bg:    rgba(217,119,6,0.08);
+      --danger:        #DC2626;
+      --danger-bg:     rgba(220,38,38,0.08);
+      --info:          #2563EB;
+      --info-bg:       rgba(37,99,235,0.06);
+
+      --text-primary:   #111827;
+      --text-secondary: #4B5563;
+      --text-muted:     #9CA3AF;
+      --text-accent:    #2563EB;
+
+      --border:         #E5E7EB;
+      --border-strong:  #D1D5DB;
+      --border-accent:  rgba(59,130,246,0.30);
+
+      --shadow-sm:  0 1px 2px rgba(0,0,0,0.05);
+      --shadow-md:  0 4px 12px rgba(0,0,0,0.07);
+      --shadow-lg:  0 8px 24px rgba(0,0,0,0.1);
+      --shadow-glow: 0 0 20px var(--accent-glow);
+    }
+
+    /* ── THEME: Warm Stone ── */
+    [data-theme="warm"] {
+      --bg-primary:    #FAF8F5;
+      --bg-secondary:  #F3F0EB;
+      --bg-card:       #FFFFFF;
+      --bg-elevated:   #EDEAE4;
+      --bg-input:      #FFFFFF;
+
+      --surface-hover: rgba(0,0,0,0.02);
+      --surface-active: rgba(180,83,9,0.06);
+
+      --accent:        #B45309;
+      --accent-light:  #92400E;
+      --accent-glow:   rgba(180,83,9,0.15);
+      --accent-subtle: rgba(180,83,9,0.06);
+
+      --success:       #15803D;
+      --success-bg:    rgba(21,128,61,0.08);
+      --warning:       #C2410C;
+      --warning-bg:    rgba(194,65,12,0.08);
+      --danger:        #B91C1C;
+      --danger-bg:     rgba(185,28,28,0.08);
+      --info:          #1D4ED8;
+      --info-bg:       rgba(29,78,216,0.06);
+
+      --text-primary:   #1C1917;
+      --text-secondary: #57534E;
+      --text-muted:     #A8A29E;
+      --text-accent:    #92400E;
+
+      --border:         #E7E5E4;
+      --border-strong:  #D6D3D1;
+      --border-accent:  rgba(180,83,9,0.25);
+
+      --shadow-sm:  0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md:  0 4px 12px rgba(0,0,0,0.06);
+      --shadow-lg:  0 8px 24px rgba(0,0,0,0.09);
+      --shadow-glow: 0 0 20px var(--accent-glow);
+    }
+
+    /* ── THEME: Sage ── */
+    [data-theme="sage"] {
+      --bg-primary:    #F5F7F5;
+      --bg-secondary:  #EBF0EB;
+      --bg-card:       #FFFFFF;
+      --bg-elevated:   #E4EBE4;
+      --bg-input:      #FFFFFF;
+
+      --surface-hover: rgba(0,0,0,0.02);
+      --surface-active: rgba(22,101,52,0.06);
+
+      --accent:        #166534;
+      --accent-light:  #15803D;
+      --accent-glow:   rgba(22,101,52,0.15);
+      --accent-subtle: rgba(22,101,52,0.06);
+
+      --success:       #166534;
+      --success-bg:    rgba(22,101,52,0.08);
+      --warning:       #B45309;
+      --warning-bg:    rgba(180,83,9,0.08);
+      --danger:        #B91C1C;
+      --danger-bg:     rgba(185,28,28,0.08);
+      --info:          #1E40AF;
+      --info-bg:       rgba(30,64,175,0.06);
+
+      --text-primary:   #14532D;
+      --text-secondary: #3F6212;
+      --text-muted:     #84CC16;
+      --text-accent:    #15803D;
+
+      --border:         #D1E7D1;
+      --border-strong:  #BBD6BB;
+      --border-accent:  rgba(22,101,52,0.30);
+
+      --shadow-sm:  0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md:  0 4px 12px rgba(0,0,0,0.06);
+      --shadow-lg:  0 8px 24px rgba(0,0,0,0.09);
+      --shadow-glow: 0 0 20px var(--accent-glow);
+    }
+
+    /* ── THEME: Slate (Modern gray) ── */
+    [data-theme="slate"] {
+      --bg-primary:    #F8FAFC;
+      --bg-secondary:  #F1F5F9;
+      --bg-card:       #FFFFFF;
+      --bg-elevated:   #E2E8F0;
+      --bg-input:      #FFFFFF;
+
+      --surface-hover: rgba(0,0,0,0.02);
+      --surface-active: rgba(99,102,241,0.06);
+
+      --accent:        #6366F1;
+      --accent-light:  #4F46E5;
+      --accent-glow:   rgba(99,102,241,0.15);
+      --accent-subtle: rgba(99,102,241,0.06);
+
+      --success:       #059669;
+      --success-bg:    rgba(5,150,105,0.08);
+      --warning:       #D97706;
+      --warning-bg:    rgba(217,119,6,0.08);
+      --danger:        #DC2626;
+      --danger-bg:     rgba(220,38,38,0.08);
+      --info:          #6366F1;
+      --info-bg:       rgba(99,102,241,0.06);
+
+      --text-primary:   #0F172A;
+      --text-secondary: #475569;
+      --text-muted:     #94A3B8;
+      --text-accent:    #4F46E5;
+
+      --border:         #E2E8F0;
+      --border-strong:  #CBD5E1;
+      --border-accent:  rgba(99,102,241,0.30);
+
+      --shadow-sm:  0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md:  0 4px 12px rgba(0,0,0,0.06);
+      --shadow-lg:  0 8px 24px rgba(0,0,0,0.08);
+      --shadow-glow: 0 0 20px var(--accent-glow);
+    }
+
+    /* ── THEME: Midnight (Dark, for comparison) ── */
+    [data-theme="midnight"] {
+      --bg-primary:    #0D0F14;
+      --bg-secondary:  #141720;
+      --bg-card:       #1A1E28;
+      --bg-elevated:   #222735;
+      --bg-input:      #161A24;
+
+      --surface-hover: rgba(255,255,255,0.04);
+      --surface-active: rgba(99,133,255,0.08);
+
+      --accent:        #6385FF;
+      --accent-light:  #8BA3FF;
+      --accent-glow:   rgba(99,133,255,0.25);
+      --accent-subtle: rgba(99,133,255,0.08);
+
+      --success:       #3DD68C;
+      --success-bg:    rgba(61,214,140,0.10);
+      --warning:       #FFB547;
+      --warning-bg:    rgba(255,181,71,0.10);
+      --danger:        #FF5C5C;
+      --danger-bg:     rgba(255,92,92,0.10);
+      --info:          #47B5FF;
+      --info-bg:       rgba(71,181,255,0.10);
+
+      --text-primary:   #F0F1F5;
+      --text-secondary: #9BA1B7;
+      --text-muted:     #5C6378;
+      --text-accent:    #8BA3FF;
+
+      --border:         rgba(255,255,255,0.06);
+      --border-strong:  rgba(255,255,255,0.12);
+      --border-accent:  rgba(99,133,255,0.30);
+
+      --shadow-sm:  0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+      --shadow-md:  0 4px 12px rgba(0,0,0,0.3);
+      --shadow-lg:  0 8px 30px rgba(0,0,0,0.4);
+      --shadow-glow: 0 0 24px var(--accent-glow);
+    }
+
+    /* ════════════════════════════════════════════════════════
+       SHARED TOKENS (non-color)
+       ════════════════════════════════════════════════════════ */
+    :root {
+      --font-ui:     'Inter', system-ui, -apple-system, sans-serif;
+      --font-formal: 'Playfair Display', 'Times New Roman', Georgia, serif;
+      --font-mono:   'JetBrains Mono', 'SF Mono', monospace;
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+      --radius-full: 999px;
+
+      --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+      --sidebar-w: 240px;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       RESET + BASE
+       ════════════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-ui);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      line-height: 1.6;
+      transition: background 0.4s ease, color 0.3s ease;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { cursor: pointer; font-family: inherit; border: none; background: none; color: inherit; }
+    input, textarea, select { font-family: inherit; color: inherit; }
+
+    /* ════════════════════════════════════════════════════════
+       THEME SIDEBAR
+       ════════════════════════════════════════════════════════ */
+    .theme-sidebar {
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      width: var(--sidebar-w);
+      background: var(--bg-card);
+      border-right: 1px solid var(--border);
+      z-index: 200;
+      overflow-y: auto;
+      padding: 24px 16px;
+      transition: background 0.4s ease, border-color 0.3s ease;
+    }
+    .theme-sidebar-brand {
+      font-family: var(--font-formal);
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+    .theme-sidebar-brand span { color: var(--accent); transition: color 0.3s ease; }
+    .theme-sidebar-sub {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+    .theme-section-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      margin-top: 20px;
+    }
+    .theme-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 4px;
+      border: 2px solid transparent;
+    }
+    .theme-option:hover { background: var(--surface-hover); }
+    .theme-option.active {
+      background: var(--accent-subtle);
+      border-color: var(--accent);
+    }
+    .theme-swatches {
+      display: flex;
+      gap: 3px;
+    }
+    .theme-swatch {
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+    .theme-option-name {
+      font-size: 12px;
+      font-weight: 600;
+      flex: 1;
+    }
+    .theme-option .theme-check {
+      font-size: 12px;
+      color: var(--accent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .theme-option.active .theme-check { opacity: 1; }
+
+    /* Sidebar nav links */
+    .theme-nav-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--text-muted);
+      margin-top: 28px;
+      margin-bottom: 8px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .theme-nav-link {
+      display: block;
+      padding: 5px 12px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      border-radius: var(--radius-sm);
+      transition: all 0.15s;
+      margin-bottom: 1px;
+    }
+    .theme-nav-link:hover { color: var(--accent); background: var(--surface-hover); }
+
+    /* ════════════════════════════════════════════════════════
+       MAIN CONTENT (offset by sidebar)
+       ════════════════════════════════════════════════════════ */
+    .guide-main {
+      margin-left: var(--sidebar-w);
+      transition: margin-left 0.3s ease;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       GUIDE LAYOUT
+       ════════════════════════════════════════════════════════ */
+    .guide-header {
+      padding: 80px 60px 60px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s ease;
+    }
+    .guide-header::before {
+      content: '';
+      position: absolute;
+      top: -200px; left: -100px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      opacity: 0.5;
+      pointer-events: none;
+      transition: background 0.4s ease;
+    }
+    .guide-header-content { position: relative; z-index: 1; }
+    .guide-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.25em;
+      padding: 4px 14px;
+      background: var(--accent-subtle);
+      color: var(--accent);
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-full);
+      margin-bottom: 20px;
+      transition: all 0.3s ease;
+    }
+    .guide-title {
+      font-family: var(--font-formal);
+      font-size: clamp(3rem, 6vw, 5rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      margin-bottom: 16px;
+    }
+    .guide-title span { color: var(--accent); transition: color 0.3s ease; }
+    .guide-desc {
+      font-size: 16px;
+      color: var(--text-secondary);
+      max-width: 560px;
+      line-height: 1.7;
+    }
+
+    .guide-section {
+      padding: 80px 60px;
+      border-bottom: 1px solid var(--border);
+      transition: border-color 0.3s ease;
+    }
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.25em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .section-title {
+      font-family: var(--font-formal);
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+    .section-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin-bottom: 48px;
+    }
+
+    .element-row { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; margin-bottom: 40px; }
+    .element-row.col { flex-direction: column; }
+    .element-group { display: flex; flex-direction: column; gap: 8px; }
+    .element-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .subsection { margin-bottom: 56px; }
+    .subsection-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .subsection-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ════════════════════════════════════════════════════════
+       1. COLORS
+       ════════════════════════════════════════════════════════ */
+    .color-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+    .color-swatch { border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border); transition: border-color 0.3s; }
+    .color-swatch-fill { height: 80px; transition: background 0.4s ease; }
+    .color-swatch-info { padding: 10px 12px; background: var(--bg-card); transition: background 0.4s ease; }
+    .color-swatch-name { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+    .color-swatch-value { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); }
+
+    /* ════════════════════════════════════════════════════════
+       2. TYPOGRAPHY
+       ════════════════════════════════════════════════════════ */
+    .type-specimen {
+      padding: 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      margin-bottom: 16px;
+      transition: all 0.3s ease;
+    }
+    .type-meta {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      display: flex;
+      gap: 16px;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       3. BUTTONS
+       ════════════════════════════════════════════════════════ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 24px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: var(--radius-md);
+      transition: all 0.25s var(--ease-out);
+      position: relative;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 8px var(--accent-glow); }
+    .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 4px 16px var(--accent-glow); }
+    .btn-secondary { background: transparent; color: var(--text-primary); border: 1px solid var(--border-strong); }
+    .btn-secondary:hover { background: var(--surface-hover); border-color: var(--accent); color: var(--accent); }
+    .btn-ghost { background: transparent; color: var(--text-secondary); padding: 10px 16px; }
+    .btn-ghost:hover { color: var(--accent); background: var(--accent-subtle); }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-danger:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    .btn-success { background: var(--success); color: #fff; font-weight: 700; }
+    .btn-success:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    .btn-icon { width: 40px; height: 40px; padding: 0; border-radius: var(--radius-md); display: inline-flex; align-items: center; justify-content: center; font-size: 18px; border: 1px solid var(--border); color: var(--text-secondary); transition: all 0.2s; }
+    .btn-icon:hover { background: var(--surface-hover); border-color: var(--accent); color: var(--accent); }
+    .btn-sm { padding: 6px 14px; font-size: 11px; border-radius: var(--radius-sm); }
+    .btn-lg { padding: 14px 32px; font-size: 15px; border-radius: var(--radius-lg); }
+    .btn-block-badge { font-family: var(--font-mono); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; padding: 6px 14px; border-radius: 0; border: 1px solid var(--border-strong); background: var(--bg-elevated); color: var(--text-secondary); transition: all 0.2s; }
+    .btn-block-badge:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-subtle); }
+
+    /* ════════════════════════════════════════════════════════
+       4. INPUTS
+       ════════════════════════════════════════════════════════ */
+    .input-group { display: flex; flex-direction: column; gap: 6px; min-width: 280px; }
+    .input-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+    .input-field { padding: 10px 14px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px; color: var(--text-primary); transition: all 0.2s; outline: none; }
+    .input-field:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+    .input-field::placeholder { color: var(--text-muted); }
+    .input-hint { font-size: 11px; color: var(--text-muted); }
+    .input-field.error { border-color: var(--danger); }
+    .input-field.success { border-color: var(--success); }
+    .textarea-field { padding: 14px 16px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px; color: var(--text-primary); resize: vertical; min-height: 100px; outline: none; font-family: var(--font-mono); line-height: 1.7; transition: border-color 0.2s; width: 100%; }
+    .textarea-field:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+    .search-wrap { position: relative; width: 320px; }
+    .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 15px; color: var(--text-muted); pointer-events: none; }
+    .search-input { width: 100%; padding: 10px 14px 10px 40px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-full); font-size: 13px; color: var(--text-primary); outline: none; transition: all 0.2s; }
+    .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+    .search-input::placeholder { color: var(--text-muted); }
+
+    /* ════════════════════════════════════════════════════════
+       5. DROPDOWNS
+       ════════════════════════════════════════════════════════ */
+    .dropdown-wrap { position: relative; display: inline-block; }
+    .dropdown-trigger { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 13px; font-weight: 500; color: var(--text-primary); cursor: pointer; transition: all 0.2s; min-width: 200px; justify-content: space-between; }
+    .dropdown-trigger:hover { border-color: var(--border-strong); }
+    .dropdown-trigger .chevron { font-size: 10px; color: var(--text-muted); }
+    .dropdown-menu { position: absolute; top: calc(100% + 6px); left: 0; min-width: 240px; background: var(--bg-card); border: 1px solid var(--border-strong); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); padding: 6px; z-index: 50; animation: dropIn 0.2s var(--ease-out); }
+    @keyframes dropIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+    .dropdown-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; font-size: 13px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s; color: var(--text-secondary); }
+    .dropdown-item:hover { background: var(--surface-hover); color: var(--text-primary); }
+    .dropdown-item.active { background: var(--accent-subtle); color: var(--accent); }
+    .dropdown-item .item-icon { font-size: 15px; opacity: 0.7; }
+    .dropdown-item .item-check { margin-left: auto; font-size: 14px; color: var(--accent); }
+    .dropdown-divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+    /* ════════════════════════════════════════════════════════
+       6. CARDS
+       ════════════════════════════════════════════════════════ */
+    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; transition: all 0.3s var(--ease-out); }
+    .card:hover { border-color: var(--border-strong); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .card-body { padding: 24px; }
+    .card-header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .card-title { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; }
+    .card-glass { background: rgba(255,255,255,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+    .stat-card { padding: 24px; display: flex; flex-direction: column; gap: 8px; }
+    .stat-card-label { font-family: var(--font-mono); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.2em; color: var(--text-muted); }
+    .stat-card-value { font-family: var(--font-formal); font-size: 36px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+    .stat-card-delta { font-family: var(--font-mono); font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+    .stat-card-delta.up { color: var(--success); }
+    .stat-card-delta.down { color: var(--danger); }
+
+    /* ════════════════════════════════════════════════════════
+       7. BADGES
+       ════════════════════════════════════════════════════════ */
+    .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: var(--radius-full); transition: all 0.3s; }
+    .badge-accent { background: var(--accent-subtle); color: var(--accent); border: 1px solid var(--border-accent); }
+    .badge-success { background: var(--success-bg); color: var(--success); border: 1px solid rgba(0,128,0,0.15); }
+    .badge-warning { background: var(--warning-bg); color: var(--warning); border: 1px solid rgba(230,81,0,0.15); }
+    .badge-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid rgba(220,38,38,0.15); }
+    .badge-info { background: var(--info-bg); color: var(--info); border: 1px solid rgba(21,101,192,0.15); }
+    .badge-neutral { background: var(--surface-hover); color: var(--text-secondary); border: 1px solid var(--border); }
+    .block-badge { display: inline-block; font-family: var(--font-mono); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; padding: 5px 12px; border-radius: 0; transition: all 0.3s; }
+    .block-badge-accent { background: var(--accent); color: #fff; }
+    .block-badge-danger { background: var(--danger); color: #fff; }
+    .block-badge-warning { background: var(--warning); color: #fff; }
+    .block-badge-success { background: var(--success); color: #fff; }
+    .block-badge-muted { background: var(--bg-elevated); color: var(--text-secondary); border: 1px solid var(--border); }
+    .tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; padding: 4px 10px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-secondary); transition: all 0.2s; }
+    .tag:hover { border-color: var(--accent); color: var(--accent); }
+    .tag-x { font-size: 10px; cursor: pointer; opacity: 0.5; transition: opacity 0.15s; margin-left: 2px; }
+    .tag-x:hover { opacity: 1; color: var(--danger); }
+
+    /* ════════════════════════════════════════════════════════
+       8. ALERTS
+       ════════════════════════════════════════════════════════ */
+    .alert { display: flex; align-items: flex-start; gap: 12px; padding: 14px 18px; border-radius: var(--radius-md); font-size: 13px; line-height: 1.6; transition: all 0.3s; }
+    .alert-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .alert-content { flex: 1; }
+    .alert-title { font-weight: 700; margin-bottom: 2px; }
+    .alert-text { color: inherit; opacity: 0.85; }
+    .alert-danger { background: var(--danger-bg); border: 1px solid rgba(220,38,38,0.15); border-left: 4px solid var(--danger); color: var(--danger); }
+    .alert-warning { background: var(--warning-bg); border: 1px solid rgba(230,81,0,0.15); border-left: 4px solid var(--warning); color: var(--warning); }
+    .alert-success { background: var(--success-bg); border: 1px solid rgba(46,125,50,0.15); border-left: 4px solid var(--success); color: var(--success); }
+    .alert-info { background: var(--info-bg); border: 1px solid rgba(21,101,192,0.15); border-left: 4px solid var(--info); color: var(--info); }
+    .error-block { font-family: var(--font-mono); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; padding: 10px 16px; border-radius: 0; background: var(--danger); color: #fff; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(198,40,40,0.2); }
+    .warning-block { font-family: var(--font-mono); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; padding: 10px 16px; border-radius: 0; background: var(--warning); color: #fff; display: inline-flex; align-items: center; gap: 8px; }
+    .success-block { font-family: var(--font-mono); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; padding: 10px 16px; border-radius: 0; background: var(--success); color: #fff; display: inline-flex; align-items: center; gap: 8px; }
+
+    /* ════════════════════════════════════════════════════════
+       9. CHIPS
+       ════════════════════════════════════════════════════════ */
+    .chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: 0.02em; cursor: grab; user-select: none; white-space: nowrap; transition: all 0.2s var(--ease-out); border-radius: var(--radius-sm); }
+    .chip-grip { font-size: 9px; color: var(--text-muted); opacity: 0.4; }
+    .chip:hover .chip-grip { opacity: 0.8; }
+    .chip-active { background: var(--accent-subtle); border: 1px solid var(--border-accent); color: var(--accent); }
+    .chip-active:hover { background: rgba(19,81,170,0.12); }
+    .chip-available { background: var(--surface-hover); border: 1px dashed var(--border-strong); color: var(--text-secondary); }
+    .chip-suggested { background: var(--success-bg); border: 1px dashed rgba(46,125,50,0.3); color: var(--success); }
+    .chip-x { font-size: 12px; cursor: pointer; opacity: 0; transition: all 0.15s; margin-left: 2px; }
+    .chip:hover .chip-x { opacity: 0.7; }
+    .chip-x:hover { opacity: 1; color: var(--danger); }
+
+    /* ════════════════════════════════════════════════════════
+       10. TOGGLES
+       ════════════════════════════════════════════════════════ */
+    .toggle { width: 40px; height: 22px; background: var(--bg-elevated); border: 1px solid var(--border-strong); border-radius: var(--radius-full); padding: 2px; cursor: pointer; transition: all 0.3s var(--ease-out); position: relative; }
+    .toggle.on { background: var(--accent); border-color: var(--accent); }
+    .toggle-thumb { width: 16px; height: 16px; background: #fff; border-radius: 50%; transition: transform 0.3s var(--ease-spring); box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+    .toggle.on .toggle-thumb { transform: translateX(18px); }
+    .check-item { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 8px 0; }
+    .check-box-v2 { width: 20px; height: 20px; border: 2px solid var(--border-strong); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: transparent; transition: all 0.2s; flex-shrink: 0; }
+    .check-box-v2.checked { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .check-label { font-size: 13px; color: var(--text-secondary); }
+    .radio-dot { width: 20px; height: 20px; border: 2px solid var(--border-strong); border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+    .radio-dot.selected { border-color: var(--accent); }
+    .radio-dot.selected::after { content: ''; width: 10px; height: 10px; background: var(--accent); border-radius: 50%; }
+
+    /* ════════════════════════════════════════════════════════
+       11. PROGRESS
+       ════════════════════════════════════════════════════════ */
+    .progress-bar-wrap { width: 100%; max-width: 400px; }
+    .progress-bar-track { height: 8px; background: var(--bg-elevated); border-radius: var(--radius-full); overflow: hidden; }
+    .progress-bar-fill { height: 100%; border-radius: var(--radius-full); transition: width 0.8s var(--ease-out); }
+    .progress-bar-fill.accent { background: linear-gradient(90deg, var(--accent), var(--accent-light)); }
+    .progress-bar-fill.success { background: var(--success); }
+    .progress-bar-fill.warning { background: var(--warning); }
+    .progress-bar-fill.danger { background: var(--danger); }
+    .progress-label { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px; }
+    .progress-label-text { color: var(--text-secondary); }
+    .progress-label-pct { font-family: var(--font-mono); font-weight: 700; }
+    .step-progress { display: flex; align-items: flex-start; gap: 0; }
+    .step-dot-item { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 80px; position: relative; }
+    .step-dot-circle { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 12px; font-weight: 700; border: 2px solid var(--border-strong); border-radius: 50%; background: var(--bg-card); color: var(--text-muted); transition: all 0.3s; position: relative; z-index: 2; }
+    .step-dot-item.active .step-dot-circle { border-color: var(--accent); background: var(--accent); color: #fff; box-shadow: var(--shadow-glow); }
+    .step-dot-item.done .step-dot-circle { border-color: var(--success); background: var(--success-bg); color: var(--success); }
+    .step-dot-label { font-family: var(--font-mono); font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); }
+    .step-dot-item.active .step-dot-label { color: var(--accent); }
+    .step-dot-line { flex: 1; height: 2px; background: var(--border); min-width: 30px; margin-top: 16px; }
+    .step-dot-line.done { background: var(--success); }
+
+    /* ════════════════════════════════════════════════════════
+       12. TABLE
+       ════════════════════════════════════════════════════════ */
+    .table-wrap { border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .table { width: 100%; border-collapse: collapse; }
+    .table th { font-family: var(--font-mono); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-muted); text-align: left; padding: 12px 16px; background: var(--bg-elevated); border-bottom: 1px solid var(--border); }
+    .table td { font-size: 13px; padding: 14px 16px; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+    .table tr:last-child td { border-bottom: none; }
+    .table tr:hover td { background: var(--surface-hover); }
+    .table-name { font-weight: 600; color: var(--text-primary); }
+
+    /* ════════════════════════════════════════════════════════
+       13. SIDEBAR NAV DEMO
+       ════════════════════════════════════════════════════════ */
+    .sidebar-demo { width: 260px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 0; overflow: hidden; transition: all 0.3s; }
+    .sidebar-brand { padding: 12px 24px 20px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+    .sidebar-brand-name { font-family: var(--font-formal); font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+    .sidebar-brand-name span { color: var(--accent); }
+    .sidebar-section-label-demo { font-family: var(--font-mono); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; color: var(--text-muted); padding: 16px 24px 8px; }
+    .sidebar-item-demo { display: flex; align-items: center; gap: 12px; padding: 10px 24px; font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; }
+    .sidebar-item-demo:hover { background: var(--surface-hover); color: var(--text-primary); }
+    .sidebar-item-demo.active { background: var(--accent-subtle); color: var(--accent); border-left-color: var(--accent); }
+    .sidebar-item-badge { margin-left: auto; font-family: var(--font-mono); font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent); }
+
+    /* ════════════════════════════════════════════════════════
+       14. EXPERIENCE CARD
+       ════════════════════════════════════════════════════════ */
+    .exp-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; transition: all 0.3s; }
+    .exp-card:hover { border-color: var(--border-strong); }
+    .exp-card-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 20px 24px; cursor: pointer; gap: 16px; }
+    .exp-card-header:hover .exp-card-title { color: var(--accent); }
+    .exp-type-badge { font-family: var(--font-mono); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; padding: 3px 8px; border-radius: 0; margin-bottom: 6px; display: inline-block; transition: all 0.3s; }
+    .exp-type-badge.job { background: var(--accent-subtle); color: var(--accent); border: 1px solid var(--border-accent); }
+    .exp-type-badge.project { background: rgba(124,77,255,0.08); color: #7C4DFF; border: 1px solid rgba(124,77,255,0.2); }
+    .exp-card-title { font-family: var(--font-formal); font-size: 20px; font-weight: 700; letter-spacing: -0.02em; transition: color 0.2s; margin-bottom: 4px; }
+    .exp-card-meta { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); display: flex; gap: 16px; }
+    .exp-card-chevron { font-size: 20px; color: var(--text-muted); transition: transform 0.3s var(--ease-out); flex-shrink: 0; margin-top: 4px; }
+    .exp-card.open .exp-card-chevron { transform: rotate(90deg); color: var(--accent); }
+    .exp-card-body { padding: 0 24px 24px; border-top: 1px solid var(--border); }
+    .exp-tags { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 16px; margin-bottom: 16px; }
+    .exp-bullets { list-style: none; padding: 0; margin: 0; }
+    .exp-bullet-item { display: flex; gap: 12px; padding: 12px 0; border-top: 1px solid var(--border); align-items: flex-start; }
+    .exp-bullet-num { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); padding-top: 4px; flex-shrink: 0; width: 24px; }
+    .exp-bullet-text { font-family: var(--font-formal); font-size: 14px; color: var(--text-secondary); line-height: 1.65; }
+
+    /* ════════════════════════════════════════════════════════
+       15. RESUME PREVIEW
+       ════════════════════════════════════════════════════════ */
+    .resume-preview { background: #FFFFFF; border: 1px solid rgba(0,0,0,0.1); border-radius: var(--radius-md); padding: 40px 48px; font-family: var(--font-formal); font-size: 11.5px; line-height: 1.5; color: #1a1a1a; max-width: 700px; box-shadow: var(--shadow-lg); }
+    .resume-name { font-size: 22px; font-weight: 800; text-align: center; margin-bottom: 4px; letter-spacing: 0.02em; }
+    .resume-contact { text-align: center; font-size: 10px; color: #555; margin-bottom: 16px; }
+    .resume-section-head { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; border-bottom: 1.5px solid #1a1a1a; padding-bottom: 2px; margin-bottom: 8px; margin-top: 14px; font-family: var(--font-ui); }
+    .resume-entry-row { display: flex; justify-content: space-between; margin-bottom: 2px; }
+    .resume-entry-title { font-weight: 700; font-size: 12px; font-family: var(--font-ui); }
+    .resume-entry-dates { font-size: 11px; font-family: var(--font-ui); font-weight: 600; }
+    .resume-entry-company { font-style: italic; font-size: 11px; color: #555; }
+    .resume-bullets-list { list-style: disc; padding-left: 18px; margin: 4px 0 0 0; }
+    .resume-bullets-list li { font-size: 11px; line-height: 1.5; margin-bottom: 2px; }
+
+    /* ════════════════════════════════════════════════════════
+       16. MODAL
+       ════════════════════════════════════════════════════════ */
+    .modal-demo { background: var(--bg-card); border: 1px solid var(--border-strong); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); width: 100%; max-width: 560px; overflow: hidden; transition: all 0.3s; }
+    .modal-demo-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border); }
+    .modal-demo-title { font-family: var(--font-formal); font-size: 18px; font-weight: 700; }
+    .modal-demo-close { width: 32px; height: 32px; border: 1px solid var(--border); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--text-muted); transition: all 0.2s; cursor: pointer; }
+    .modal-demo-close:hover { background: var(--danger-bg); color: var(--danger); border-color: var(--danger); }
+    .modal-demo-body { padding: 24px; }
+    .modal-demo-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 24px; border-top: 1px solid var(--border); }
+
+    /* ════════════════════════════════════════════════════════
+       17. LOADING
+       ════════════════════════════════════════════════════════ */
+    .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner-text { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); letter-spacing: 0.05em; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .pulse { animation: pulse 1.5s ease-in-out infinite; }
+    .skeleton { background: linear-gradient(90deg, var(--bg-elevated) 25%, var(--bg-card) 50%, var(--bg-elevated) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: var(--radius-sm); }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* ════════════════════════════════════════════════════════
+       18. TABS
+       ════════════════════════════════════════════════════════ */
+    .tabs { display: flex; gap: 4px; padding: 4px; background: var(--bg-elevated); border-radius: var(--radius-md); border: 1px solid var(--border); }
+    .tab-item { padding: 8px 18px; font-size: 12px; font-weight: 600; color: var(--text-muted); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s; }
+    .tab-item:hover { color: var(--text-primary); background: var(--surface-hover); }
+    .tab-item.active { background: var(--accent); color: #fff; box-shadow: 0 2px 8px var(--accent-glow); }
+    .entry-tabs { display: flex; gap: 6px; overflow-x: auto; }
+    .entry-tab { display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text-muted); transition: all 0.2s; white-space: nowrap; }
+    .entry-tab:hover { border-color: var(--border-strong); color: var(--text-primary); }
+    .entry-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .entry-tab-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .entry-tab-dot.job { background: var(--accent); }
+    .entry-tab-dot.project { background: #7C4DFF; }
+
+    /* ════════════════════════════════════════════════════════
+       19. MISC
+       ════════════════════════════════════════════════════════ */
+    .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--accent-subtle); border: 2px solid var(--border-accent); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: var(--accent); }
+    .avatar-sm { width: 28px; height: 28px; font-size: 10px; }
+    .avatar-lg { width: 56px; height: 56px; font-size: 20px; }
+    .divider { height: 1px; background: var(--border); margin: 24px 0; }
+    .divider-label { display: flex; align-items: center; gap: 16px; font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.15em; }
+    .divider-label::before, .divider-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .breadcrumbs { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+    .breadcrumb-item { color: var(--text-muted); transition: color 0.2s; cursor: pointer; }
+    .breadcrumb-item:hover { color: var(--accent); }
+    .breadcrumb-item.current { color: var(--text-primary); font-weight: 600; }
+    .breadcrumb-sep { color: var(--text-muted); font-size: 10px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+
+    /* Word Budget */
+    .word-budget-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px 16px; transition: all 0.3s; }
+    .wb-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .wb-stats { display: flex; align-items: baseline; gap: 6px; }
+    .wb-count { font-family: var(--font-mono); font-size: 14px; font-weight: 700; letter-spacing: -0.02em; }
+    .wb-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.05em; color: var(--text-muted); }
+    .wb-page-est { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-mono); font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: var(--radius-full); }
+    .wb-page-est.safe { color: var(--success); background: var(--success-bg); }
+    .wb-pct { font-family: var(--font-mono); font-size: 14px; font-weight: 700; letter-spacing: -0.02em; color: var(--text-secondary); }
+    .wb-track { position: relative; height: 5px; background: var(--bg-elevated); border-radius: var(--radius-full); overflow: hidden; }
+    .wb-fill { position: absolute; top: 0; left: 0; height: 100%; border-radius: var(--radius-full); transition: width 0.6s var(--ease-out); background: linear-gradient(90deg, var(--accent), var(--success)); }
+    .wb-threshold { display: none; }
+
+    @media (max-width: 900px) {
+      .theme-sidebar { width: 200px; }
+      :root { --sidebar-w: 200px; }
+      .guide-header, .guide-section { padding: 48px 32px; }
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 650px) {
+      .theme-sidebar { display: none; }
+      .guide-main { margin-left: 0; }
+    }
+
+    /* Smooth all themed transitions */
+    * { transition-property: background-color, border-color, color, box-shadow;
+        transition-duration: 0.35s;
+        transition-timing-function: ease; }
+    /* Override for things that shouldn't transition */
+    .spinner, .skeleton, .pulse { transition: none; }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════
+       THEME SIDEBAR
+       ═══════════════════════════════════════════════════════ -->
+  <aside class="theme-sidebar" id="themeSidebar">
+    <div class="theme-sidebar-brand">Resume<span>Genie</span></div>
+    <div class="theme-sidebar-sub">V2 Style Guide</div>
+
+    <div class="theme-section-label">Color Scheme</div>
+
+    <div class="theme-option active" data-theme="warm-indigo" onclick="setTheme('warm-indigo')">
+      <div class="theme-swatches">
+        <div class="theme-swatch" style="background:#FAF8F5"></div>
+        <div class="theme-swatch" style="background:#6366F1"></div>
+        <div class="theme-swatch" style="background:#1C1917"></div>
+      </div>
+      <span class="theme-option-name">Warm Indigo</span>
+      <span class="theme-check">✓</span>
+    </div>
+
+    <div class="theme-option" data-theme="warm-dusk" onclick="setTheme('warm-dusk')">
+      <div class="theme-swatches">
+        <div class="theme-swatch" style="background:#FAF8F5"></div>
+        <div class="theme-swatch" style="background:#676DCC"></div>
+        <div class="theme-swatch" style="background:#2D2A26"></div>
+      </div>
+      <span class="theme-option-name">Warm Dusk</span>
+      <span class="theme-check">✓</span>
+    </div>
+
+    <div class="theme-option" data-theme="classic" onclick="setTheme('classic')">
+      <div class="theme-swatches">
+        <div class="theme-swatch" style="background:#E3E2DE"></div>
+        <div class="theme-swatch" style="background:#1351AA"></div>
+        <div class="theme-swatch" style="background:#141414"></div>
+      </div>
+      <span class="theme-option-name">Classic (V1)</span>
+      <span class="theme-check">✓</span>
+    </div>
+
+    <div class="theme-option" data-theme="clean" onclick="setTheme('clean')">
+      <div class="theme-swatches">
+        <div class="theme-swatch" style="background:#FFFFFF;border-color:#ddd"></div>
+        <div class="theme-swatch" style="background:#3B82F6"></div>
+        <div class="theme-swatch" style="background:#111827"></div>
+      </div>
+      <span class="theme-option-name">Clean White</span>
+      <span class="theme-check">✓</span>
+    </div>
+
+    <div class="theme-option" data-theme="warm" onclick="setTheme('warm')">
+      <div class="theme-swatches">
+        <div class="theme-swatch" style="background:#FAF8F5"></div>
+        <div class="theme-swatch" style="background:#B45309"></div>
+        <div class="theme-swatch" style="background:#1C1917"></div>
+      </div>
+      <span class="theme-option-name">Warm Stone</span>
+      <span class="theme-check">✓</span>
+    </div>
+
+    <div class="theme-option" data-theme="sage" onclick="setTheme('sage')">
+      <div class="theme-swatches">
+        <div class="theme-swatch" style="background:#F5F7F5"></div>
+        <div class="theme-swatch" style="background:#166534"></div>
+        <div class="theme-swatch" style="background:#14532D"></div>
+      </div>
+      <span class="theme-option-name">Sage</span>
+      <span class="theme-check">✓</span>
+    </div>
+
+    <div class="theme-option" data-theme="slate" onclick="setTheme('slate')">
+      <div class="theme-swatches">
+        <div class="theme-swatch" style="background:#F8FAFC"></div>
+        <div class="theme-swatch" style="background:#6366F1"></div>
+        <div class="theme-swatch" style="background:#0F172A"></div>
+      </div>
+      <span class="theme-option-name">Slate Indigo</span>
+      <span class="theme-check">✓</span>
+    </div>
+
+    <div class="theme-option" data-theme="midnight" onclick="setTheme('midnight')">
+      <div class="theme-swatches">
+        <div class="theme-swatch" style="background:#0D0F14;border-color:#333"></div>
+        <div class="theme-swatch" style="background:#6385FF"></div>
+        <div class="theme-swatch" style="background:#F0F1F5"></div>
+      </div>
+      <span class="theme-option-name">Midnight (Dark)</span>
+      <span class="theme-check">✓</span>
+    </div>
+
+    <div class="theme-nav-label">Sections</div>
+    <a href="#colors" class="theme-nav-link">Colors</a>
+    <a href="#typography" class="theme-nav-link">Typography</a>
+    <a href="#buttons" class="theme-nav-link">Buttons</a>
+    <a href="#inputs" class="theme-nav-link">Inputs</a>
+    <a href="#dropdowns" class="theme-nav-link">Dropdowns</a>
+    <a href="#cards" class="theme-nav-link">Cards</a>
+    <a href="#badges" class="theme-nav-link">Badges & Tags</a>
+    <a href="#alerts" class="theme-nav-link">Alerts</a>
+    <a href="#chips" class="theme-nav-link">Skill Chips</a>
+    <a href="#toggles" class="theme-nav-link">Toggles</a>
+    <a href="#progress" class="theme-nav-link">Progress</a>
+    <a href="#tables" class="theme-nav-link">Tables</a>
+    <a href="#sidebar" class="theme-nav-link">Sidebar Nav</a>
+    <a href="#experience" class="theme-nav-link">Experience Cards</a>
+    <a href="#resume" class="theme-nav-link">Resume Preview</a>
+    <a href="#modal" class="theme-nav-link">Modal</a>
+    <a href="#loading" class="theme-nav-link">Loading</a>
+    <a href="#tabs" class="theme-nav-link">Tabs</a>
+    <a href="#misc" class="theme-nav-link">Misc</a>
+  </aside>
+
+  <!-- ═══════════════════════════════════════════════════════
+       MAIN CONTENT
+       ═══════════════════════════════════════════════════════ -->
+  <div class="guide-main">
+
+    <header class="guide-header">
+      <div class="guide-header-content">
+        <div class="guide-badge">V2 Design System</div>
+        <h1 class="guide-title">Resume<span>Genie</span><br>UI Guide</h1>
+        <p class="guide-desc">A comprehensive style guide blending SaaS-modern aesthetics with formal serif typography. Toggle color schemes in the sidebar to preview different palettes live.</p>
+      </div>
+    </header>
+
+    <!-- 1. COLORS -->
+    <section class="guide-section" id="colors">
+      <div class="section-label">01</div>
+      <h2 class="section-title">Color Palette</h2>
+      <p class="section-desc">Active palette updates live as you switch themes in the sidebar. Surfaces layer from primary background through elevated cards.</p>
+      <div class="subsection"><h3 class="subsection-title">Backgrounds & Surfaces</h3>
+        <div class="color-grid">
+          <div class="color-swatch"><div class="color-swatch-fill" style="background:var(--bg-primary)"></div><div class="color-swatch-info"><div class="color-swatch-name">Primary BG</div><div class="color-swatch-value">--bg-primary</div></div></div>
+          <div class="color-swatch"><div class="color-swatch-fill" style="background:var(--bg-secondary)"></div><div class="color-swatch-info"><div class="color-swatch-name">Secondary BG</div><div class="color-swatch-value">--bg-secondary</div></div></div>
+          <div class="color-swatch"><div class="color-swatch-fill" style="background:var(--bg-card)"></div><div class="color-swatch-info"><div class="color-swatch-name">Card</div><div class="color-swatch-value">--bg-card</div></div></div>
+          <div class="color-swatch"><div class="color-swatch-fill" style="background:var(--bg-elevated)"></div><div class="color-swatch-info"><div class="color-swatch-name">Elevated</div><div class="color-swatch-value">--bg-elevated</div></div></div>
+        </div></div>
+      <div class="subsection"><h3 class="subsection-title">Accent & Brand</h3>
+        <div class="color-grid">
+          <div class="color-swatch"><div class="color-swatch-fill" style="background:var(--accent)"></div><div class="color-swatch-info"><div class="color-swatch-name">Accent</div><div class="color-swatch-value">--accent</div></div></div>
+          <div class="color-swatch"><div class="color-swatch-fill" style="background:var(--accent-light)"></div><div class="color-swatch-info"><div class="color-swatch-name">Accent Light</div><div class="color-swatch-value">--accent-light</div></div></div>
+        </div></div>
+      <div class="subsection"><h3 class="subsection-title">Semantic</h3>
+        <div class="color-grid">
+          <div class="color-swatch"><div class="color-swatch-fill" style="background:var(--success)"></div><div class="color-swatch-info"><div class="color-swatch-name">Success</div><div class="color-swatch-value">--success</div></div></div>
+          <div class="color-swatch"><div class="color-swatch-fill" style="background:var(--warning)"></div><div class="color-swatch-info"><div class="color-swatch-name">Warning</div><div class="color-swatch-value">--warning</div></div></div>
+          <div class="color-swatch"><div class="color-swatch-fill" style="background:var(--danger)"></div><div class="color-swatch-info"><div class="color-swatch-name">Danger</div><div class="color-swatch-value">--danger</div></div></div>
+          <div class="color-swatch"><div class="color-swatch-fill" style="background:var(--info)"></div><div class="color-swatch-info"><div class="color-swatch-name">Info</div><div class="color-swatch-value">--info</div></div></div>
+        </div></div>
+    </section>
+
+    <!-- 2. TYPOGRAPHY -->
+    <section class="guide-section" id="typography">
+      <div class="section-label">02</div><h2 class="section-title">Typography</h2>
+      <p class="section-desc">Three font stacks: Playfair Display for formal serif headings, Inter for UI, JetBrains Mono for code & labels.</p>
+      <div class="subsection"><h3 class="subsection-title">Playfair Display — Formal / Serif</h3>
+        <div class="type-specimen"><div class="type-meta"><span>weight: 800</span><span>size: 48px</span></div><div style="font-family:var(--font-formal);font-size:48px;font-weight:800;letter-spacing:-0.03em;line-height:1.1">Your Career,<br>Precisely Tailored.</div></div>
+        <div class="type-specimen"><div class="type-meta"><span>weight: 700</span><span>size: 24px</span></div><div style="font-family:var(--font-formal);font-size:24px;font-weight:700;letter-spacing:-0.02em">Software Engineer at Google</div></div>
+        <div class="type-specimen"><div class="type-meta"><span>weight: 400</span><span>size: 14px</span></div><div style="font-family:var(--font-formal);font-size:14px;line-height:1.65;color:var(--text-secondary)">Developed a microservices architecture using Python and Go, reducing API latency by 40% and supporting 2M+ daily active users across distributed systems.</div></div></div>
+      <div class="subsection"><h3 class="subsection-title">Inter — UI / Sans-Serif</h3>
+        <div class="type-specimen"><div class="type-meta"><span>weight: 900</span><span>size: 32px</span></div><div style="font-size:32px;font-weight:900;letter-spacing:-0.03em">Dashboard Overview</div></div>
+        <div class="type-specimen"><div class="type-meta"><span>weight: 600</span><span>size: 15px</span></div><div style="font-size:15px;font-weight:600;color:var(--text-secondary);line-height:1.6">Your resume has been tailored to match 94% of the job requirements. Review the suggested changes.</div></div></div>
+      <div class="subsection"><h3 class="subsection-title">JetBrains Mono — Code / Labels</h3>
+        <div class="type-specimen"><div class="type-meta"><span>weight: 700</span><span>size: 10px / uppercase</span></div><div style="font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.2em;color:var(--text-muted)">Experience — 3 Entries Selected</div></div></div>
+    </section>
+
+    <!-- 3. BUTTONS -->
+    <section class="guide-section" id="buttons">
+      <div class="section-label">03</div><h2 class="section-title">Buttons</h2>
+      <p class="section-desc">Rounded modern buttons for actions, plus square block-badge buttons for formal overlays.</p>
+      <div class="subsection"><h3 class="subsection-title">Variants</h3>
+        <div class="element-row"><button class="btn btn-primary">Continue →</button><button class="btn btn-secondary">Cancel</button><button class="btn btn-ghost">Skip</button><button class="btn btn-danger">Delete</button><button class="btn btn-success">✓ Approved</button></div></div>
+      <div class="subsection"><h3 class="subsection-title">Sizes</h3>
+        <div class="element-row"><button class="btn btn-primary btn-sm">Small CTA</button><button class="btn btn-primary">Default</button><button class="btn btn-primary btn-lg">Large Action</button></div></div>
+      <div class="subsection"><h3 class="subsection-title">Icon Buttons</h3>
+        <div class="element-row"><button class="btn-icon">⚙</button><button class="btn-icon">✎</button><button class="btn-icon">⤓</button><button class="btn-icon">×</button><button class="btn-icon">+</button></div></div>
+      <div class="subsection"><h3 class="subsection-title">Block Badge Buttons — Formal / Boxy</h3>
+        <div class="element-row"><button class="btn-block-badge">Pinned</button><button class="btn-block-badge">Job</button><button class="btn-block-badge">Project</button><button class="btn-block-badge">Export PDF</button></div></div>
+    </section>
+
+    <!-- 4. INPUTS -->
+    <section class="guide-section" id="inputs">
+      <div class="section-label">04</div><h2 class="section-title">Inputs & Forms</h2><p class="section-desc">Clean inputs with accent glow on focus.</p>
+      <div class="subsection"><h3 class="subsection-title">Text Inputs</h3>
+        <div class="grid-2">
+          <div class="input-group"><label class="input-label">Company Name</label><input class="input-field" type="text" placeholder="e.g. Google" value="Google"><span class="input-hint">The target company for this tailored resume</span></div>
+          <div class="input-group"><label class="input-label">Role Title</label><input class="input-field" type="text" placeholder="e.g. Software Engineer"></div>
+          <div class="input-group"><label class="input-label">Email (error)</label><input class="input-field error" type="email" value="invalid-email"><span class="input-hint" style="color:var(--danger)">Please enter a valid email</span></div>
+          <div class="input-group"><label class="input-label">API Key (success)</label><input class="input-field success" type="text" value="sk-••••••••3kF9"><span class="input-hint" style="color:var(--success)">✓ Validated</span></div>
+        </div></div>
+      <div class="subsection"><h3 class="subsection-title">Textarea (JD Paste)</h3>
+        <div class="input-group" style="max-width:640px"><label class="input-label">Job Description</label><textarea class="textarea-field" rows="4" placeholder="Paste the full job description here...">We're looking for a Software Engineer to join our Cloud Platform team. You'll work on distributed systems and build scalable APIs.</textarea></div></div>
+      <div class="subsection"><h3 class="subsection-title">Search</h3><div class="search-wrap"><span class="search-icon">⌕</span><input class="search-input" type="text" placeholder="Search entries, skills, or runs..."></div></div>
+    </section>
+
+    <!-- 5. DROPDOWNS -->
+    <section class="guide-section" id="dropdowns">
+      <div class="section-label">05</div><h2 class="section-title">Dropdowns</h2><p class="section-desc">Dropdown menus for filtering experience types, seniority, and options.</p>
+      <div class="element-row" style="align-items:flex-start">
+        <div class="dropdown-wrap"><button class="dropdown-trigger"><span>All Entries</span><span class="chevron">▼</span></button>
+          <div class="dropdown-menu"><div class="dropdown-item active"><span>All Entries</span><span class="item-check">✓</span></div><div class="dropdown-item"><span>Jobs Only</span></div><div class="dropdown-item"><span>Projects Only</span></div><div class="dropdown-divider"></div><div class="dropdown-item"><span>Pinned First</span></div></div></div>
+        <div class="dropdown-wrap"><button class="dropdown-trigger"><span>Seniority Level</span><span class="chevron">▼</span></button>
+          <div class="dropdown-menu"><div class="dropdown-item">Entry Level</div><div class="dropdown-item active"><span>Mid Level</span><span class="item-check">✓</span></div><div class="dropdown-item">Senior</div><div class="dropdown-item">Staff / Lead</div></div></div>
+      </div>
+    </section>
+
+    <!-- 6. CARDS -->
+    <section class="guide-section" id="cards">
+      <div class="section-label">06</div><h2 class="section-title">Cards</h2><p class="section-desc">Elevated card surfaces for grouping content.</p>
+      <div class="subsection"><h3 class="subsection-title">Stat Cards</h3>
+        <div class="grid-4"><div class="card stat-card"><span class="stat-card-label">Entries</span><span class="stat-card-value">12</span><span class="stat-card-delta up">↑ 3 new</span></div><div class="card stat-card"><span class="stat-card-label">Bullets</span><span class="stat-card-value">87</span><span class="stat-card-delta up">↑ 15</span></div><div class="card stat-card"><span class="stat-card-label">Skills</span><span class="stat-card-value">34</span><span class="stat-card-delta down">↓ 2</span></div><div class="card stat-card"><span class="stat-card-label">Runs</span><span class="stat-card-value">8</span><span class="stat-card-delta up">↑ 94%</span></div></div></div>
+      <div class="subsection"><h3 class="subsection-title">Content Card</h3>
+        <div style="max-width:500px"><div class="card"><div class="card-header"><span class="card-title">Profile Information</span><button class="btn btn-ghost btn-sm">✎ Edit</button></div><div class="card-body"><p style="font-size:13px;color:var(--text-secondary);line-height:1.65;margin-bottom:16px">Software engineer with 3+ years building scalable distributed systems.</p><div style="display:flex;flex-direction:column;gap:10px"><div style="display:flex;gap:8px"><span style="font-size:12px;font-weight:700;min-width:80px">Name</span><span style="font-size:12px;color:var(--text-secondary)">Jonah Rothman</span></div><div style="display:flex;gap:8px"><span style="font-size:12px;font-weight:700;min-width:80px">Email</span><span style="font-size:12px;color:var(--text-secondary)">jonah@example.com</span></div></div></div></div></div></div>
+      <div class="subsection"><h3 class="subsection-title">Glass Card</h3>
+        <div style="max-width:400px;padding:40px;background:linear-gradient(135deg, var(--accent-glow), rgba(124,77,255,0.08));border-radius:var(--radius-lg)"><div class="card-glass" style="padding:24px"><div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.2em;margin-bottom:10px">Match Score</div><div style="font-family:var(--font-formal);font-size:48px;font-weight:800;color:var(--accent)">94%</div><div style="font-size:13px;color:var(--text-secondary);margin-top:8px">Matches 94% of requirements</div></div></div></div>
+    </section>
+
+    <!-- 7. BADGES -->
+    <section class="guide-section" id="badges">
+      <div class="section-label">07</div><h2 class="section-title">Badges & Tags</h2><p class="section-desc">Rounded pills for status, square blocks for formal overlays.</p>
+      <div class="subsection"><h3 class="subsection-title">Pill Badges (Modern)</h3>
+        <div class="element-row"><span class="badge badge-accent">Tailored</span><span class="badge badge-success">✓ Complete</span><span class="badge badge-warning">⚠ Review</span><span class="badge badge-danger">✕ Failed</span><span class="badge badge-info">ℹ Draft</span><span class="badge badge-neutral">Archived</span></div></div>
+      <div class="subsection"><h3 class="subsection-title">Block Badges (Boxy / Formal)</h3>
+        <div class="element-row"><span class="block-badge block-badge-accent">PINNED</span><span class="block-badge block-badge-danger">OVER BUDGET</span><span class="block-badge block-badge-warning">NEEDS REVIEW</span><span class="block-badge block-badge-success">QA PASSED</span><span class="block-badge block-badge-muted">ARCHIVED</span></div></div>
+      <div class="subsection"><h3 class="subsection-title">Tags (Removable)</h3>
+        <div class="element-row"><span class="tag">Python <span class="tag-x">×</span></span><span class="tag">React <span class="tag-x">×</span></span><span class="tag">Distributed Systems <span class="tag-x">×</span></span><span class="tag">AWS <span class="tag-x">×</span></span></div></div>
+    </section>
+
+    <!-- 8. ALERTS -->
+    <section class="guide-section" id="alerts">
+      <div class="section-label">08</div><h2 class="section-title">Alerts & Notifications</h2><p class="section-desc">Soft alerts for inline feedback, hard-edge blocks for system overlays.</p>
+      <div class="subsection"><h3 class="subsection-title">Soft Alerts</h3>
+        <div class="element-row col" style="max-width:600px">
+          <div class="alert alert-success"><span class="alert-icon">✓</span><div class="alert-content"><div class="alert-title">Resume compiled</div><div class="alert-text">Your tailored resume is ready. Word count: 487 / 500.</div></div></div>
+          <div class="alert alert-warning"><span class="alert-icon">⚠</span><div class="alert-content"><div class="alert-title">Over budget</div><div class="alert-text">23 words over limit. Consider removing a bullet.</div></div></div>
+          <div class="alert alert-danger"><span class="alert-icon">✕</span><div class="alert-content"><div class="alert-title">Compilation failed</div><div class="alert-text">Could not generate a valid resume. Please retry.</div></div></div>
+          <div class="alert alert-info"><span class="alert-icon">ℹ</span><div class="alert-content"><div class="alert-title">AI Processing</div><div class="alert-text">Analyzing job description. ~10-15 seconds.</div></div></div>
+        </div></div>
+      <div class="subsection"><h3 class="subsection-title">Block Overlays (Boxy)</h3>
+        <div class="element-row"><div class="error-block">OVER PAGE LIMIT</div><div class="warning-block">2 SUGGESTIONS PENDING</div><div class="success-block">QA PASSED</div></div></div>
+    </section>
+
+    <!-- 9. CHIPS -->
+    <section class="guide-section" id="chips">
+      <div class="section-label">09</div><h2 class="section-title">Skill Chips</h2><p class="section-desc">Draggable chips for the skills playground. Active, available, and AI-suggested variants.</p>
+      <div class="subsection"><h3 class="subsection-title">Active (Placed)</h3>
+        <div class="element-row"><div class="chip chip-active"><span class="chip-grip">⠿</span>Python<span class="chip-x">×</span></div><div class="chip chip-active"><span class="chip-grip">⠿</span>React<span class="chip-x">×</span></div><div class="chip chip-active"><span class="chip-grip">⠿</span>TypeScript<span class="chip-x">×</span></div><div class="chip chip-active"><span class="chip-grip">⠿</span>AWS<span class="chip-x">×</span></div></div></div>
+      <div class="subsection"><h3 class="subsection-title">Available (Pool)</h3>
+        <div class="element-row"><div class="chip chip-available"><span class="chip-grip">⠿</span>Docker</div><div class="chip chip-available"><span class="chip-grip">⠿</span>Kubernetes</div><div class="chip chip-available"><span class="chip-grip">⠿</span>Redis</div></div></div>
+      <div class="subsection"><h3 class="subsection-title">AI Suggested</h3>
+        <div class="element-row"><div class="chip chip-suggested"><span class="chip-grip">⠿</span>LangChain</div><div class="chip chip-suggested"><span class="chip-grip">⠿</span>FastAPI</div><div class="chip chip-suggested"><span class="chip-grip">⠿</span>Terraform</div></div></div>
+      <div class="subsection"><h3 class="subsection-title">Skills Row Layout</h3>
+        <div style="max-width:700px">
+          <div style="display:flex;align-items:stretch;border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;background:var(--bg-card);margin-bottom:8px"><div style="flex:0 0 140px;border-right:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;background:var(--bg-elevated)"><span style="font-family:var(--font-mono);font-size:11px;font-weight:700">Languages</span></div><div style="flex:1;display:flex;flex-wrap:wrap;gap:6px;padding:8px 12px;align-items:center"><div class="chip chip-active" style="margin:0"><span class="chip-grip">⠿</span>Python<span class="chip-x">×</span></div><div class="chip chip-active" style="margin:0"><span class="chip-grip">⠿</span>TypeScript<span class="chip-x">×</span></div><div class="chip chip-active" style="margin:0"><span class="chip-grip">⠿</span>Go<span class="chip-x">×</span></div><button style="width:24px;height:24px;border:1px dashed var(--border-strong);border-radius:var(--radius-sm);display:inline-flex;align-items:center;justify-content:center;font-size:14px;color:var(--text-muted);cursor:pointer;background:none">+</button></div><button style="flex:0 0 36px;display:flex;align-items:center;justify-content:center;border-left:1px solid var(--border);font-size:18px;color:var(--text-muted);cursor:pointer;background:none">−</button></div>
+          <button style="width:100%;padding:10px;border:1px dashed var(--border-strong);border-radius:var(--radius-md);font-family:var(--font-mono);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);background:none;cursor:pointer">+ Add Category</button>
+        </div></div>
+    </section>
+
+    <!-- 10. TOGGLES -->
+    <section class="guide-section" id="toggles">
+      <div class="section-label">10</div><h2 class="section-title">Toggles & Checkboxes</h2><p class="section-desc">Switches, checkboxes, and radios for selections.</p>
+      <div class="subsection"><h3 class="subsection-title">Toggle Switches</h3>
+        <div class="element-row" style="gap:24px"><div class="element-group"><span class="element-label">Off</span><div class="toggle"><div class="toggle-thumb"></div></div></div><div class="element-group"><span class="element-label">On</span><div class="toggle on"><div class="toggle-thumb"></div></div></div></div></div>
+      <div class="subsection"><h3 class="subsection-title">Checkboxes</h3>
+        <div class="element-row col" style="max-width:400px"><div class="check-item"><div class="check-box-v2 checked">✓</div><span class="check-label">Include work at Google</span></div><div class="check-item"><div class="check-box-v2 checked">✓</div><span class="check-label">Include open-source projects</span></div><div class="check-item"><div class="check-box-v2"></div><span class="check-label" style="opacity:0.5">Include freelance work</span></div></div></div>
+      <div class="subsection"><h3 class="subsection-title">Radio Buttons</h3>
+        <div class="element-row col" style="max-width:400px"><div class="check-item"><div class="radio-dot selected"></div><span class="check-label">1-page resume</span></div><div class="check-item"><div class="radio-dot"></div><span class="check-label">2-page resume</span></div></div></div>
+    </section>
+
+    <!-- 11. PROGRESS -->
+    <section class="guide-section" id="progress">
+      <div class="section-label">11</div><h2 class="section-title">Progress Bars</h2><p class="section-desc">Word budget, match score, wizard steps.</p>
+      <div class="subsection"><h3 class="subsection-title">Linear Progress</h3>
+        <div class="element-row col" style="max-width:500px;gap:24px">
+          <div class="progress-bar-wrap"><div class="progress-label"><span class="progress-label-text">Word budget</span><span class="progress-label-pct" style="color:var(--success)">72%</span></div><div class="progress-bar-track"><div class="progress-bar-fill accent" style="width:72%"></div></div></div>
+          <div class="progress-bar-wrap"><div class="progress-label"><span class="progress-label-text">Match score</span><span class="progress-label-pct" style="color:var(--success)">94%</span></div><div class="progress-bar-track"><div class="progress-bar-fill success" style="width:94%"></div></div></div>
+          <div class="progress-bar-wrap"><div class="progress-label"><span class="progress-label-text">Over limit</span><span class="progress-label-pct" style="color:var(--danger)">132%</span></div><div class="progress-bar-track"><div class="progress-bar-fill danger" style="width:100%"></div></div></div>
+        </div></div>
+      <div class="subsection"><h3 class="subsection-title">Word Budget Component</h3>
+        <div style="max-width:600px"><div class="word-budget-v2"><div class="wb-top"><div class="wb-stats"><span class="wb-count">423</span><span class="wb-label">/ 500 words</span></div><span class="wb-page-est safe">~1.0 pages</span><span class="wb-pct">85%</span></div><div class="wb-track"><div class="wb-fill" style="width:85%"></div></div></div></div></div>
+      <div class="subsection"><h3 class="subsection-title">Wizard Steps</h3>
+        <div class="step-progress"><div class="step-dot-item done"><div class="step-dot-circle">1</div><span class="step-dot-label">Paste JD</span></div><div class="step-dot-line done"></div><div class="step-dot-item done"><div class="step-dot-circle">2</div><span class="step-dot-label">Parsed</span></div><div class="step-dot-line done"></div><div class="step-dot-item active"><div class="step-dot-circle">3</div><span class="step-dot-label">Skills</span></div><div class="step-dot-line"></div><div class="step-dot-item"><div class="step-dot-circle">4</div><span class="step-dot-label">Entries</span></div><div class="step-dot-line"></div><div class="step-dot-item"><div class="step-dot-circle">5</div><span class="step-dot-label">Bullets</span></div><div class="step-dot-line"></div><div class="step-dot-item"><div class="step-dot-circle">6</div><span class="step-dot-label">Review</span></div></div></div>
+    </section>
+
+    <!-- 12. TABLES -->
+    <section class="guide-section" id="tables">
+      <div class="section-label">12</div><h2 class="section-title">Tables</h2><p class="section-desc">Run history and data tables.</p>
+      <div class="table-wrap" style="max-width:900px"><table class="table"><thead><tr><th>Target</th><th>Company</th><th>Date</th><th>Match</th><th>Status</th></tr></thead><tbody>
+        <tr><td class="table-name">Software Engineer</td><td>Google</td><td style="font-family:var(--font-mono);font-size:11px">2026-08-06</td><td><span style="color:var(--success);font-weight:700">94%</span></td><td><span class="badge badge-success">✓ Complete</span></td></tr>
+        <tr><td class="table-name">Backend Developer</td><td>Stripe</td><td style="font-family:var(--font-mono);font-size:11px">2026-08-05</td><td><span style="color:var(--accent);font-weight:700">87%</span></td><td><span class="badge badge-success">✓ Complete</span></td></tr>
+        <tr><td class="table-name">Full Stack Engineer</td><td>Vercel</td><td style="font-family:var(--font-mono);font-size:11px">2026-08-04</td><td><span style="color:var(--warning);font-weight:700">71%</span></td><td><span class="badge badge-warning">⚠ Review</span></td></tr>
+        <tr><td class="table-name">ML Engineer</td><td>OpenAI</td><td style="font-family:var(--font-mono);font-size:11px">2026-08-03</td><td><span style="color:var(--danger);font-weight:700">45%</span></td><td><span class="badge badge-danger">✕ Failed</span></td></tr>
+      </tbody></table></div>
+    </section>
+
+    <!-- 13. SIDEBAR NAV -->
+    <section class="guide-section" id="sidebar">
+      <div class="section-label">13</div><h2 class="section-title">Sidebar Navigation</h2><p class="section-desc">Persistent sidebar with brand, sections, and active indicators.</p>
+      <div class="sidebar-demo"><div class="sidebar-brand"><div class="sidebar-brand-name">Resume<span>Genie</span></div></div>
+        <div class="sidebar-section-label-demo">Pipeline</div>
+        <div class="sidebar-item-demo active"><span>Dashboard</span></div>
+        <div class="sidebar-item-demo"><span>New Tailoring</span></div>
+        <div class="sidebar-item-demo"><span>Source Bank</span><span class="sidebar-item-badge">12</span></div>
+        <div class="sidebar-item-demo"><span>Run History</span><span class="sidebar-item-badge">8</span></div>
+        <div class="sidebar-section-label-demo">Settings</div>
+        <div class="sidebar-item-demo"><span>Profile</span></div>
+        <div class="sidebar-item-demo"><span>Preferences</span></div>
+      </div>
+    </section>
+
+    <!-- 14. EXPERIENCE CARDS -->
+    <section class="guide-section" id="experience">
+      <div class="section-label">14</div><h2 class="section-title">Experience Cards</h2><p class="section-desc">Expandable entry cards with formal serif titles, boxy type badges, and bullet points.</p>
+      <div style="max-width:800px;display:flex;flex-direction:column;gap:12px">
+        <div class="exp-card open"><div class="exp-card-header"><div><span class="exp-type-badge job">JOB</span><div class="exp-card-title">Software Engineer</div><div class="exp-card-meta"><span>Google • Mountain View, CA</span><span>Jun 2024 — Present</span></div></div><span class="exp-card-chevron">›</span></div><div class="exp-card-body"><div class="exp-tags"><span class="tag">Python</span><span class="tag">Go</span><span class="tag">Distributed Systems</span><span class="tag">Kubernetes</span></div><ul class="exp-bullets"><li class="exp-bullet-item"><span class="exp-bullet-num">01</span><span class="exp-bullet-text">Designed and implemented a microservices architecture using Python and Go, reducing API latency by 40% and supporting 2M+ daily active users.</span></li><li class="exp-bullet-item"><span class="exp-bullet-num">02</span><span class="exp-bullet-text">Led migration of monolithic data pipeline to event-driven architecture, improving throughput by 3x while reducing costs by 25%.</span></li><li class="exp-bullet-item"><span class="exp-bullet-num">03</span><span class="exp-bullet-text">Mentored 4 junior engineers, establishing coding standards that reduced PR review time by 60%.</span></li></ul></div></div>
+        <div class="exp-card"><div class="exp-card-header"><div><span class="exp-type-badge project">PROJECT</span><div class="exp-card-title">ResumeGenie — AI Resume Tailoring</div><div class="exp-card-meta"><span>Personal Project</span><span>Mar 2026 — Present</span><span style="color:var(--accent);font-weight:600">PINNED</span></div></div><span class="exp-card-chevron">›</span></div></div>
+        <div class="exp-card"><div class="exp-card-header"><div><span class="exp-type-badge job">JOB</span><div class="exp-card-title">Mobile Engineer Intern</div><div class="exp-card-meta"><span>Meta • Menlo Park, CA</span><span>May 2023 — Aug 2023</span></div></div><span class="exp-card-chevron">›</span></div></div>
+      </div>
+    </section>
+
+    <!-- 15. RESUME PREVIEW -->
+    <section class="guide-section" id="resume">
+      <div class="section-label">15</div><h2 class="section-title">Resume Preview</h2><p class="section-desc">The actual resume document with formal serif on light paper.</p>
+      <div class="resume-preview">
+        <div class="resume-name">JONAH ROTHMAN</div>
+        <div class="resume-contact">jonah@example.com · (555) 123-4567 · New York, NY · linkedin.com/in/jonahrothman</div>
+        <div class="resume-section-head">Technical Skills</div>
+        <div style="font-size:11px;margin-bottom:4px"><span style="font-weight:700;font-family:var(--font-ui);font-size:10.5px">Languages: </span><span>Python, TypeScript, Go, Java, SQL</span></div>
+        <div style="font-size:11px;margin-bottom:4px"><span style="font-weight:700;font-family:var(--font-ui);font-size:10.5px">Frameworks: </span><span>React, Next.js, FastAPI, Flask, LangChain</span></div>
+        <div class="resume-section-head">Experience</div>
+        <div class="resume-entry-row"><span class="resume-entry-title">Software Engineer</span><span class="resume-entry-dates">Jun 2024 — Present</span></div>
+        <div class="resume-entry-company">Google · Mountain View, CA</div>
+        <ul class="resume-bullets-list"><li>Designed microservices architecture reducing API latency by 40%</li><li>Led event-driven migration, improving throughput by 3x</li><li>Mentored 4 junior engineers, reducing PR review time by 60%</li></ul>
+        <div class="resume-section-head">Education</div>
+        <div class="resume-entry-row"><span class="resume-entry-title">B.S. Computer Science</span><span class="resume-entry-dates">May 2025</span></div>
+        <div class="resume-entry-company">University of Example · GPA: 3.8/4.0</div>
+      </div>
+    </section>
+
+    <!-- 16. MODAL -->
+    <section class="guide-section" id="modal">
+      <div class="section-label">16</div><h2 class="section-title">Modal</h2><p class="section-desc">Overlays for preview, confirmations, and detail views.</p>
+      <div class="modal-demo"><div class="modal-demo-header"><span class="modal-demo-title">Preview Resume</span><button class="modal-demo-close">×</button></div><div class="modal-demo-body"><p style="font-size:13px;color:var(--text-secondary);line-height:1.65;margin-bottom:16px">Your tailored resume for <strong>Software Engineer at Google</strong> is ready for review.</p><div style="display:flex;gap:24px;margin-bottom:16px"><div class="element-group" style="align-items:center"><span style="font-family:var(--font-formal);font-size:32px;font-weight:800;color:var(--accent)">94%</span><span class="element-label">Match</span></div><div class="element-group" style="align-items:center"><span style="font-family:var(--font-formal);font-size:32px;font-weight:800">487</span><span class="element-label">Words</span></div><div class="element-group" style="align-items:center"><span style="font-family:var(--font-formal);font-size:32px;font-weight:800;color:var(--success)">1.0</span><span class="element-label">Pages</span></div></div></div><div class="modal-demo-footer"><button class="btn btn-secondary">Cancel</button><button class="btn btn-primary">Download PDF →</button></div></div>
+    </section>
+
+    <!-- 17. LOADING -->
+    <section class="guide-section" id="loading">
+      <div class="section-label">17</div><h2 class="section-title">Loading States</h2><p class="section-desc">Spinners, skeletons, and compile animations.</p>
+      <div class="subsection"><h3 class="subsection-title">Spinners</h3>
+        <div class="element-row" style="gap:40px"><div class="element-group" style="align-items:center"><div class="spinner"></div><span class="spinner-text">Processing...</span></div><div class="element-group" style="align-items:center"><div class="spinner" style="width:20px;height:20px;border-width:2px"></div><span class="spinner-text" style="font-size:10px">Loading</span></div></div></div>
+      <div class="subsection"><h3 class="subsection-title">Skeleton Loading</h3>
+        <div style="max-width:500px;display:flex;flex-direction:column;gap:12px"><div class="skeleton" style="height:16px;width:60%"></div><div class="skeleton" style="height:12px;width:100%"></div><div class="skeleton" style="height:12px;width:90%"></div><div class="skeleton" style="height:12px;width:75%"></div><div style="display:flex;gap:8px;margin-top:8px"><div class="skeleton" style="height:28px;width:80px"></div><div class="skeleton" style="height:28px;width:60px"></div><div class="skeleton" style="height:28px;width:100px"></div></div></div></div>
+      <div class="subsection"><h3 class="subsection-title">Compile Steps</h3>
+        <div style="max-width:300px;display:flex;flex-direction:column;gap:8px"><div style="font-family:var(--font-mono);font-size:12px;color:var(--success)">Done — Parsed job description</div><div style="font-family:var(--font-mono);font-size:12px;color:var(--success)">Done — Selected entries</div><div style="font-family:var(--font-mono);font-size:12px;color:var(--text-primary)" class="pulse">Running — Compiling resume...</div><div style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted)">Pending — QA validation</div></div></div>
+    </section>
+
+    <!-- 18. TABS -->
+    <section class="guide-section" id="tabs">
+      <div class="section-label">18</div><h2 class="section-title">Tabs</h2><p class="section-desc">Tab styles for view navigation and suggestion panels.</p>
+      <div class="subsection"><h3 class="subsection-title">Pill Tabs</h3>
+        <div class="tabs"><div class="tab-item active">Overview</div><div class="tab-item">Skills</div><div class="tab-item">Entries</div><div class="tab-item">Settings</div></div></div>
+      <div class="subsection"><h3 class="subsection-title">Entry Tabs</h3>
+        <div class="entry-tabs"><div class="entry-tab active"><span class="entry-tab-dot job"></span><span>Google — SWE</span></div><div class="entry-tab"><span class="entry-tab-dot job"></span><span>Meta — Intern</span></div><div class="entry-tab"><span class="entry-tab-dot project"></span><span>ResumeGenie</span></div></div></div>
+    </section>
+
+    <!-- 19. MISC -->
+    <section class="guide-section" id="misc">
+      <div class="section-label">19</div><h2 class="section-title">Miscellaneous</h2><p class="section-desc">Avatars, dividers, breadcrumbs, tooltips, deltas, verdicts, rationale.</p>
+      <div class="subsection"><h3 class="subsection-title">Avatars</h3>
+        <div class="element-row"><div class="avatar avatar-sm">JR</div><div class="avatar">JR</div><div class="avatar avatar-lg">JR</div></div></div>
+      <div class="subsection"><h3 class="subsection-title">Dividers</h3>
+        <div style="max-width:500px"><div class="divider"></div><div class="divider-label">or continue with</div><div class="divider"></div></div></div>
+      <div class="subsection"><h3 class="subsection-title">Breadcrumbs</h3>
+        <div class="breadcrumbs"><span class="breadcrumb-item">Home</span><span class="breadcrumb-sep">/</span><span class="breadcrumb-item">Tailoring</span><span class="breadcrumb-sep">/</span><span class="breadcrumb-item">Google — SWE</span><span class="breadcrumb-sep">/</span><span class="breadcrumb-item current">Skills</span></div></div>
+      <div class="subsection"><h3 class="subsection-title">Word Delta Badges</h3>
+        <div class="element-row"><span style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:3px 8px;background:var(--danger-bg);color:var(--danger);border-radius:2px">+12 WORDS</span><span style="font-family:var(--font-mono);font-size:10px;font-weight:700;padding:3px 8px;background:var(--success-bg);color:var(--success);border-radius:2px">−8 WORDS</span></div></div>
+      <div class="subsection"><h3 class="subsection-title">AI Rationale Block</h3>
+        <div style="max-width:500px"><div style="font-size:12px;color:var(--text-secondary);line-height:1.6;padding:14px 16px;background:var(--accent-subtle);border-left:3px solid var(--accent);border-radius:0 var(--radius-sm) var(--radius-sm) 0"><strong style="color:var(--accent)">AI Rationale:</strong> This entry was selected because it demonstrates direct experience with distributed systems and Go, which are listed as required skills.</div></div></div>
+    </section>
+
+    <footer style="padding:40px 60px;text-align:center;border-top:1px solid var(--border)">
+      <p style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);letter-spacing:0.1em">ResumeGenie V2 Design System · Toggle themes in the sidebar</p>
+    </footer>
+
+  </div><!-- /guide-main -->
+
+  <!-- ═══════════════════════════════════════════════════════
+       THEME SWITCHER JS
+       ═══════════════════════════════════════════════════════ -->
+  <script>
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+
+      // Update sidebar active state
+      document.querySelectorAll('.theme-option').forEach(opt => {
+        opt.classList.toggle('active', opt.dataset.theme === theme);
+      });
+
+      // Persist choice
+      localStorage.setItem('rg-theme', theme);
+    }
+
+    // Load saved theme
+    const saved = localStorage.getItem('rg-theme');
+    if (saved) setTheme(saved);
+  </script>
+
+</body>
+</html>
