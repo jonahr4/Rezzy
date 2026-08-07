@@ -1,4 +1,5 @@
 % ResumeGenie — Auto-generated tailored resume
+% Template based on Jake Gutierrez
 \documentclass[letterpaper,10pt]{article}
 
 \usepackage{latexsym}
@@ -19,97 +20,105 @@
 \renewcommand{\headrulewidth}{0pt}
 \renewcommand{\footrulewidth}{0pt}
 
-% Tight margins for 1-page
-\addtolength{\oddsidemargin}{-0.5in}
-\addtolength{\evensidemargin}{-0.5in}
-\addtolength{\textwidth}{1.0in}
-\addtolength{\topmargin}{-0.7in}
-\addtolength{\textheight}{1.4in}
+% Expanded width to eliminate orphan wraps
+\addtolength{\oddsidemargin}{-0.6in}
+\addtolength{\evensidemargin}{-0.6in}
+\addtolength{\textwidth}{1.2in}
+\addtolength{\topmargin}{-.6in}
+\addtolength{\textheight}{1.2in}
 
 \urlstyle{same}
+
 \raggedbottom
 \raggedright
 \setlength{\tabcolsep}{0in}
-\setlength{\footskip}{4.08003pt}
 
-% Section headings
+% Sections formatting
 \titleformat{\section}{
-  \vspace{-4pt}\scshape\raggedright\large
-}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+  \vspace{-5pt}\scshape\raggedright\large
+}{}{0em}{}[\color{black}\titlerule \vspace{-4pt}]
 
-% ─── Custom commands ────────────────────────────
 
+% Custom commands
 \newcommand{\resumeItem}[1]{
-  \item\small{#1 \vspace{-2pt}}
+  \item\small{
+    {#1 \vspace{-2pt}}
+  }
 }
 
-% CRITICAL: -5pt not -7pt to avoid company line overlapping with bullets
 \newcommand{\resumeSubheading}[4]{
-  \vspace{-2pt}\item
-    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+  \vspace{-2pt}\item\small
+    \begin{tabular*}{0.98\textwidth}[t]{l@{\extracolsep{\fill}}r}
       \textbf{#1} & #2 \\
-      \textit{\small#3} & \textit{\small #4} \\
-    \end{tabular*}\vspace{-5pt}
+      \textit{#3} & \textit{#4} \\
+    \end{tabular*}\vspace{-6pt}
 }
 
 \newcommand{\resumeProjectHeading}[3]{
-    \item
-    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
-      \small#1 & #2 \\
-      \textit{\small #3} \\
-    \end{tabular*}\vspace{-5pt}
+    \item\small
+    \begin{tabular*}{0.98\textwidth}{l@{\extracolsep{\fill}}r}
+      #1 & #2 \\
+      \textit{#3} & \\
+    \end{tabular*}\vspace{-6pt}
 }
 
+\newcommand{\resumeItemListStart}{\begin{itemize}}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-4pt}}
 \newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
 \newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
-\newcommand{\resumeItemListStart}{\begin{itemize}[leftmargin=0.15in, label=$\bullet$, topsep=0pt, parsep=0pt, itemsep=-2pt]}
-\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+
+\renewcommand\labelitemii{$\vcenter{\hbox{\tiny$\bullet$}}$}
 
 % ─── DOCUMENT ────────────────────────────────────
 
 \begin{document}
 
-% ─── HEADER (compact) ────────────────────────────
+% ─── HEADER ──────────────────────────────────────
 \begin{center}
-    {\fontsize{18}{18}\selectfont \textbf{\scshape (( personal.name | latex ))}} \\ \vspace{2pt}
-    \small
-    (( personal.phone | latex )) $|$
+    \textbf{\fontsize{19}{19}\selectfont\scshape (( personal.name | latex ))} \\ \vspace{2pt}
+    \small (( personal.phone | latex )) $|$
     \href{mailto:(( personal.email ))}{\underline{(( personal.email | latex ))}} $|$
     \href{https://(( personal.website ))}{\underline{(( personal.website | latex ))}} $|$
     \href{https://(( personal.linkedin ))}{\underline{(( personal.linkedin | latex ))}} $|$
     \href{https://(( personal.github ))}{\underline{(( personal.github | latex ))}}
 \end{center}
-\vspace{-8pt}
 
 % ─── EDUCATION ───────────────────────────────────
+\vspace{-5mm}
 \section{Education}
+\vspace{1.0mm}
   \resumeSubHeadingListStart
   (% for edu in education %)
-    \resumeSubheading
-      {(( edu.institution | latex ))}{(( edu.start_date )) -- (( edu.end_date ))}
-      {(( edu.degree | latex ))(% if edu.minor %); Minor in (( edu.minor | latex ))(% endif %)}{(( edu.location | latex ))}
-      (% if edu.gpa %)
-      {\small\hspace{0.15in}\textit{GPA: (( edu.gpa )) $|$ (( edu.honors | latex ))}}
-      \vspace{-5pt}
+    \vspace{-2pt}\item\small
+      \begin{tabular*}{0.98\textwidth}[t]{l@{\extracolsep{\fill}}r}
+        \textbf{(( edu.institution | latex ))} $|$ (( edu.location | latex )) & (( edu.end_date )) \\
+        \textit{(( edu.degree | latex ))(% if edu.minor %); Minor in (( edu.minor | latex ))(% endif %)} & GPA: (( edu.gpa ))(% if edu.honors %), (( edu.honors | latex ))(% endif %)
+      \end{tabular*}\vspace{-6pt}
+      (% if edu.relevant_coursework %)
+      \begin{itemize}
+          \item \textit{Related Coursework:} (( edu.relevant_coursework | join(', ') | latex ))
+      \end{itemize}
       (% endif %)
   (% endfor %)
   \resumeSubHeadingListEnd
-  \vspace{-6pt}
 
 % ─── TECHNICAL SKILLS ────────────────────────────
+\vspace{-5.0mm}
 \section{Technical Skills}
- \begin{itemize}[leftmargin=0.15in, label={}, itemsep=-3pt]
+\vspace{1.0mm}
+ \begin{itemize}[leftmargin=0.15in, label={}]
     \small{\item{
     (% for cat in skill_categories %)
      \textbf{(( cat['label'] ))}{: (( cat['items'] | join(', ') | latex ))} \\
     (% endfor %)
     }}
  \end{itemize}
- \vspace{-8pt}
 
 % ─── EXPERIENCE ──────────────────────────────────
 (% if jobs %)
+\vspace{-5.0mm}
 \section{Experience}
+\vspace{1.0mm}
   \resumeSubHeadingListStart
   (% for job in jobs %)
     \resumeSubheading
@@ -126,7 +135,9 @@
 
 % ─── PROJECTS ────────────────────────────────────
 (% if projects %)
+\vspace{-5.0mm}
 \section{Personal Projects}
+\vspace{1.0mm}
   \resumeSubHeadingListStart
   (% for proj in projects %)
     (% set link_parts = [] %)
