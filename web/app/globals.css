@@ -1816,6 +1816,81 @@ a { color: inherit; text-decoration: none; }
 .done-stat-label { font-family: var(--mono); font-size: 10px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.15em; }
 .done-actions { display: flex; gap: 12px; }
 
+/* ── QA Attempts Timeline ─────────────────────────────── */
+.qa-attempts {
+  margin-top: 32px;
+  width: 100%;
+  max-width: 700px;
+}
+.qa-attempts-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--gray);
+  margin-bottom: 16px;
+}
+.qa-attempt {
+  border: 1px solid var(--light-gray);
+  padding: 16px;
+  margin-bottom: 12px;
+  background: var(--white);
+  animation: fadeSlideIn 0.4s ease-out;
+}
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.qa-attempt--pass { border-left: 3px solid #2E7D32; }
+.qa-attempt--fail { border-left: 3px solid #C62828; }
+.qa-attempt--warn { border-left: 3px solid #E65100; }
+
+.qa-attempt-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.qa-attempt-badge {
+  font-weight: 700;
+  font-size: 13px;
+}
+.qa-attempt-verdict {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 2px 8px;
+}
+.verdict-pass { color: #2E7D32; background: rgba(46,125,50,0.08); }
+.verdict-fail { color: #C62828; background: rgba(198,40,40,0.08); }
+.verdict-warn { color: #E65100; background: rgba(230,81,0,0.08); }
+
+.qa-attempt-feedback {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--deep-gray);
+  background: var(--cream);
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  border-left: 2px solid var(--light-gray);
+}
+.qa-attempt-preview {
+  max-height: 300px;
+  overflow: hidden;
+  border: 1px solid var(--light-gray);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: max-height 0.3s ease;
+  cursor: zoom-in;
+}
+.qa-attempt-preview:hover {
+  max-height: 600px;
+}
+.qa-attempt-preview img {
+  width: 100%;
+  display: block;
+}
+
 /* ── SCROLLBAR ─────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--cream); }
