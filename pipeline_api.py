@@ -16,6 +16,7 @@ import json
 import os
 import shutil
 import time
+import base64
 from pathlib import Path
 from datetime import datetime
 from fastapi import FastAPI, HTTPException
@@ -51,6 +52,23 @@ app.add_middleware(
 # ── Session state ─────────────────────────────────────────
 # Tracks the current interactive run so trace/logging spans all steps.
 _session: dict = {}
+
+
+def _render_pdf_preview(pdf_path: str | None) -> str | None:
+    """Render the first page of a PDF to a base64 PNG string."""
+    if not pdf_path:
+        return None
+    try:
+        import fitz
+        doc = fitz.open(pdf_path)
+        page = doc[0]
+        pix = page.get_pixmap(dpi=150)  # Slightly lower DPI for faster SSE transfer
+        img_bytes = pix.tobytes("png")
+        doc.close()
+        return base64.b64encode(img_bytes).decode("utf-8")
+    except Exception as e:
+        print(f"   ⚠ Preview render error: {e}")
+        return None
 
 
 def _get_or_create_session():
@@ -417,19 +435,36 @@ def step_compile(req: CompileRequest):
                 },
             )
 
-            if not state.get("qa_feedback"):
-                yield from send_event("progress", {"stage": "qa_pass", "message": "QA passed ✓"})
+            # Send the rendered PDF preview to the frontend
+            preview_b64 = _render_pdf_preview(state.get("pdf_path"))
+            qa_fb = state.get("qa_feedback")
+
+            if not qa_fb:
+                yield from send_event("qa_result", {
+                    "stage": "qa_pass",
+                    "message": "QA passed ✓",
+                    "attempt": attempt + 1,
+                    "verdict": "PASS",
+                    "preview": preview_b64,
+                })
                 break
 
             if attempt < max_retries - 1:
-                yield from send_event("progress", {
-                    "stage": f"qa_retry",
-                    "message": f"QA found issues, retrying ({attempt + 1}/{max_retries})...",
-                    "feedback": state.get("qa_feedback", ""),
+                yield from send_event("qa_result", {
+                    "stage": "qa_retry",
+                    "message": f"QA found issues (attempt {attempt + 1}/{max_retries})",
+                    "feedback": qa_fb,
                     "attempt": attempt + 1,
+                    "verdict": "FAIL",
+                    "preview": preview_b64,
                 })
                 state["retry_count"] = attempt + 1
                 state["qa_fix_instructions"] = state["qa_feedback"]
+                yield from send_event("progress", {
+                    "stage": "qa_fixing",
+                    "message": f"Fixing issues and recompiling (attempt {attempt + 2}/{max_retries})...",
+                    "attempt": attempt + 2,
+                })
                 state.update(bullet_selector(state))
                 state.update(latex_assembler(state))
                 state.update(compile_latex(state))
@@ -437,6 +472,16 @@ def step_compile(req: CompileRequest):
                     node="retry",
                     summary=f"Retry {attempt + 1}/{max_retries}: {state.get('qa_feedback', '')[:80]}",
                 )
+            else:
+                # Final attempt failed
+                yield from send_event("qa_result", {
+                    "stage": "qa_fail",
+                    "message": f"QA issues remain after {max_retries} attempts",
+                    "feedback": qa_fb,
+                    "attempt": attempt + 1,
+                    "verdict": "WARN",
+                    "preview": preview_b64,
+                })
 
         # Save all output files
         report = {
