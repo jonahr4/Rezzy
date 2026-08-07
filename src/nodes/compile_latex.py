@@ -59,7 +59,7 @@ def compile_latex(state: dict) -> dict:
         }
 
     except FileNotFoundError:
-        msg = "Tectonic is not installed. Install it: brew install tectonic (macOS) or cargo install tectonic"
+        msg = "Tectonic is not installed and auto-download failed."
         print(f"   ✗ {msg}")
         return {
             "pdf_path": None,
@@ -74,3 +74,4 @@ def compile_latex(state: dict) -> dict:
             "qa_feedback": msg,
             "status": "[compile_latex] Tectonic timeout",
         }
+
