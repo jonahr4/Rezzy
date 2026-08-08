@@ -2,12 +2,16 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import {
   getAuth,
   GoogleAuthProvider,
+  OAuthProvider,
+  RecaptchaVerifier,
   signInWithPopup,
+  signInWithPhoneNumber,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   type User,
+  type ConfirmationResult,
 } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -27,13 +31,23 @@ const app = hasConfig
   : (getApps().length ? getApp() : initializeApp({ apiKey: 'build-placeholder', authDomain: '', projectId: '' }));
 export const auth = hasConfig ? getAuth(app) : getAuth(app);
 
+// ── Providers ────────────────────────────────────────
 const googleProvider = new GoogleAuthProvider();
 googleProvider.addScope('email');
 googleProvider.addScope('profile');
 
+const appleProvider = new OAuthProvider('apple.com');
+appleProvider.addScope('email');
+appleProvider.addScope('name');
+
 // ── Auth Actions ──────────────────────────────────────
 export async function signInWithGoogle() {
   const result = await signInWithPopup(auth, googleProvider);
+  return result.user;
+}
+
+export async function signInWithApple() {
+  const result = await signInWithPopup(auth, appleProvider);
   return result.user;
 }
 
@@ -47,6 +61,31 @@ export async function signUpWithEmail(email: string, password: string) {
   return result.user;
 }
 
+// ── Phone Auth (2-step) ──────────────────────────────
+let recaptchaVerifier: RecaptchaVerifier | null = null;
+
+export function setupRecaptcha(buttonId: string) {
+  if (recaptchaVerifier) recaptchaVerifier.clear();
+  recaptchaVerifier = new RecaptchaVerifier(auth, buttonId, {
+    size: 'invisible',
+  });
+  return recaptchaVerifier;
+}
+
+export async function sendPhoneCode(phone: string, buttonId: string): Promise<ConfirmationResult> {
+  const verifier = setupRecaptcha(buttonId);
+  return signInWithPhoneNumber(auth, phone, verifier);
+}
+
+export async function confirmPhoneCode(
+  confirmationResult: ConfirmationResult,
+  code: string
+) {
+  const result = await confirmationResult.confirm(code);
+  return result.user;
+}
+
+// ── Sign Out ─────────────────────────────────────────
 export async function signOut() {
   await firebaseSignOut(auth);
 }
@@ -64,4 +103,4 @@ export function getIdToken(): Promise<string | null> {
   });
 }
 
-export type { User };
+export type { User, ConfirmationResult };

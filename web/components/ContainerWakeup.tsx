@@ -13,13 +13,15 @@ import { useEffect } from 'react';
  */
 export function ContainerWakeup() {
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (!apiUrl) return;
+    // Prefer ACA URL for wake-up (the one that scales to zero)
+    // Falls back to API_URL for local dev
+    const acaUrl = process.env.NEXT_PUBLIC_ACA_URL || process.env.NEXT_PUBLIC_API_URL;
+    if (!acaUrl) return;
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30_000);
 
-    fetch(`${apiUrl}/health`, {
+    fetch(`${acaUrl}/health`, {
       signal: controller.signal,
       cache: 'no-store',
     })

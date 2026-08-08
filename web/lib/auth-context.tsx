@@ -27,8 +27,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (firebaseUser) {
         const token = await firebaseUser.getIdToken();
         setIdToken(token);
+        // Set session cookie so the proxy (middleware) can detect auth
+        document.cookie = `__session=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
       } else {
         setIdToken(null);
+        // Clear session cookie
+        document.cookie = '__session=; path=/; max-age=0';
       }
       setLoading(false);
     });

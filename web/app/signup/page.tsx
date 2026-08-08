@@ -2,11 +2,11 @@
 
 import { useState, useRef } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import {
   signInWithGoogle,
   signInWithApple,
-  signInWithEmail,
+  signUpWithEmail,
   sendPhoneCode,
   confirmPhoneCode,
 } from '@/lib/firebase';
@@ -16,17 +16,19 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 const schema = z.object({
-  email:    z.string().email('Enter a valid email'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  name:            z.string().min(2, 'Enter your name'),
+  email:           z.string().email('Enter a valid email'),
+  password:        z.string().min(6, 'Password must be at least 6 characters'),
+  confirmPassword: z.string(),
+}).refine((d) => d.password === d.confirmPassword, {
+  message: 'Passwords do not match',
+  path: ['confirmPassword'],
 });
 
 type FormData = z.infer<typeof schema>;
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirect = searchParams.get('redirect') || '/dashboard';
-
   const [error, setError] = useState('');
   const [googleLoading, setGoogleLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
@@ -45,11 +47,10 @@ export default function LoginPage() {
     formState: { errors, isSubmitting },
   } = useForm<FormData>({ resolver: zodResolver(schema) });
 
-  // Wait for the auth cookie to be set by AuthProvider before navigating
   function waitForCookieThenRedirect() {
     const check = () => {
       if (document.cookie.includes('__session=')) {
-        router.push(redirect);
+        router.push('/onboarding');
       } else {
         setTimeout(check, 100);
       }
@@ -60,10 +61,15 @@ export default function LoginPage() {
   async function onSubmit(data: FormData) {
     setError('');
     try {
-      await signInWithEmail(data.email, data.password);
+      await signUpWithEmail(data.email, data.password);
       waitForCookieThenRedirect();
-    } catch {
-      setError('Invalid email or password.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : '';
+      if (msg.includes('email-already-in-use')) {
+        setError('An account with this email already exists.');
+      } else {
+        setError('Could not create account. Please try again.');
+      }
     }
   }
 
@@ -98,7 +104,7 @@ export default function LoginPage() {
     setError('');
     setPhoneLoading(true);
     try {
-      const result = await sendPhoneCode(phone, 'btn-phone-send');
+      const result = await sendPhoneCode(phone, 'btn-phone-send-signup');
       setConfirmation(result);
     } catch {
       setError('Could not send verification code. Check the number and try again.');
@@ -129,17 +135,17 @@ export default function LoginPage() {
           Rez<span>zy</span>
         </div>
 
-        <div className="auth-title">Welcome back</div>
-        <div className="auth-subtitle">Sign in to tailor your next application</div>
+        <div className="auth-title">Create your account</div>
+        <div className="auth-subtitle">Start tailoring your resume for every role</div>
 
-        {/* Social sign-in buttons */}
+        {/* Social sign-up buttons */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 4 }}>
           <button
             onClick={handleGoogle}
             disabled={googleLoading}
             className="btn btn-secondary w-full"
             style={{ justifyContent: 'center', gap: 10 }}
-            id="btn-google-signin"
+            id="btn-google-signup"
           >
             {googleLoading ? (
               <span className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} />
@@ -159,7 +165,7 @@ export default function LoginPage() {
             disabled={appleLoading}
             className="btn btn-secondary w-full"
             style={{ justifyContent: 'center', gap: 10 }}
-            id="btn-apple-signin"
+            id="btn-apple-signup"
           >
             {appleLoading ? (
               <span className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} />
@@ -175,7 +181,7 @@ export default function LoginPage() {
             onClick={() => setShowPhone(!showPhone)}
             className="btn btn-secondary w-full"
             style={{ justifyContent: 'center', gap: 10 }}
-            id="btn-phone-toggle"
+            id="btn-phone-toggle-signup"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
@@ -190,9 +196,9 @@ export default function LoginPage() {
             {!confirmation ? (
               <>
                 <div className="input-group">
-                  <label className="input-label" htmlFor="phone-number">Phone number</label>
+                  <label className="input-label" htmlFor="phone-number-signup">Phone number</label>
                   <input
-                    id="phone-number"
+                    id="phone-number-signup"
                     type="tel"
                     placeholder="+1 (555) 123-4567"
                     className="input-field"
@@ -201,7 +207,7 @@ export default function LoginPage() {
                   />
                 </div>
                 <button
-                  id="btn-phone-send"
+                  id="btn-phone-send-signup"
                   ref={phoneBtnRef}
                   onClick={handleSendCode}
                   disabled={phoneLoading || !phone.trim()}
@@ -218,9 +224,9 @@ export default function LoginPage() {
             ) : (
               <>
                 <div className="input-group">
-                  <label className="input-label" htmlFor="phone-code">Verification code</label>
+                  <label className="input-label" htmlFor="phone-code-signup">Verification code</label>
                   <input
-                    id="phone-code"
+                    id="phone-code-signup"
                     type="text"
                     inputMode="numeric"
                     placeholder="123456"
@@ -254,12 +260,25 @@ export default function LoginPage() {
           <div className="auth-divider-line" />
         </div>
 
-        {/* Email/password form */}
+        {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div className="input-group">
-            <label className="input-label" htmlFor="login-email">Email</label>
+            <label className="input-label" htmlFor="signup-name">Full name</label>
             <input
-              id="login-email"
+              id="signup-name"
+              type="text"
+              autoComplete="name"
+              placeholder="Your full name"
+              className={`input-field ${errors.name ? 'error' : ''}`}
+              {...register('name')}
+            />
+            {errors.name && <span className="input-error">{errors.name.message}</span>}
+          </div>
+
+          <div className="input-group">
+            <label className="input-label" htmlFor="signup-email">Email</label>
+            <input
+              id="signup-email"
               type="email"
               autoComplete="email"
               placeholder="you@example.com"
@@ -270,16 +289,29 @@ export default function LoginPage() {
           </div>
 
           <div className="input-group">
-            <label className="input-label" htmlFor="login-password">Password</label>
+            <label className="input-label" htmlFor="signup-password">Password</label>
             <input
-              id="login-password"
+              id="signup-password"
               type="password"
-              autoComplete="current-password"
+              autoComplete="new-password"
               placeholder="••••••••"
               className={`input-field ${errors.password ? 'error' : ''}`}
               {...register('password')}
             />
             {errors.password && <span className="input-error">{errors.password.message}</span>}
+          </div>
+
+          <div className="input-group">
+            <label className="input-label" htmlFor="signup-confirm">Confirm password</label>
+            <input
+              id="signup-confirm"
+              type="password"
+              autoComplete="new-password"
+              placeholder="••••••••"
+              className={`input-field ${errors.confirmPassword ? 'error' : ''}`}
+              {...register('confirmPassword')}
+            />
+            {errors.confirmPassword && <span className="input-error">{errors.confirmPassword.message}</span>}
           </div>
 
           {error && (
@@ -293,19 +325,19 @@ export default function LoginPage() {
             disabled={isSubmitting}
             className="btn btn-primary w-full"
             style={{ justifyContent: 'center' }}
-            id="btn-email-signin"
+            id="btn-create-account"
           >
             {isSubmitting ? (
               <span className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} />
             ) : (
-              'Sign in'
+              'Create account'
             )}
           </button>
         </form>
 
         <div className="auth-footer">
-          Don&apos;t have an account?{' '}
-          <Link href="/signup">Create one</Link>
+          Already have an account?{' '}
+          <Link href="/login">Sign in</Link>
         </div>
       </div>
     </div>
