@@ -132,7 +132,7 @@ export default function SignupPage() {
       <div className="auth-card">
         {/* Logo */}
         <div className="auth-logo" style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center' }}>
-          <img src="/logo.png" alt="Rezzy Logo" style={{ width: 32, height: 32, objectFit: 'contain' }} />
+          <img src="/Logo.svg" alt="Rezzy Logo" style={{ height: 36, width: 'auto' }} />
           <div>Rez<span>zy</span></div>
         </div>
 

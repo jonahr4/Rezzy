@@ -35,7 +35,7 @@ export default function TailorPage() {
       </div>
 
       <div className="page-content">
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 24, alignItems: 'start' }}>
+        <div className="tailor-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 24, alignItems: 'start' }}>
           {/* Left: JD input */}
           <div>
             <div className="input-group" style={{ marginBottom: 16 }}>

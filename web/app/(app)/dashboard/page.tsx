@@ -41,7 +41,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick actions */}
-        <div style={{ display: 'flex', gap: 12, marginBottom: 40 }}>
+        <div className="dashboard-actions" style={{ display: 'flex', gap: 12, marginBottom: 40 }}>
           <Link href="/tailor" className="btn btn-primary btn-lg">
             New Tailoring Run
           </Link>
