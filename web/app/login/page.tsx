@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -23,6 +23,18 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="auth-shell">
+        <div className="spinner" style={{ width: 24, height: 24, borderWidth: 3 }} />
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
+  );
+}
+
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/dashboard';
@@ -125,8 +137,9 @@ export default function LoginPage() {
     <div className="auth-shell">
       <div className="auth-card">
         {/* Logo */}
-        <div className="auth-logo">
-          Rez<span>zy</span>
+        <div className="auth-logo" style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center' }}>
+          <img src="/logo.png" alt="Rezzy Logo" style={{ width: 32, height: 32, objectFit: 'contain' }} />
+          <div>Rez<span>zy</span></div>
         </div>
 
         <div className="auth-title">Welcome back</div>

@@ -1045,3 +1045,132 @@ img { display: block; max-width: 100%; }
 .run-card-role { font-size: 12px; color: var(--text-muted); }
 .run-card-meta { margin-left: auto; text-align: right; }
 .run-card-date { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); }
+
+/* ════════════════════════════════════════════════════════
+   PILL TABS
+   ════════════════════════════════════════════════════════ */
+.tab-pills {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  width: fit-content;
+}
+.tab-pill {
+  padding: 7px 18px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-radius: calc(var(--radius-md) - 2px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-sans);
+  white-space: nowrap;
+}
+.tab-pill:hover { color: var(--text); background: var(--surface-elevated); }
+.tab-pill.active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+
+/* ════════════════════════════════════════════════════════
+   SIDEBAR BADGES
+   ════════════════════════════════════════════════════════ */
+.sidebar-badge {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  background: var(--accent);
+  color: #fff;
+  padding: 1px 7px;
+  border-radius: 20px;
+  line-height: 1.5;
+}
+
+/* ════════════════════════════════════════════════════════
+   SPINNER
+   ════════════════════════════════════════════════════════ */
+.spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ════════════════════════════════════════════════════════
+   TOGGLE SWITCHES
+   ════════════════════════════════════════════════════════ */
+.toggle {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 36px;
+  height: 20px;
+  background: var(--border);
+  border-radius: 20px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.toggle:checked { background: var(--accent); }
+.toggle:checked::after { transform: translateX(16px); }
+
+/* ════════════════════════════════════════════════════════
+   TABLES
+   ════════════════════════════════════════════════════════ */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+.table tbody tr:hover { background: var(--surface-elevated); }
+.table tbody tr:last-child td { border-bottom: none; }
+
+/* ════════════════════════════════════════════════════════
+   TEXTAREA IN INPUT-FIELD
+   ════════════════════════════════════════════════════════ */
+textarea.input-field {
+  min-height: 100px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
