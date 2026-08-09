@@ -1,29 +1,83 @@
-// app/api/migrate/route.ts — run once to create tables
+// app/api/migrate/route.ts — idempotent schema setup
 import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 
 export async function POST() {
   try {
+    // Drop FK constraints that block inserts with Firebase UIDs
+    await sql`
+      DO $$ BEGIN
+        ALTER TABLE entries    DROP CONSTRAINT IF EXISTS entries_user_id_fkey;
+        ALTER TABLE education  DROP CONSTRAINT IF EXISTS education_user_id_fkey;
+        ALTER TABLE skill_groups DROP CONSTRAINT IF EXISTS skill_groups_user_id_fkey;
+      EXCEPTION WHEN others THEN NULL;
+      END $$
+    `;
+
+    // ── entries ─────────────────────────────────────────────────
     await sql`
       CREATE TABLE IF NOT EXISTS entries (
-        id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        user_id     TEXT NOT NULL,
-        type        TEXT NOT NULL CHECK (type IN ('job','project')),
-        title       TEXT NOT NULL,
+        id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id      TEXT NOT NULL,
+        type         TEXT NOT NULL,
+        title        TEXT NOT NULL,
         organization TEXT,
-        start_date  TEXT,
-        end_date    TEXT,
-        location    TEXT,
-        pinned      BOOLEAN NOT NULL DEFAULT false,
-        summary     TEXT,
-        bullets     JSONB NOT NULL DEFAULT '[]',
-        skills      JSONB NOT NULL DEFAULT '[]',
-        links       JSONB NOT NULL DEFAULT '{}',
-        created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
-        updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+        start_date   TEXT,
+        end_date     TEXT,
+        location     TEXT,
+        pinned       BOOLEAN NOT NULL DEFAULT false,
+        summary      TEXT,
+        bullets      JSONB NOT NULL DEFAULT '[]',
+        skills       JSONB NOT NULL DEFAULT '[]',
+        links        JSONB NOT NULL DEFAULT '{}',
+        created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+        updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
       )
     `;
 
+    // Add missing scalar columns (safe no-ops if exist)
+    await sql`ALTER TABLE entries ADD COLUMN IF NOT EXISTS organization TEXT`;
+    await sql`ALTER TABLE entries ADD COLUMN IF NOT EXISTS start_date   TEXT`;
+    await sql`ALTER TABLE entries ADD COLUMN IF NOT EXISTS end_date     TEXT`;
+    await sql`ALTER TABLE entries ADD COLUMN IF NOT EXISTS location     TEXT`;
+    await sql`ALTER TABLE entries ADD COLUMN IF NOT EXISTS summary      TEXT`;
+    await sql`ALTER TABLE entries ADD COLUMN IF NOT EXISTS updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()`;
+
+    // Coerce text[] → JSONB for bullets / skills / links
+    await sql`
+      DO $$ BEGIN
+        IF (SELECT data_type FROM information_schema.columns
+            WHERE table_name='entries' AND column_name='bullets') = 'ARRAY' THEN
+          ALTER TABLE entries ALTER COLUMN bullets TYPE JSONB USING to_jsonb(bullets);
+        END IF;
+      END $$
+    `;
+    await sql`
+      DO $$ BEGIN
+        IF (SELECT data_type FROM information_schema.columns
+            WHERE table_name='entries' AND column_name='skills') = 'ARRAY' THEN
+          ALTER TABLE entries ALTER COLUMN skills TYPE JSONB USING to_jsonb(skills);
+        END IF;
+      END $$
+    `;
+    await sql`
+      DO $$ BEGIN
+        IF (SELECT data_type FROM information_schema.columns
+            WHERE table_name='entries' AND column_name='links') IS NULL THEN
+          ALTER TABLE entries ADD COLUMN links JSONB NOT NULL DEFAULT '{}';
+        END IF;
+      END $$
+    `;
+    await sql`
+      DO $$ BEGIN
+        IF (SELECT data_type FROM information_schema.columns
+            WHERE table_name='entries' AND column_name='pinned') IS NULL THEN
+          ALTER TABLE entries ADD COLUMN pinned BOOLEAN NOT NULL DEFAULT false;
+        END IF;
+      END $$
+    `;
+
+    // ── education ───────────────────────────────────────────────
     await sql`
       CREATE TABLE IF NOT EXISTS education (
         id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -41,7 +95,16 @@ export async function POST() {
         updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
       )
     `;
+    await sql`
+      DO $$ BEGIN
+        IF (SELECT data_type FROM information_schema.columns
+            WHERE table_name='education' AND column_name='relevant_coursework') = 'ARRAY' THEN
+          ALTER TABLE education ALTER COLUMN relevant_coursework TYPE JSONB USING to_jsonb(relevant_coursework);
+        END IF;
+      END $$
+    `;
 
+    // ── skill_groups ─────────────────────────────────────────────
     await sql`
       CREATE TABLE IF NOT EXISTS skill_groups (
         id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -53,10 +116,18 @@ export async function POST() {
         updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
       )
     `;
+    await sql`
+      DO $$ BEGIN
+        IF (SELECT data_type FROM information_schema.columns
+            WHERE table_name='skill_groups' AND column_name='skills') = 'ARRAY' THEN
+          ALTER TABLE skill_groups ALTER COLUMN skills TYPE JSONB USING to_jsonb(skills);
+        END IF;
+      END $$
+    `;
 
-    await sql`CREATE INDEX IF NOT EXISTS entries_user_idx    ON entries    (user_id)`;
-    await sql`CREATE INDEX IF NOT EXISTS education_user_idx  ON education  (user_id)`;
-    await sql`CREATE INDEX IF NOT EXISTS skillgrp_user_idx   ON skill_groups (user_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS entries_user_idx   ON entries      (user_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS education_user_idx ON education    (user_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS skillgrp_user_idx  ON skill_groups (user_id)`;
 
     return NextResponse.json({ ok: true });
   } catch (e: unknown) {

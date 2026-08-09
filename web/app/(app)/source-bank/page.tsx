@@ -1,9 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import EntryModal from '@/components/EntryModal';
 import SkillsEditor, { makeDefaultGroups } from '@/components/SkillsEditor';
+import ResumeReviewModal from '@/components/ResumeReviewModal';
+import type { ImportSelection } from '@/components/ResumeReviewModal';
+import type { ResumeParseResult } from '@/app/api/parse-resume/route';
 import {
   getEntries, createEntry, updateEntry, deleteEntry,
   getEducation, createEducation, updateEducation, deleteEducation,
@@ -317,6 +320,12 @@ export default function SourceBankPage() {
   const [entryModal, setEntryModal]   = useState<{ open: boolean; entry?: Entry }>({ open: false });
   const [eduModal, setEduModal]       = useState<{ open: boolean; edu?: Education }>({ open: false });
 
+  // Upload & review state
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading]     = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const [reviewResult, setReviewResult] = useState<ResumeParseResult | null>(null);
+
   /* ── Load data ── */
   const load = useCallback(async () => {
     if (!uid) return;
@@ -419,6 +428,60 @@ export default function SourceBankPage() {
     }
   }
 
+  /* ── Resume Upload ── */
+  async function handleUpload(file: File) {
+    setUploading(true);
+    setUploadError('');
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const res = await fetch('/api/parse-resume', {
+        method: 'POST',
+        headers: authHeaders(uid),
+        body: form,
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error ?? `Error ${res.status}`);
+      }
+      const result: ResumeParseResult = await res.json();
+      setReviewResult(result);
+    } catch (e: unknown) {
+      setUploadError(e instanceof Error ? e.message : 'Upload failed');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  }
+
+  /* ── Import confirmed items from review ── */
+  async function handleImport(selection: ImportSelection) {
+    const headers = { ...authHeaders(uid), 'Content-Type': 'application/json' } as HeadersInit;
+
+    // Import entries
+    for (const entry of selection.entries) {
+      await fetch('/api/entries', { method: 'POST', headers, body: JSON.stringify(entry) });
+    }
+    // Import education
+    for (const edu of selection.education) {
+      await fetch('/api/education', { method: 'POST', headers, body: JSON.stringify(edu) });
+    }
+    // Import skills — merge into existing groups
+    if (selection.skills.length > 0) {
+      const otherGroup = skillGroups.find(g => g.label.toLowerCase() === 'other') ?? skillGroups[skillGroups.length - 1];
+      if (otherGroup) {
+        const updated = skillGroups.map(g =>
+          g.id === otherGroup.id
+            ? { ...g, skills: [...g.skills, ...selection.skills.filter(s => !g.skills.includes(s))] }
+            : g
+        );
+        await fetch('/api/skills', { method: 'POST', headers, body: JSON.stringify({ groups: updated }) });
+      }
+    }
+    // Reload everything
+    await load();
+  }
+
   /* ── Filtered entries for display ── */
   const filteredEntries = activeTab === 'all' || activeTab === 'education' || activeTab === 'skills'
     ? entries
@@ -441,6 +504,15 @@ export default function SourceBankPage() {
 
   return (
     <>
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf"
+        style={{ display: 'none' }}
+        onChange={e => { const f = e.target.files?.[0]; if (f) handleUpload(f); }}
+      />
+
       {/* Modals */}
       {entryModal.open && (
         <EntryModal
@@ -456,6 +528,13 @@ export default function SourceBankPage() {
           onClose={() => setEduModal({ open: false })}
         />
       )}
+      {reviewResult && (
+        <ResumeReviewModal
+          result={reviewResult}
+          onImport={handleImport}
+          onClose={() => setReviewResult(null)}
+        />
+      )}
 
       {/* Page header */}
       <div className="page-header">
@@ -465,6 +544,34 @@ export default function SourceBankPage() {
           <p className="page-desc">
             All your experience, projects, education, and skills in one place. The pipeline pulls from these when tailoring.
           </p>
+        </div>
+        {/* Upload button in header */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+          <button
+            className="btn btn-primary"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+          >
+            {uploading ? (
+              <>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ animation: 'spin 1s linear infinite' }}>
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                </svg>
+                Parsing…
+              </>
+            ) : (
+              <>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                Upload Resume
+              </>
+            )}
+          </button>
+          {uploadError && <p style={{ fontSize: 12, color: 'var(--danger)' }}>{uploadError}</p>}
         </div>
       </div>
 
