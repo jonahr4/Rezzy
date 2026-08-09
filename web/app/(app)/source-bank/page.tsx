@@ -1,123 +1,476 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
+import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '@/lib/auth-context';
+import EntryModal from '@/components/EntryModal';
+import SkillsEditor, { makeDefaultGroups } from '@/components/SkillsEditor';
+import {
+  getEntries, createEntry, updateEntry, deleteEntry,
+  getEducation, createEducation, updateEducation, deleteEducation,
+  getSkillGroups, saveSkillGroups,
+} from '@/lib/entries';
+import type { Entry, EntryType, Education, SkillGroup } from '@/lib/entries';
 
-type Tab = 'entries' | 'skills' | 'education';
+type Tab = 'all' | 'job' | 'project' | 'education' | 'skills';
 
 const TABS: { key: Tab; label: string }[] = [
-  { key: 'entries',   label: 'Entries' },
-  { key: 'skills',    label: 'Skills' },
-  { key: 'education', label: 'Education' },
+  { key: 'all',       label: 'All'        },
+  { key: 'job',       label: 'Experience' },
+  { key: 'project',   label: 'Project'    },
+  { key: 'education', label: 'Education'  },
+  { key: 'skills',    label: 'Skills'     },
 ];
 
-/* ── Empty state per tab ─────────────────────────────── */
-function EmptyEntries() {
+/* ── Helpers ── */
+function authHeaders(uid: string | undefined): HeadersInit {
+  return uid ? { 'x-user-id': uid } : {};
+}
+
+/* ── Entry Card ── */
+function EntryCard({ entry, onEdit, onDelete }: {
+  entry: Entry;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const dateStr = [entry.start_date, entry.end_date].filter(Boolean).join(' – ') || null;
+  const isJob = entry.type === 'job';
+
+  // SVG icons
+  const JobIcon = () => (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="7" width="20" height="14" rx="2"/>
+      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+    </svg>
+  );
+  const ProjectIcon = () => (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+    </svg>
+  );
+
   return (
-    <div className="card" style={{ padding: '60px 24px', textAlign: 'center' }}>
-      <div style={{ fontSize: 40, marginBottom: 16, opacity: 0.3 }}>
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block' }}>
-          <rect x="2" y="3" width="20" height="18" rx="3" />
-          <line x1="8" y1="9" x2="16" y2="9" />
-          <line x1="8" y1="13" x2="14" y2="13" />
-          <line x1="8" y1="17" x2="12" y2="17" />
-        </svg>
+    <div className={`entry-card ${entry.pinned ? 'pinned' : ''}`}>
+      <div className="entry-card-header" onClick={() => setExpanded(e => !e)}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <span className={`entry-type-badge ${isJob ? 'badge-job' : 'badge-project'}`} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              {isJob ? <JobIcon /> : <ProjectIcon />}
+              {isJob ? 'Experience' : 'Project'}
+            </span>
+            {entry.pinned && (
+              <span className="entry-pin-badge" style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                  <path d="M12 2a5 5 0 0 1 5 5c0 2.4-1.6 4.4-3.8 5.2L14 21H10l.8-8.8C8.6 11.4 7 9.4 7 7a5 5 0 0 1 5-5z"/>
+                </svg>
+                Pinned
+              </span>
+            )}
+          </div>
+          <h3 className="entry-card-title">{entry.title}</h3>
+          {entry.organization && (
+            <div className="entry-card-org">{entry.organization}</div>
+          )}
+          <div className="entry-card-meta">
+            {dateStr && <span>{dateStr}</span>}
+            {entry.location && <span>· {entry.location}</span>}
+            {entry.bullets?.length > 0 && (
+              <span>· {entry.bullets.length} bullet{entry.bullets.length !== 1 ? 's' : ''}</span>
+            )}
+          </div>
+        </div>
+
+        <div className="entry-card-actions" onClick={e => e.stopPropagation()}>
+          <button className="btn btn-ghost btn-sm" onClick={onEdit} title="Edit">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            Edit
+          </button>
+          <button className="btn btn-ghost btn-sm" onClick={onDelete} style={{ color: 'var(--danger)' }} title="Delete">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              <path d="M10 11v6"/><path d="M14 11v6"/>
+            </svg>
+            Delete
+          </button>
+          <button
+            className="btn btn-ghost btn-sm"
+            onClick={() => setExpanded(e => !e)}
+            style={{ color: 'var(--text-muted)' }}
+          >
+            {expanded ? '▲' : '▼'}
+          </button>
+        </div>
       </div>
-      <div className="text-mono text-muted" style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: 8 }}>
-        No entries yet
-      </div>
-      <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20, maxWidth: 360, margin: '0 auto 20px' }}>
-        Add your work experience, projects, research, and volunteer roles. These become the building blocks for every tailored resume.
-      </p>
-      <button className="btn btn-primary" id="btn-add-first-entry">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-          <line x1="12" y1="5" x2="12" y2="19" />
-          <line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
-        Add your first entry
-      </button>
+
+      {/* Skill chips always visible */}
+      {entry.skills?.length > 0 && (
+        <div className="entry-skills-row">
+          {entry.skills.map(s => (
+            <span key={s} className="entry-skill-chip">{s}</span>
+          ))}
+        </div>
+      )}
+
+      {/* Expanded: bullets + summary */}
+      {expanded && (
+        <div className="entry-card-body">
+          {entry.summary && (
+            <p className="entry-summary">{entry.summary}</p>
+          )}
+          {entry.bullets?.length > 0 && (
+            <ul className="entry-bullets">
+              {entry.bullets.filter(b => b.text?.trim()).map(b => (
+                <li key={b.id}>{b.text}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
-function EmptySkills() {
+/* ── Education Card ── */
+function EducationCard({ edu, onEdit, onDelete }: {
+  edu: Education;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  const dateStr = [edu.start_date, edu.end_date].filter(Boolean).join(' – ') || null;
   return (
-    <div className="card" style={{ padding: '60px 24px', textAlign: 'center' }}>
-      <div style={{ fontSize: 40, marginBottom: 16, opacity: 0.3 }}>
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block' }}>
-          <polyline points="16 18 22 12 16 6" />
-          <polyline points="8 6 2 12 8 18" />
-          <line x1="14" y1="4" x2="10" y2="20" />
-        </svg>
+    <div className="entry-card">
+      <div className="entry-card-header">
+        <div style={{ flex: 1 }}>
+          <span className="entry-type-badge badge-education" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+              </svg>
+              Education
+            </span>
+          <h3 className="entry-card-title">{edu.institution}</h3>
+          <div className="entry-card-org">{edu.degree}{edu.minor ? ` · Minor in ${edu.minor}` : ''}</div>
+          <div className="entry-card-meta">
+            {dateStr && <span>{dateStr}</span>}
+            {edu.location && <span>· {edu.location}</span>}
+            {edu.gpa && <span>· GPA: {edu.gpa}</span>}
+          </div>
+          {edu.honors && <div style={{ fontSize: 12, color: 'var(--accent)', marginTop: 4 }}>{edu.honors}</div>}
+        </div>
+        <div className="entry-card-actions">
+          <button className="btn btn-ghost btn-sm" onClick={onEdit}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            Edit
+          </button>
+          <button className="btn btn-ghost btn-sm" onClick={onDelete} style={{ color: 'var(--danger)' }}>Delete</button>
+        </div>
       </div>
-      <div className="text-mono text-muted" style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: 8 }}>
-        No skills added
-      </div>
-      <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20, maxWidth: 360, margin: '0 auto 20px' }}>
-        Build your master skills list — languages, frameworks, tools, certifications. The pipeline selects the most relevant ones for each role.
-      </p>
-      <button className="btn btn-primary" id="btn-add-first-skill">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-          <line x1="12" y1="5" x2="12" y2="19" />
-          <line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
-        Add skills
-      </button>
+      {edu.relevant_coursework?.length > 0 && (
+        <div className="entry-skills-row">
+          {edu.relevant_coursework.map(c => (
+            <span key={c} className="entry-skill-chip">{c}</span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
-function EmptyEducation() {
-  return (
-    <div className="card" style={{ padding: '60px 24px', textAlign: 'center' }}>
-      <div style={{ fontSize: 40, marginBottom: 16, opacity: 0.3 }}>
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block' }}>
-          <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-          <path d="M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5" />
-        </svg>
-      </div>
-      <div className="text-mono text-muted" style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: 8 }}>
-        No education added
-      </div>
-      <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20, maxWidth: 360, margin: '0 auto 20px' }}>
-        Add your degrees, schools, GPAs, and relevant coursework. These appear in the Education section of your tailored resume.
-      </p>
-      <button className="btn btn-primary" id="btn-add-first-edu">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-          <line x1="12" y1="5" x2="12" y2="19" />
-          <line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
-        Add education
-      </button>
-    </div>
-  );
-}
+/* ── Education Modal ── */
+function EducationModal({ edu, onSave, onClose }: {
+  edu?: Education | null;
+  onSave: (data: Partial<Education>) => Promise<void>;
+  onClose: () => void;
+}) {
+  const [institution, setInstitution] = useState(edu?.institution ?? '');
+  const [degree, setDegree]           = useState(edu?.degree ?? '');
+  const [minor, setMinor]             = useState(edu?.minor ?? '');
+  const [location, setLocation]       = useState(edu?.location ?? '');
+  const [startDate, setStartDate]     = useState(edu?.start_date ?? '');
+  const [endDate, setEndDate]         = useState(edu?.end_date ?? '');
+  const [gpa, setGpa]                 = useState(edu?.gpa ?? '');
+  const [honors, setHonors]           = useState(edu?.honors ?? '');
+  const [coursework, setCoursework]   = useState(edu?.relevant_coursework?.join(', ') ?? '');
+  const [saving, setSaving]           = useState(false);
+  const [error, setError]             = useState('');
 
-const TAB_CONTENT: Record<Tab, React.ReactNode> = {
-  entries:   <EmptyEntries />,
-  skills:    <EmptySkills />,
-  education: <EmptyEducation />,
-};
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onClose]);
 
-export default function SourceBankPage() {
-  const [activeTab, setActiveTab] = useState<Tab>('entries');
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!institution.trim() || !degree.trim()) { setError('Institution and degree are required'); return; }
+    setSaving(true);
+    try {
+      await onSave({
+        institution: institution.trim(),
+        degree: degree.trim(),
+        minor: minor.trim() || null,
+        location: location.trim() || null,
+        start_date: startDate.trim() || null,
+        end_date: endDate.trim() || null,
+        gpa: gpa.trim() || null,
+        honors: honors.trim() || null,
+        relevant_coursework: coursework.split(',').map(s => s.trim()).filter(Boolean),
+      });
+      onClose();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <>
+      <div className="modal-backdrop" onClick={onClose} />
+      <div className="entry-modal" role="dialog">
+        <div className="entry-modal-header">
+          <h2 className="entry-modal-title">{edu ? 'Edit' : 'Add'} Education</h2>
+          <button className="modal-close-btn" onClick={onClose}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="entry-modal-body">
+          <div className="input-group">
+            <label className="input-label">Institution *</label>
+            <input className="input-field" value={institution} onChange={e => setInstitution(e.target.value)} placeholder="e.g. Boston University" required />
+          </div>
+          <div className="input-group">
+            <label className="input-label">Degree *</label>
+            <input className="input-field" value={degree} onChange={e => setDegree(e.target.value)} placeholder="e.g. BS in Computer Science" required />
+          </div>
+          <div className="input-group">
+            <label className="input-label">Minor (optional)</label>
+            <input className="input-field" value={minor} onChange={e => setMinor(e.target.value)} placeholder="e.g. Economics" />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+            <div className="input-group">
+              <label className="input-label">Start</label>
+              <input className="input-field" value={startDate} onChange={e => setStartDate(e.target.value)} placeholder="Sep 2022" />
+            </div>
+            <div className="input-group">
+              <label className="input-label">End</label>
+              <input className="input-field" value={endDate} onChange={e => setEndDate(e.target.value)} placeholder="May 2026" />
+            </div>
+            <div className="input-group">
+              <label className="input-label">Location</label>
+              <input className="input-field" value={location} onChange={e => setLocation(e.target.value)} placeholder="Boston, MA" />
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div className="input-group">
+              <label className="input-label">GPA (optional)</label>
+              <input className="input-field" value={gpa} onChange={e => setGpa(e.target.value)} placeholder="3.85" />
+            </div>
+            <div className="input-group">
+              <label className="input-label">Honors (optional)</label>
+              <input className="input-field" value={honors} onChange={e => setHonors(e.target.value)} placeholder="Dean's List" />
+            </div>
+          </div>
+          <div className="input-group">
+            <label className="input-label">Relevant Coursework (comma-separated)</label>
+            <textarea
+              className="input-field"
+              value={coursework}
+              onChange={e => setCoursework(e.target.value)}
+              placeholder="Machine Learning, Algorithms, Distributed Systems..."
+              rows={3}
+            />
+          </div>
+          {error && <p style={{ color: 'var(--danger)', fontSize: 13 }}>{error}</p>}
+          <div className="entry-modal-footer">
+            <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>
+            <button type="submit" className="btn btn-primary" disabled={saving}>
+              {saving ? 'Saving…' : (edu ? 'Save Changes' : 'Add Education')}
+            </button>
+          </div>
+        </form>
+      </div>
+    </>
+  );
+}
+
+/* ── Main Page ── */
+export default function SourceBankPage() {
+  const { user } = useAuth();
+  const uid = user?.uid;
+
+  const [activeTab, setActiveTab]       = useState<Tab>('all');
+  const [entries, setEntries]           = useState<Entry[]>([]);
+  const [education, setEducation]       = useState<Education[]>([]);
+  const [skillGroups, setSkillGroups]   = useState<SkillGroup[]>([]);
+  const [loading, setLoading]           = useState(true);
+  const [skillsSaving, setSkillsSaving] = useState(false);
+
+  // Modal state
+  const [entryModal, setEntryModal]   = useState<{ open: boolean; entry?: Entry }>({ open: false });
+  const [eduModal, setEduModal]       = useState<{ open: boolean; edu?: Education }>({ open: false });
+
+  /* ── Load data ── */
+  const load = useCallback(async () => {
+    if (!uid) return;
+    setLoading(true);
+    try {
+      const headers = authHeaders(uid);
+      const [ent, edu, skills] = await Promise.all([
+        fetch('/api/entries', { headers }).then(r => r.json()),
+        fetch('/api/education', { headers }).then(r => r.json()),
+        fetch('/api/skills', { headers }).then(r => r.json()),
+      ]);
+      setEntries(Array.isArray(ent) ? ent : []);
+      setEducation(Array.isArray(edu) ? edu : []);
+      // Auto-init default skill groups if none exist
+      if (Array.isArray(skills) && skills.length === 0) {
+        const defaults = makeDefaultGroups();
+        setSkillGroups(defaults);
+        // Persist them immediately
+        fetch('/api/skills', {
+          method: 'POST',
+          headers: { ...authHeaders(uid), 'Content-Type': 'application/json' } as HeadersInit,
+          body: JSON.stringify({ groups: defaults }),
+        }).catch(console.error);
+      } else {
+        setSkillGroups(Array.isArray(skills) ? skills : []);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [uid]);
+
+  useEffect(() => { load(); }, [load]);
+
+  /* ── Entry CRUD ── */
+  async function handleSaveEntry(data: Partial<Entry>) {
+    const headers = { ...authHeaders(uid), 'Content-Type': 'application/json' };
+    if (entryModal.entry) {
+      const res = await fetch(`/api/entries/${entryModal.entry.id}`, {
+        method: 'PATCH', headers, body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const updated = await res.json();
+      setEntries(es => es.map(e => e.id === updated.id ? updated : e));
+    } else {
+      const res = await fetch('/api/entries', {
+        method: 'POST', headers, body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const created = await res.json();
+      setEntries(es => [created, ...es]);
+    }
+  }
+
+  async function handleDeleteEntry(id: string) {
+    if (!confirm('Delete this entry?')) return;
+    await fetch(`/api/entries/${id}`, { method: 'DELETE', headers: authHeaders(uid) });
+    setEntries(es => es.filter(e => e.id !== id));
+  }
+
+  /* ── Education CRUD ── */
+  async function handleSaveEdu(data: Partial<Education>) {
+    const headers = { ...authHeaders(uid), 'Content-Type': 'application/json' };
+    if (eduModal.edu) {
+      const res = await fetch(`/api/education/${eduModal.edu.id}`, {
+        method: 'PATCH', headers, body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const updated = await res.json();
+      setEducation(es => es.map(e => e.id === updated.id ? updated : e));
+    } else {
+      const res = await fetch('/api/education', {
+        method: 'POST', headers, body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const created = await res.json();
+      setEducation(es => [...es, created]);
+    }
+  }
+
+  async function handleDeleteEdu(id: string) {
+    if (!confirm('Delete this education entry?')) return;
+    await fetch(`/api/education/${id}`, { method: 'DELETE', headers: authHeaders(uid) });
+    setEducation(es => es.filter(e => e.id !== id));
+  }
+
+  /* ── Skills save ── */
+  async function handleSaveSkills() {
+    setSkillsSaving(true);
+    try {
+      const res = await fetch('/api/skills', {
+        method: 'POST',
+        headers: { ...authHeaders(uid), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ groups: skillGroups }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const saved = await res.json();
+      setSkillGroups(saved);
+    } finally {
+      setSkillsSaving(false);
+    }
+  }
+
+  /* ── Filtered entries for display ── */
+  const filteredEntries = activeTab === 'all' || activeTab === 'education' || activeTab === 'skills'
+    ? entries
+    : entries.filter(e => e.type === activeTab as EntryType);
+
+  /* ── Counts for tab badges ── */
+  const counts = {
+    all:       entries.length + education.length,
+    job:       entries.filter(e => e.type === 'job').length,
+    project:   entries.filter(e => e.type === 'project').length,
+    education: education.length,
+    skills:    skillGroups.reduce((sum, g) => sum + g.skills.length, 0),
+  };
+
+  /* ── Add button label ── */
+  const addLabel = activeTab === 'education' ? 'Add Education'
+    : activeTab === 'skills' ? null
+    : activeTab === 'project' ? 'Add Project'
+    : 'Add Entry';
+
+  return (
+    <>
+      {/* Modals */}
+      {entryModal.open && (
+        <EntryModal
+          entry={entryModal.entry}
+          onSave={handleSaveEntry}
+          onClose={() => setEntryModal({ open: false })}
+        />
+      )}
+      {eduModal.open && (
+        <EducationModal
+          edu={eduModal.edu}
+          onSave={handleSaveEdu}
+          onClose={() => setEduModal({ open: false })}
+        />
+      )}
+
       {/* Page header */}
       <div className="page-header">
         <div className="page-header-content">
           <div className="page-eyebrow">Source Bank</div>
           <h1 className="page-title">Your Resume Content</h1>
           <p className="page-desc">
-            Manage all your experience entries, skills, and education in one place. The pipeline pulls from these when tailoring.
+            All your experience, projects, education, and skills in one place. The pipeline pulls from these when tailoring.
           </p>
         </div>
       </div>
 
       <div className="page-content">
-        {/* Pill Tabs */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+        {/* Tab bar + Add button */}
+        <div className="source-bank-toolbar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, gap: 12, flexWrap: 'wrap' }}>
           <div className="tab-pills">
             {TABS.map(({ key, label }) => (
               <button
@@ -126,21 +479,141 @@ export default function SourceBankPage() {
                 onClick={() => setActiveTab(key)}
               >
                 {label}
+                {counts[key] > 0 && (
+                  <span className="tab-pill-count">{counts[key]}</span>
+                )}
               </button>
             ))}
           </div>
 
-          <button className="btn btn-primary btn-sm" id="btn-add-new">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Add {activeTab === 'entries' ? 'Entry' : activeTab === 'skills' ? 'Skill' : 'Education'}
-          </button>
+          {addLabel && (
+            <button
+              className="btn btn-primary btn-sm"
+              style={{ flexShrink: 0 }}
+              onClick={() => {
+                if (activeTab === 'education') {
+                  setEduModal({ open: true });
+                } else {
+                  setEntryModal({ open: true, entry: undefined });
+                }
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              {addLabel}
+            </button>
+          )}
         </div>
 
-        {/* Tab content */}
-        {TAB_CONTENT[activeTab]}
+        {/* Content */}
+        {loading ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {[1, 2, 3].map(i => (
+              <div key={i} className="skeleton-card" />
+            ))}
+          </div>
+        ) : (
+          <>
+            {/* Skills tab */}
+            {activeTab === 'skills' && (
+              <SkillsEditor
+                groups={skillGroups}
+                onChange={setSkillGroups}
+                saving={skillsSaving}
+                onSave={handleSaveSkills}
+              />
+            )}
+
+            {/* Education tab */}
+            {activeTab === 'education' && (
+              <>
+                {education.length === 0 ? (
+                  <div className="card" style={{ padding: '60px 24px', textAlign: 'center' }}>
+                    <div style={{ marginBottom: 16, opacity: 0.25, display: 'flex', justifyContent: 'center' }}>
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                      </svg>
+                    </div>
+                    <div className="text-mono text-muted" style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: 8 }}>No education yet</div>
+                    <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>Add your degrees and academic background.</p>
+                    <button className="btn btn-primary" onClick={() => setEduModal({ open: true })}>Add Education</button>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {education.map(edu => (
+                      <EducationCard
+                        key={edu.id}
+                        edu={edu}
+                        onEdit={() => setEduModal({ open: true, edu })}
+                        onDelete={() => handleDeleteEdu(edu.id)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Entries (all / job / project) */}
+            {activeTab !== 'skills' && activeTab !== 'education' && (
+              <>
+                {/* All tab: show education cards too */}
+                {activeTab === 'all' && education.length > 0 && (
+                  <div style={{ marginBottom: 16 }}>
+                    <div className="sidebar-section-label" style={{ marginBottom: 8 }}>Education</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {education.map(edu => (
+                        <EducationCard
+                          key={edu.id}
+                          edu={edu}
+                          onEdit={() => setEduModal({ open: true, edu })}
+                          onDelete={() => handleDeleteEdu(edu.id)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {filteredEntries.length === 0 ? (
+                  <div className="card" style={{ padding: '60px 24px', textAlign: 'center' }}>
+                    <div style={{ marginBottom: 16, opacity: 0.25, display: 'flex', justifyContent: 'center' }}>
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                        {activeTab === 'project'
+                          ? <><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></>
+                          : <><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>}
+                      </svg>
+                    </div>
+                    <div className="text-mono text-muted" style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: 8 }}>
+                      {activeTab === 'all' ? 'No entries yet' : `No ${activeTab === 'project' ? 'projects' : 'experience'} yet`}
+                    </div>
+                    <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20, maxWidth: 360, margin: '0 auto 20px' }}>
+                      {activeTab === 'project'
+                        ? 'Add your personal and course projects — each one is a bullet-point building block.'
+                        : 'Add your work experience, internships, and research roles.'}
+                    </p>
+                    <button className="btn btn-primary" onClick={() => setEntryModal({ open: true })}>
+                      Add {activeTab === 'project' ? 'Project' : 'Entry'}
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {activeTab === 'all' && filteredEntries.length > 0 && (
+                      <div className="sidebar-section-label" style={{ marginBottom: 4 }}>Entries</div>
+                    )}
+                    {filteredEntries.map(entry => (
+                      <EntryCard
+                        key={entry.id}
+                        entry={entry}
+                        onEdit={() => setEntryModal({ open: true, entry })}
+                        onDelete={() => handleDeleteEntry(entry.id)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </>
+        )}
       </div>
     </>
   );
