@@ -1446,10 +1446,12 @@ img { display: block; max-width: 100%; }
   color: var(--text-secondary);
 }
 .entry-bullets li::before {
-  content: '–';
+  content: '•';
   position: absolute;
   left: 0;
-  color: var(--text-muted);
+  color: var(--accent);
+  font-size: 10px;
+  top: 3px;
 }
 .entry-skills-row {
   display: flex;
