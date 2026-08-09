@@ -66,10 +66,6 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Close mobile drawer when route changes (click on nav)
-  useEffect(() => {
-    setMobileOpen(false);
-  }, []);
 
   return (
     <SidebarContext.Provider value={{ collapsed, mobileOpen, toggleCollapsed, openMobile, closeMobile }}>

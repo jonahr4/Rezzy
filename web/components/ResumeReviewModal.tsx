@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import type { ResumeParseResult } from '@/app/api/parse-resume/route';
 
 type ReviewTab = 'new' | 'duplicates';
@@ -37,13 +37,13 @@ export default function ResumeReviewModal({ result, onImport, onClose }: Props) 
   );
 
   function toggleEntry(i: number) {
-    setSelectedEntries(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n; });
+    setSelectedEntries(s => { const n = new Set(s); if (n.has(i)) { n.delete(i); } else { n.add(i); } return n; });
   }
   function toggleEdu(i: number) {
-    setSelectedEdu(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n; });
+    setSelectedEdu(s => { const n = new Set(s); if (n.has(i)) { n.delete(i); } else { n.add(i); } return n; });
   }
   function toggleSkill(skill: string) {
-    setSelectedSkills(s => { const n = new Set(s); n.has(skill) ? n.delete(skill) : n.add(skill); return n; });
+    setSelectedSkills(s => { const n = new Set(s); if (n.has(skill)) { n.delete(skill); } else { n.add(skill); } return n; });
   }
 
   const totalNew = result.new_entries.length + result.new_education.length + result.new_skills.length;

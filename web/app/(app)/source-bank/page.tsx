@@ -29,6 +29,23 @@ function authHeaders(uid: string | undefined): HeadersInit {
   return uid ? { 'x-user-id': uid } : {};
 }
 
+/* ── Module-level SVG icons (must not be defined inside render) ── */
+function JobIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="7" width="20" height="14" rx="2"/>
+      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+    </svg>
+  );
+}
+function ProjectIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+    </svg>
+  );
+}
+
 /* ── Entry Card ── */
 function EntryCard({ entry, onEdit, onDelete }: {
   entry: Entry;
@@ -38,19 +55,6 @@ function EntryCard({ entry, onEdit, onDelete }: {
   const [expanded, setExpanded] = useState(false);
   const dateStr = [entry.start_date, entry.end_date].filter(Boolean).join(' – ') || null;
   const isJob = entry.type === 'job';
-
-  // SVG icons
-  const JobIcon = () => (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="7" width="20" height="14" rx="2"/>
-      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-    </svg>
-  );
-  const ProjectIcon = () => (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
-    </svg>
-  );
 
   return (
     <div className={`entry-card ${entry.pinned ? 'pinned' : ''}`}>
@@ -355,9 +359,11 @@ export default function SourceBankPage() {
     } finally {
       setLoading(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uid]);
 
-  useEffect(() => { load(); }, [load]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { void load(); }, [uid]);
 
   /* ── Entry CRUD ── */
   async function handleSaveEntry(data: Partial<Entry>) {

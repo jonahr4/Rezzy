@@ -3,15 +3,17 @@ import { sql } from '@/lib/db';
 import OpenAI from 'openai';
 import { extractText } from 'unpdf';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENROUTER_API_KEY,
-  baseURL: 'https://openrouter.ai/api/v1',
-  defaultHeaders: {
-    'HTTP-Referer': 'https://rezzy.app',
-    'X-Title': 'Rezzy',
-  },
-});
-
+/* ── OpenAI client — lazy init inside handler so build doesn't need env var ── */
+function getOpenAI() {
+  return new OpenAI({
+    apiKey: process.env.OPENROUTER_API_KEY,
+    baseURL: 'https://openrouter.ai/api/v1',
+    defaultHeaders: {
+      'HTTP-Referer': 'https://rezzy.app',
+      'X-Title': 'Rezzy',
+    },
+  });
+}
 const MODEL = process.env.OPENROUTER_MODEL ?? 'google/gemini-2.5-flash-lite';
 
 /* ── Types ── */
@@ -145,7 +147,7 @@ Resume:
 ${resumeText.slice(0, 12000)}
 ---`;
 
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAI().chat.completions.create({
       model: MODEL,
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.1,
