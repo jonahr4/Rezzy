@@ -3,10 +3,12 @@ import { sql } from '@/lib/db';
 import OpenAI from 'openai';
 import { extractText } from 'unpdf';
 
-/* ── OpenAI client — lazy init inside handler so build doesn't need env var ── */
+/* ── OpenAI-compatible client pointing at OpenRouter (not OpenAI) ── */
 function getOpenAI() {
+  const key = process.env.OPENROUTER_API_KEY;
+  if (!key) throw new Error('OPENROUTER_API_KEY env var is not set. Add it in Vercel → Settings → Environment Variables.');
   return new OpenAI({
-    apiKey: process.env.OPENROUTER_API_KEY,
+    apiKey: key,
     baseURL: 'https://openrouter.ai/api/v1',
     defaultHeaders: {
       'HTTP-Referer': 'https://rezzy.app',
