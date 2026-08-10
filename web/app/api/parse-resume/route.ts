@@ -19,8 +19,8 @@ function getOpenAI() {
 const MODEL = process.env.OPENROUTER_MODEL ?? 'google/gemini-2.5-flash-lite';
 
 /* ── Types ── */
-interface ParsedBullet { id: string; text: string; }
-interface ParsedEntry {
+export interface ParsedBullet { id: string; text: string; }
+export interface ParsedEntry {
   type: 'job' | 'project';
   title: string;
   organization: string | null;
@@ -31,7 +31,7 @@ interface ParsedEntry {
   bullets: ParsedBullet[];
   skills: string[];
 }
-interface ParsedEducation {
+export interface ParsedEducation {
   institution: string;
   degree: string;
   minor: string | null;
@@ -43,11 +43,20 @@ interface ParsedEducation {
   relevant_coursework: string[];
 }
 
+export interface MergeEntry {
+  existing_id: string;
+  existing_title: string;
+  existing_org: string | null;
+  new_bullets: ParsedBullet[];
+  new_skills: string[];
+}
+
 export interface ResumeParseResult {
   entries: ParsedEntry[];
   education: ParsedEducation[];
   skills: string[];
   new_entries: ParsedEntry[];
+  merge_entries: MergeEntry[];
   duplicate_entries: ParsedEntry[];
   new_education: ParsedEducation[];
   duplicate_education: ParsedEducation[];
@@ -69,11 +78,19 @@ function isDuplicateBullet(newBullet: string, existingBullets: string[]): boolea
   return existingBullets.some(b => similarity(newBullet, b) > 0.65);
 }
 
-function isDuplicateEntry(incoming: ParsedEntry, existing: { title: string; organization: string | null }[]): boolean {
-  return existing.some(e =>
+interface ExistingEntry {
+  id: string;
+  title: string;
+  organization: string | null;
+  bullets: ParsedBullet[];
+  skills: unknown;
+}
+
+function findMatchingEntry(incoming: ParsedEntry, existing: ExistingEntry[]): ExistingEntry | null {
+  return existing.find(e =>
     similarity(incoming.title, e.title) > 0.8 &&
     (!incoming.organization || !e.organization || similarity(incoming.organization, e.organization) > 0.7)
-  );
+  ) ?? null;
 }
 
 function isDuplicateEdu(incoming: ParsedEducation, existing: { institution: string; degree: string }[]): boolean {
@@ -89,21 +106,39 @@ export async function POST(req: NextRequest) {
 
   try {
     const formData = await req.formData();
-    const file = formData.get('file') as File | null;
-    if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 });
-    if (!file.name.toLowerCase().endsWith('.pdf')) {
-      return NextResponse.json({ error: 'Only PDF files are supported' }, { status: 400 });
+
+    // Collect all PDF files (multi-upload support, up to 5)
+    const files: File[] = [];
+    for (const [, value] of formData.entries()) {
+      if (value instanceof File && value.name.toLowerCase().endsWith('.pdf')) {
+        files.push(value);
+      }
+    }
+    if (files.length === 0) {
+      return NextResponse.json({ error: 'No PDF files provided' }, { status: 400 });
+    }
+    if (files.length > 5) {
+      return NextResponse.json({ error: 'Maximum 5 PDFs at once' }, { status: 400 });
     }
 
-    // 1. Extract text from PDF
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const { text: resumeText } = await extractText(new Uint8Array(buffer), { mergePages: true });
-    if (!resumeText || resumeText.length < 50) {
-      return NextResponse.json({ error: 'Could not extract text from PDF. Try a text-based PDF.' }, { status: 422 });
+    // 1. Extract text from all PDFs and concatenate
+    const textParts: string[] = [];
+    for (const file of files) {
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const { text } = await extractText(new Uint8Array(buffer), { mergePages: true });
+      if (text && text.length > 20) {
+        textParts.push(text);
+      }
+    }
+    const resumeText = textParts.join('\n\n--- Next Resume ---\n\n');
+    if (resumeText.length < 50) {
+      return NextResponse.json({ error: 'Could not extract text from PDF(s). Try text-based PDFs.' }, { status: 422 });
     }
 
     // 2. Call OpenRouter to parse structured resume data
     const prompt = `You are a resume parser. Extract ALL structured data from this resume text.
+There may be content from multiple resumes — deduplicate entries that are clearly the same role
+(same company + similar title) by keeping the most complete version with ALL unique bullet points combined.
 
 Return ONLY valid JSON matching this schema exactly:
 {
@@ -137,7 +172,8 @@ Return ONLY valid JSON matching this schema exactly:
 }
 
 Rules:
-- Include EVERY bullet point verbatim
+- Include EVERY bullet point verbatim — do not paraphrase or summarize
+- If two entries are the same role at the same company, merge them into one entry with all unique bullets combined
 - Jobs = work experience, internships, research roles
 - Projects = personal, course, or team projects
 - skills[] at top level = all unique skills from the whole document
@@ -146,7 +182,7 @@ Rules:
 
 Resume:
 ---
-${resumeText.slice(0, 12000)}
+${resumeText.slice(0, 16000)}
 ---`;
 
     const completion = await getOpenAI().chat.completions.create({
@@ -174,30 +210,54 @@ ${resumeText.slice(0, 12000)}
     const incomingEducation: ParsedEducation[] = parsed.education ?? [];
     const incomingSkills: string[] = parsed.skills ?? [];
 
-    // 3. Fetch existing data from Neon for duplicate detection
+    // 3. Fetch existing data from Neon for duplicate/merge detection
     const [existingEntries, existingEdu, existingSkillGroups] = await Promise.all([
-      sql`SELECT title, organization, bullets FROM entries WHERE user_id = ${uid}`,
+      sql`SELECT id, title, organization, bullets, skills FROM entries WHERE user_id = ${uid}`,
       sql`SELECT institution, degree FROM education WHERE user_id = ${uid}`,
       sql`SELECT skills FROM skill_groups WHERE user_id = ${uid}`,
     ]);
 
-    const existingBullets: string[] = existingEntries.flatMap(
-      (e) => (e.bullets as ParsedBullet[]).map(b => b.text)
+    const typedExisting = existingEntries as unknown as ExistingEntry[];
+    const allExistingBullets: string[] = typedExisting.flatMap(
+      (e) => (Array.isArray(e.bullets) ? e.bullets : []).map((b: ParsedBullet) => b.text)
     );
     const existingSkillSet = new Set<string>(
       existingSkillGroups.flatMap(g => (g.skills as string[]).map(s => s.toLowerCase()))
     );
 
-    // 4. Deduplicate entries
+    // 4. Categorize entries: new / merge / duplicate
     const new_entries: ParsedEntry[] = [];
+    const merge_entries: MergeEntry[] = [];
     const duplicate_entries: ParsedEntry[] = [];
+
     for (const entry of incomingEntries) {
-      if (isDuplicateEntry(entry, existingEntries as { title: string; organization: string | null }[])) {
-        duplicate_entries.push(entry);
+      const match = findMatchingEntry(entry, typedExisting);
+      if (match) {
+        // Same entry exists — check for new bullets
+        const existingBulletTexts = (Array.isArray(match.bullets) ? match.bullets : []).map((b: ParsedBullet) => b.text);
+        const existingSkillList = Array.isArray(match.skills) ? (match.skills as string[]) : [];
+        const newBullets = entry.bullets.filter(b => !isDuplicateBullet(b.text, existingBulletTexts));
+        const newSkills = entry.skills.filter(s =>
+          !existingSkillList.some(es => es.toLowerCase() === s.toLowerCase())
+        );
+
+        if (newBullets.length > 0 || newSkills.length > 0) {
+          // Has new content to merge
+          merge_entries.push({
+            existing_id: match.id,
+            existing_title: match.title,
+            existing_org: match.organization,
+            new_bullets: newBullets,
+            new_skills: newSkills,
+          });
+        } else {
+          // Pure duplicate — nothing new
+          duplicate_entries.push(entry);
+        }
       } else {
-        // Filter bullets — only keep non-duplicate ones
-        const freshBullets = entry.bullets.filter(b => !isDuplicateBullet(b.text, existingBullets));
-        new_entries.push({ ...entry, bullets: freshBullets });
+        // Brand new entry — still filter bullets against ALL existing bullets
+        const freshBullets = entry.bullets.filter(b => !isDuplicateBullet(b.text, allExistingBullets));
+        new_entries.push({ ...entry, bullets: freshBullets.length > 0 ? freshBullets : entry.bullets });
       }
     }
 
@@ -218,6 +278,7 @@ ${resumeText.slice(0, 12000)}
       education: incomingEducation,
       skills: incomingSkills,
       new_entries,
+      merge_entries,
       duplicate_entries,
       new_education,
       duplicate_education,
@@ -231,4 +292,3 @@ ${resumeText.slice(0, 12000)}
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }
-

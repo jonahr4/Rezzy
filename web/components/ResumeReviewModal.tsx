@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import type { ResumeParseResult } from '@/app/api/parse-resume/route';
+import type { ResumeParseResult, MergeEntry, ParsedBullet } from '@/app/api/parse-resume/route';
 
-type ReviewTab = 'new' | 'duplicates';
+type ReviewTab = 'new' | 'merging' | 'duplicates';
 
 interface Props {
   result: ResumeParseResult;
@@ -15,9 +15,16 @@ export interface ImportSelection {
   entries: ResumeParseResult['new_entries'];
   education: ResumeParseResult['new_education'];
   skills: string[];
+  merges: SelectedMerge[];
 }
 
-// Make TypeScript happy — pull types from result shape
+export interface SelectedMerge {
+  existing_id: string;
+  new_bullets: ParsedBullet[];
+  new_skills: string[];
+}
+
+// Pull types from result shape
 type ParsedEntry    = ResumeParseResult['new_entries'][number];
 type ParsedEducation = ResumeParseResult['new_education'][number];
 
@@ -36,6 +43,16 @@ export default function ResumeReviewModal({ result, onImport, onClose }: Props) 
     new Set(result.new_skills)
   );
 
+  // Merge selections — per merge entry, which new bullets are selected
+  const mergeEntries = result.merge_entries ?? [];
+  const [selectedMerges, setSelectedMerges] = useState<Map<number, Set<string>>>(() => {
+    const m = new Map<number, Set<string>>();
+    mergeEntries.forEach((me, i) => {
+      m.set(i, new Set(me.new_bullets.map(b => b.id)));
+    });
+    return m;
+  });
+
   function toggleEntry(i: number) {
     setSelectedEntries(s => { const n = new Set(s); if (n.has(i)) { n.delete(i); } else { n.add(i); } return n; });
   }
@@ -45,18 +62,65 @@ export default function ResumeReviewModal({ result, onImport, onClose }: Props) 
   function toggleSkill(skill: string) {
     setSelectedSkills(s => { const n = new Set(s); if (n.has(skill)) { n.delete(skill); } else { n.add(skill); } return n; });
   }
+  function toggleMergeBullet(mergeIdx: number, bulletId: string) {
+    setSelectedMerges(prev => {
+      const next = new Map(prev);
+      const set = new Set(next.get(mergeIdx) ?? []);
+      if (set.has(bulletId)) { set.delete(bulletId); } else { set.add(bulletId); }
+      next.set(mergeIdx, set);
+      return next;
+    });
+  }
+  function toggleMergeAll(mergeIdx: number) {
+    setSelectedMerges(prev => {
+      const next = new Map(prev);
+      const current = next.get(mergeIdx) ?? new Set<string>();
+      const allBullets = mergeEntries[mergeIdx].new_bullets.map(b => b.id);
+      if (current.size === allBullets.length) {
+        next.set(mergeIdx, new Set());
+      } else {
+        next.set(mergeIdx, new Set(allBullets));
+      }
+      return next;
+    });
+  }
 
-  const totalNew = result.new_entries.length + result.new_education.length + result.new_skills.length;
-  const totalDupes = result.duplicate_entries.length + result.duplicate_education.length + result.duplicate_skills.length;
-  const totalSelected = selectedEntries.size + selectedEdu.size + selectedSkills.size;
+  const totalNew    = result.new_entries.length + result.new_education.length + result.new_skills.length;
+  const totalMerge  = mergeEntries.length;
+  const totalDupes  = result.duplicate_entries.length + result.duplicate_education.length + result.duplicate_skills.length;
+
+  // Count merge bullets selected
+  let mergeBulletCount = 0;
+  selectedMerges.forEach(set => { mergeBulletCount += set.size; });
+
+  const totalSelected = selectedEntries.size + selectedEdu.size + selectedSkills.size + mergeBulletCount;
+
+  // Auto-select default tab based on what's available
+  const defaultTab = totalNew > 0 ? 'new' : totalMerge > 0 ? 'merging' : 'duplicates';
+  if (tab === 'new' && totalNew === 0 && totalMerge > 0) {
+    // Will show empty — switch to a better tab
+  }
 
   async function handleImport() {
     setImporting(true);
     try {
+      const merges: SelectedMerge[] = [];
+      selectedMerges.forEach((bulletIds, idx) => {
+        if (bulletIds.size > 0) {
+          const me = mergeEntries[idx];
+          merges.push({
+            existing_id: me.existing_id,
+            new_bullets: me.new_bullets.filter(b => bulletIds.has(b.id)),
+            new_skills: me.new_skills, // always include new skills from merge
+          });
+        }
+      });
+
       await onImport({
         entries: result.new_entries.filter((_, i) => selectedEntries.has(i)),
         education: result.new_education.filter((_, i) => selectedEdu.has(i)),
         skills: result.new_skills.filter(s => selectedSkills.has(s)),
+        merges,
       });
       onClose();
     } finally {
@@ -67,14 +131,16 @@ export default function ResumeReviewModal({ result, onImport, onClose }: Props) 
   return (
     <>
       <div className="modal-backdrop" onClick={onClose} />
-      <div className="entry-modal" style={{ width: 'min(680px, 100vw)' }} role="dialog">
+      <div className="review-modal" role="dialog">
         {/* Header */}
         <div className="entry-modal-header">
           <div>
             <h2 className="entry-modal-title">Resume Import Review</h2>
             <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>
-              {totalNew} new item{totalNew !== 1 ? 's' : ''} found
-              {totalDupes > 0 ? ` · ${totalDupes} duplicate${totalDupes !== 1 ? 's' : ''} skipped` : ''}
+              {totalNew + totalMerge > 0
+                ? `${totalNew} new · ${totalMerge} to merge · ${totalDupes} duplicate${totalDupes !== 1 ? 's' : ''}`
+                : `${totalDupes} duplicate${totalDupes !== 1 ? 's' : ''} — everything already exists`
+              }
             </p>
           </div>
           <button className="modal-close-btn" onClick={onClose}>
@@ -87,21 +153,14 @@ export default function ResumeReviewModal({ result, onImport, onClose }: Props) 
         {/* Tabs */}
         <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid var(--border)', padding: '0 24px' }}>
           {([
-            { key: 'new',        label: `New (${totalNew})` },
-            { key: 'duplicates', label: `Duplicates (${totalDupes})` },
-          ] as { key: ReviewTab; label: string }[]).map(t => (
+            { key: 'new' as ReviewTab,        label: `New (${totalNew})` },
+            { key: 'merging' as ReviewTab,     label: `Merging (${totalMerge})` },
+            { key: 'duplicates' as ReviewTab,  label: `Duplicates (${totalDupes})` },
+          ]).map(t => (
             <button
               key={t.key}
+              className={`review-tab ${tab === t.key ? 'active' : ''}`}
               onClick={() => setTab(t.key)}
-              style={{
-                padding: '12px 16px',
-                fontSize: 13,
-                fontWeight: 500,
-                color: tab === t.key ? 'var(--accent)' : 'var(--text-muted)',
-                borderBottom: tab === t.key ? '2px solid var(--accent)' : '2px solid transparent',
-                marginBottom: -1,
-                transition: 'color 0.15s',
-              }}
             >
               {t.label}
             </button>
@@ -110,11 +169,18 @@ export default function ResumeReviewModal({ result, onImport, onClose }: Props) 
 
         {/* Body */}
         <div className="entry-modal-body">
-          {tab === 'new' ? (
+          {tab === 'new' && (
             <>
               {totalNew === 0 ? (
                 <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)', fontSize: 14 }}>
                   No new items found — everything already exists in your Source Bank.
+                  {totalMerge > 0 && (
+                    <div style={{ marginTop: 8 }}>
+                      <button className="btn btn-ghost btn-sm" onClick={() => setTab('merging')}>
+                        View {totalMerge} entries with new bullets →
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <>
@@ -170,8 +236,36 @@ export default function ResumeReviewModal({ result, onImport, onClose }: Props) 
                 </>
               )}
             </>
-          ) : (
-            /* Duplicates tab */
+          )}
+
+          {tab === 'merging' && (
+            <>
+              {totalMerge === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)', fontSize: 14 }}>
+                  No entries to merge — all bullet points already exist.
+                </div>
+              ) : (
+                <>
+                  <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>
+                    These entries already exist in your Source Bank, but the uploaded resume has <strong>new bullet points</strong> to add.
+                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {mergeEntries.map((me, idx) => (
+                      <MergeCard
+                        key={idx}
+                        merge={me}
+                        selectedBullets={selectedMerges.get(idx) ?? new Set()}
+                        onToggleBullet={(bulletId) => toggleMergeBullet(idx, bulletId)}
+                        onToggleAll={() => toggleMergeAll(idx)}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
+          )}
+
+          {tab === 'duplicates' && (
             <>
               {totalDupes === 0 ? (
                 <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)', fontSize: 14 }}>
@@ -264,6 +358,30 @@ function Section({ title, count, children }: { title: string; count: number; chi
   );
 }
 
+function Checkbox({ checked, onChange }: { checked: boolean; onChange: () => void }) {
+  return (
+    <div
+      onClick={(e) => { e.stopPropagation(); onChange(); }}
+      style={{
+        width: 18, height: 18,
+        border: `2px solid ${checked ? 'var(--accent)' : 'var(--border-strong)'}`,
+        borderRadius: 4,
+        background: checked ? 'var(--accent)' : 'transparent',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        transition: 'all 0.15s',
+        cursor: 'pointer',
+        flexShrink: 0,
+      }}
+    >
+      {checked && (
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      )}
+    </div>
+  );
+}
+
 function ReviewEntryCard({
   entry,
   selected,
@@ -289,20 +407,7 @@ function ReviewEntryCard({
       <div className="entry-card-header" style={{ cursor: 'inherit' }}>
         {!duplicate && (
           <div style={{ flexShrink: 0, marginTop: 2 }}>
-            <div style={{
-              width: 18, height: 18,
-              border: `2px solid ${selected ? 'var(--accent)' : 'var(--border-strong)'}`,
-              borderRadius: 4,
-              background: selected ? 'var(--accent)' : 'transparent',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: 'all 0.15s',
-            }}>
-              {selected && (
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-              )}
-            </div>
+            <Checkbox checked={selected} onChange={() => onToggle?.()} />
           </div>
         )}
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -343,6 +448,72 @@ function ReviewEntryCard({
   );
 }
 
+function MergeCard({
+  merge,
+  selectedBullets,
+  onToggleBullet,
+  onToggleAll,
+}: {
+  merge: MergeEntry;
+  selectedBullets: Set<string>;
+  onToggleBullet: (bulletId: string) => void;
+  onToggleAll: () => void;
+}) {
+  const allSelected = selectedBullets.size === merge.new_bullets.length;
+
+  return (
+    <div className="merge-card">
+      <div className="merge-card-header" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <Checkbox checked={allSelected} onChange={onToggleAll} />
+        <div style={{ flex: 1 }}>
+          <h3 className="entry-card-title" style={{ marginBottom: 2 }}>{merge.existing_title}</h3>
+          {merge.existing_org && (
+            <div className="entry-card-org">{merge.existing_org}</div>
+          )}
+        </div>
+        <span style={{
+          fontFamily: 'var(--font-mono)',
+          fontSize: 11,
+          fontWeight: 600,
+          color: 'var(--accent)',
+          background: 'color-mix(in srgb, var(--accent) 12%, transparent)',
+          padding: '3px 10px',
+          borderRadius: 'var(--radius-full)',
+        }}>
+          +{merge.new_bullets.length} bullet{merge.new_bullets.length !== 1 ? 's' : ''}
+        </span>
+      </div>
+      <div className="merge-card-body">
+        <div className="merge-new-label">New bullets to add</div>
+        {merge.new_bullets.map(b => (
+          <div
+            key={b.id}
+            className="merge-bullet-new"
+            style={{
+              cursor: 'pointer',
+              opacity: selectedBullets.has(b.id) ? 1 : 0.4,
+            }}
+            onClick={() => onToggleBullet(b.id)}
+          >
+            <Checkbox checked={selectedBullets.has(b.id)} onChange={() => onToggleBullet(b.id)} />
+            <span style={{ flex: 1 }}>• {b.text}</span>
+          </div>
+        ))}
+        {merge.new_skills.length > 0 && (
+          <>
+            <div className="merge-new-label">New skills</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, paddingLeft: 4 }}>
+              {merge.new_skills.map(s => (
+                <span key={s} className="entry-skill-chip">{s}</span>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function ReviewEduCard({
   edu,
   selected,
@@ -367,20 +538,7 @@ function ReviewEduCard({
       <div className="entry-card-header">
         {!duplicate && (
           <div style={{ flexShrink: 0, marginTop: 2 }}>
-            <div style={{
-              width: 18, height: 18,
-              border: `2px solid ${selected ? 'var(--accent)' : 'var(--border-strong)'}`,
-              borderRadius: 4,
-              background: selected ? 'var(--accent)' : 'transparent',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: 'all 0.15s',
-            }}>
-              {selected && (
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-              )}
-            </div>
+            <Checkbox checked={selected} onChange={() => onToggle?.()} />
           </div>
         )}
         <div style={{ flex: 1 }}>

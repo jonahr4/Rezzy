@@ -326,9 +326,11 @@ export default function SourceBankPage() {
 
   // Upload & review state
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading]     = useState(false);
-  const [uploadError, setUploadError] = useState('');
-  const [reviewResult, setReviewResult] = useState<ResumeParseResult | null>(null);
+  const [uploading, setUploading]         = useState(false);
+  const [uploadStatus, setUploadStatus]   = useState('');
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadError, setUploadError]     = useState('');
+  const [reviewResult, setReviewResult]   = useState<ResumeParseResult | null>(null);
 
   /* ── Load data ── */
   const load = useCallback(async () => {
@@ -434,28 +436,47 @@ export default function SourceBankPage() {
     }
   }
 
-  /* ── Resume Upload ── */
-  async function handleUpload(file: File) {
+  /* ── Resume Upload (multi-file) ── */
+  async function handleUpload(files: FileList) {
+    const pdfs = Array.from(files).filter(f => f.name.toLowerCase().endsWith('.pdf')).slice(0, 5);
+    if (pdfs.length === 0) { setUploadError('Please select PDF files.'); return; }
+
     setUploading(true);
     setUploadError('');
+    setUploadProgress(10);
+    setUploadStatus(`Extracting text from ${pdfs.length} PDF${pdfs.length > 1 ? 's' : ''}...`);
+
     try {
       const form = new FormData();
-      form.append('file', file);
+      for (const f of pdfs) form.append('file', f);
+
+      setUploadProgress(25);
+      setUploadStatus('Analyzing resume content...');
+
       const res = await fetch('/api/parse-resume', {
         method: 'POST',
         headers: authHeaders(uid),
         body: form,
       });
+
+      setUploadProgress(80);
+      setUploadStatus('Checking for duplicates...');
+
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.error ?? `Error ${res.status}`);
       }
       const result: ResumeParseResult = await res.json();
+
+      setUploadProgress(100);
+      setUploadStatus('Done!');
       setReviewResult(result);
     } catch (e: unknown) {
       setUploadError(e instanceof Error ? e.message : 'Upload failed');
     } finally {
       setUploading(false);
+      setUploadProgress(0);
+      setUploadStatus('');
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   }
@@ -464,15 +485,38 @@ export default function SourceBankPage() {
   async function handleImport(selection: ImportSelection) {
     const headers = { ...authHeaders(uid), 'Content-Type': 'application/json' } as HeadersInit;
 
-    // Import entries
+    // 1. Import new entries
     for (const entry of selection.entries) {
       await fetch('/api/entries', { method: 'POST', headers, body: JSON.stringify(entry) });
     }
-    // Import education
+    // 2. Import new education
     for (const edu of selection.education) {
       await fetch('/api/education', { method: 'POST', headers, body: JSON.stringify(edu) });
     }
-    // Import skills — merge into existing groups
+    // 3. Merge bullets into existing entries
+    if (selection.merges) {
+      for (const merge of selection.merges) {
+        // PATCH the entry with appended bullets and skills
+        const currentEntry = entries.find(e => e.id === merge.existing_id);
+        if (currentEntry) {
+          const mergedBullets = [
+            ...(currentEntry.bullets ?? []),
+            ...merge.new_bullets,
+          ];
+          const existingSkills: string[] = Array.isArray(currentEntry.skills) ? currentEntry.skills : [];
+          const mergedSkills = [
+            ...existingSkills,
+            ...merge.new_skills.filter(s => !existingSkills.some(es => es.toLowerCase() === s.toLowerCase())),
+          ];
+          await fetch(`/api/entries/${merge.existing_id}`, {
+            method: 'PATCH',
+            headers,
+            body: JSON.stringify({ bullets: mergedBullets, skills: mergedSkills }),
+          });
+        }
+      }
+    }
+    // 4. Import skills — merge into existing groups
     if (selection.skills.length > 0) {
       const otherGroup = skillGroups.find(g => g.label.toLowerCase() === 'other') ?? skillGroups[skillGroups.length - 1];
       if (otherGroup) {
@@ -484,7 +528,7 @@ export default function SourceBankPage() {
         await fetch('/api/skills', { method: 'POST', headers, body: JSON.stringify({ groups: updated }) });
       }
     }
-    // Reload everything
+    // 5. Reload everything
     await load();
   }
 
@@ -492,6 +536,20 @@ export default function SourceBankPage() {
   const filteredEntries = activeTab === 'all' || activeTab === 'education' || activeTab === 'skills'
     ? entries
     : entries.filter(e => e.type === activeTab as EntryType);
+
+  /* ── Sort entries: pinned first, then oldest → newest by start_date ── */
+  function parseDate(d: string | null | undefined): number {
+    if (!d) return Infinity; // no date → sort to end
+    const t = Date.parse(d);
+    return isNaN(t) ? Infinity : t;
+  }
+  const sortedEntries = [...filteredEntries].sort((a, b) => {
+    // Pinned always first
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+    // Newest start_date first
+    return parseDate(b.start_date) - parseDate(a.start_date);
+  });
 
   /* ── Counts for tab badges ── */
   const counts = {
@@ -510,13 +568,14 @@ export default function SourceBankPage() {
 
   return (
     <>
-      {/* Hidden file input */}
+      {/* Hidden file input — multi-file, up to 5 */}
       <input
         ref={fileInputRef}
         type="file"
         accept=".pdf"
+        multiple
         style={{ display: 'none' }}
-        onChange={e => { const f = e.target.files?.[0]; if (f) handleUpload(f); }}
+        onChange={e => { const f = e.target.files; if (f && f.length > 0) handleUpload(f); }}
       />
 
       {/* Modals */}
@@ -551,32 +610,38 @@ export default function SourceBankPage() {
             All your experience, projects, education, and skills in one place. The pipeline pulls from these when tailoring.
           </p>
         </div>
-        {/* Upload button in header */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+        {/* Upload button + progress in header */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, minWidth: 200 }}>
           <button
             className="btn btn-primary"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
             style={{ display: 'flex', alignItems: 'center', gap: 8 }}
           >
-            {uploading ? (
-              <>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ animation: 'spin 1s linear infinite' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            Upload Resume{uploading ? '…' : 's'}
+          </button>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Up to 5 PDFs at once</span>
+
+          {/* Progress indicator */}
+          {uploading && (
+            <div className="upload-progress" style={{ width: '100%' }}>
+              <div className="upload-progress-status">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                   <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
                 </svg>
-                Parsing…
-              </>
-            ) : (
-              <>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                  <polyline points="17 8 12 3 7 8"/>
-                  <line x1="12" y1="3" x2="12" y2="15"/>
-                </svg>
-                Upload Resume
-              </>
-            )}
-          </button>
+                {uploadStatus}
+              </div>
+              <div className="upload-progress-bar">
+                <div className="upload-progress-fill" style={{ width: `${uploadProgress}%` }} />
+              </div>
+            </div>
+          )}
+
           {uploadError && <p style={{ fontSize: 12, color: 'var(--danger)' }}>{uploadError}</p>}
         </div>
       </div>
@@ -687,7 +752,7 @@ export default function SourceBankPage() {
                   </div>
                 )}
 
-                {filteredEntries.length === 0 ? (
+                {sortedEntries.length === 0 ? (
                   <div className="card" style={{ padding: '60px 24px', textAlign: 'center' }}>
                     <div style={{ marginBottom: 16, opacity: 0.25, display: 'flex', justifyContent: 'center' }}>
                       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
@@ -710,10 +775,10 @@ export default function SourceBankPage() {
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    {activeTab === 'all' && filteredEntries.length > 0 && (
+                    {activeTab === 'all' && sortedEntries.length > 0 && (
                       <div className="sidebar-section-label" style={{ marginBottom: 4 }}>Entries</div>
                     )}
-                    {filteredEntries.map(entry => (
+                    {sortedEntries.map(entry => (
                       <EntryCard
                         key={entry.id}
                         entry={entry}
