@@ -1,138 +1,261 @@
-# Getting Started — AI Resume Tailor (Phase 1)
+# Getting Started — Rezzy (AI Resume Tailor)
 
-This guide walks you through setting up and running the local pipeline POC.
+This guide walks you through running Rezzy locally for development.
 
 ---
 
 ## Prerequisites
 
-### Python 3.11+
-Verify your Python version:
-```bash
-python3 --version
+| Tool | Version | Install |
+|------|---------|---------|
+| **Python** | 3.12+ | `brew install python` or [python.org](https://www.python.org/downloads/) |
+| **Node.js** | 18+ | `brew install node` or [nodejs.org](https://nodejs.org/) |
+| **Tectonic** | Latest | `brew install tectonic` |
+| **Docker Desktop** | Latest | `brew install --cask docker` (only needed for Azure deploys) |
+
+### API Keys
+
+| Key | Where to get it |
+|-----|----------------|
+| **OpenRouter** | [openrouter.ai/keys](https://openrouter.ai/keys) — add ~$5 credits, each pipeline run costs < $0.01 |
+| **LangSmith** (optional) | [smith.langchain.com](https://smith.langchain.com) — for pipeline tracing |
+
+---
+
+## Project Structure
+
 ```
-If you need to install or upgrade, use [pyenv](https://github.com/pyenv/pyenv) or download from [python.org](https://www.python.org/downloads/).
-
-### OpenRouter Account + API Key
-1. Create an account at [https://openrouter.ai](https://openrouter.ai).
-2. Navigate to **Keys** in your dashboard and create a new API key.
-3. Add a small amount of credits ($5 is more than enough for extensive testing — each pipeline run costs a fraction of a cent).
-
-### Tectonic (LaTeX Compiler)
-
-Tectonic is a lightweight, self-contained LaTeX engine. It downloads and caches only the packages your document needs — no full TeX Live install required.
-
-**macOS (Homebrew):**
-```bash
-brew install tectonic
-```
-
-**Windows / Linux:**
-Download the official binary from [https://tectonic-typesetting.github.io](https://tectonic-typesetting.github.io/en-US/install.html) and add it to your PATH.
-
-**Verify installation:**
-```bash
-tectonic --version
+Rezzy/
+├── V1/                         # Python pipeline
+│   ├── pipeline_api.py         # FastAPI server (step-by-step endpoints)
+│   ├── main.py                 # CLI entry point
+│   ├── langgraph.json          # LangGraph Studio config
+│   ├── requirements.txt        # Python dependencies
+│   ├── src/
+│   │   ├── graph.py            # LangGraph DAG definition
+│   │   ├── state.py            # ResumeState TypedDict
+│   │   ├── llm.py              # OpenRouter client with auto-retry
+│   │   ├── loader.py           # Source bank & JD loaders
+│   │   ├── trace.py            # Pipeline audit logging
+│   │   ├── templates/
+│   │   │   └── resume.tex.j2   # Jinja2 LaTeX resume template
+│   │   └── nodes/
+│   │       ├── jd_parser.py    # Parse JD → skills, keywords, seniority
+│   │       ├── job_selector.py # Select best entries for JD
+│   │       ├── bullet_selector.py  # ATS-aware bullet ranking
+│   │       ├── ai_suggestion_gen.py # Grammarly-style bullet improvements
+│   │       ├── latex_assembler.py   # Render LaTeX from selections
+│   │       ├── compile_latex.py     # Tectonic PDF compilation
+│   │       └── qa_critic.py         # Page-count QA + retry routing
+│   ├── data/
+│   │   └── *.txt               # Sample job descriptions
+│   └── output/                 # Generated runs (gitignored)
+│
+├── web/                        # Next.js frontend (V2 — current)
+│   ├── app/
+│   │   ├── page.tsx            # Dashboard
+│   │   ├── source-bank/        # Source Bank viewer
+│   │   ├── tailor/             # Interactive pipeline wizard
+│   │   ├── login/              # Auth pages
+│   │   ├── signup/
+│   │   └── api/
+│   │       ├── pipeline/       # Proxy routes to Python backend
+│   │       │   ├── step/       # POST pipeline step calls
+│   │       │   ├── health/     # Health check proxy
+│   │       │   └── source-bank/ # Source bank assembly
+│   │       ├── file/           # Serve output files (PDFs, etc.)
+│   │       ├── entries/        # CRUD for source bank entries
+│   │       ├── parse-resume/   # Resume PDF parser
+│   │       └── profile/        # User profile
+│   ├── components/
+│   │   ├── Sidebar.tsx         # Navigation sidebar
+│   │   ├── ContainerWakeup.tsx # Pre-warms Azure Container App
+│   │   └── tailor/             # 7 wizard step components
+│   │       ├── StepPasteJD.tsx
+│   │       ├── StepSkills.tsx
+│   │       ├── StepEntries.tsx
+│   │       ├── StepBullets.tsx
+│   │       ├── StepSuggestions.tsx
+│   │       ├── StepPreview.tsx
+│   │       ├── StepCompile.tsx
+│   │       └── WordBudget.tsx
+│   ├── lib/
+│   │   ├── tailorStore.ts      # Zustand store for wizard state
+│   │   ├── firebase.ts         # Firebase Auth client
+│   │   ├── auth-context.tsx    # Auth context provider
+│   │   └── db.ts               # Neon PostgreSQL connection
+│   └── .env.local              # Local env vars (not committed)
+│
+├── Dockerfile                  # Pipeline Docker image for Azure
+├── .dockerignore               # Excludes node_modules, .venv, etc.
+└── ui-guide/                   # V1 reference screenshots
 ```
 
 ---
 
 ## Setup
 
-### 1. Clone the repo
-```bash
-git clone <your-repo-url>
-cd ai-resume-tailor
-```
+### 1. Clone and install Python deps
 
-### 2. Create a virtual environment
 ```bash
+git clone https://github.com/jonahr4/ResumeGenie.git
+cd ResumeGenie
+
+# Create virtual environment
 python3 -m venv .venv
-source .venv/bin/activate    # macOS/Linux
-# .venv\Scripts\activate     # Windows
-```
+source .venv/bin/activate
 
-### 3. Install dependencies
-```bash
+# Install pipeline dependencies
+cd V1
 pip install -r requirements.txt
+cd ..
 ```
 
-### 4. Configure environment variables
+### 2. Install web dependencies
+
 ```bash
-cp .env.example .env
+cd web
+npm install
+cd ..
 ```
 
-Open `.env` and fill in your values:
-```
-OPENROUTER_API_KEY=sk-or-v1-your-actual-key-here
-OPENROUTER_MODEL=deepseek/deepseek-chat
+### 3. Configure environment variables
+
+**Python pipeline** — create `V1/.env`:
+```env
+OPENROUTER_API_KEY=sk-or-v1-your-key-here
+OPENROUTER_MODEL=google/gemini-2.5-flash-lite
+
+# Optional: LangSmith tracing
+LANGCHAIN_TRACING_V2=true
+LANGCHAIN_API_KEY=your_langsmith_key
+LANGCHAIN_PROJECT=Rezzy
 ```
 
-The `OPENROUTER_MODEL` can be any model available on OpenRouter. The default (`deepseek/deepseek-chat`) is cheap and capable. Other good options:
-- `meta-llama/llama-4-maverick` — strong open model
-- `openai/gpt-4o-mini` — if you prefer OpenAI-family models
+**Web app** — create `web/.env.local`:
+```env
+# Local pipeline API
+NEXT_PUBLIC_API_URL=http://localhost:5001
+
+# Azure pipeline (production only — used when NEXT_PUBLIC_API_URL is not set)
+NEXT_PUBLIC_ACA_URL=https://rezzy-pipeline.livelybay-96c41090.eastus.azurecontainerapps.io
+
+# Database (Neon PostgreSQL)
+DATABASE_URL=postgresql://...
+
+# Firebase Auth
+NEXT_PUBLIC_FIREBASE_API_KEY=...
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
+```
 
 ---
 
-## Running the Pipeline
+## Running Locally
 
-### Basic usage
+You need **3 terminals**:
+
+### Terminal 1: Pipeline API (FastAPI)
 ```bash
+source .venv/bin/activate
+cd V1
+uvicorn pipeline_api:app --port 5001 --reload
+```
+Runs on `http://localhost:5001`. Test: `curl http://localhost:5001/health`
+
+### Terminal 2: LangGraph Dev Server (optional — for LangSmith Studio debugging)
+```bash
+source .venv/bin/activate
+cd V1
+langgraph dev
+```
+Opens LangGraph Studio at `http://127.0.0.1:2024`. This is a **dev-only tool** — not needed in production.
+
+### Terminal 3: Web Frontend
+```bash
+cd web
+npm run dev
+```
+Opens at `http://localhost:3000`
+
+### Using the app
+1. Go to `http://localhost:3000/tailor`
+2. Paste a job description
+3. Walk through the wizard: Skills → Entries → Bullets → Suggestions → Preview → Compile
+4. The compiled PDF is served at `/api/file?path=output/run_.../resume.pdf`
+
+---
+
+## CLI Usage (Alternative)
+
+You can also run the pipeline directly via CLI without the web UI:
+
+```bash
+source .venv/bin/activate
+cd V1
 python main.py --jd data/sample_jd_backend.txt
 ```
 
-### With the alternative sample JD
-```bash
-python main.py --jd data/sample_jd_data_ml.txt
-```
+Output lands in `V1/output/run_YYYY-MM-DD_HH-MM-SS/`.
 
-### What you should see
+---
 
-The console will print a step-by-step status log as each LangGraph node executes:
+## Deploying to Production
 
-```
-[jd_parser] Parsed JD: 8 required skills, 12 keywords, seniority=mid-level
-[bullet_selector] Selected 4 jobs/1 projects, 17 bullets total (retry 0)
-[latex_assembler] Rendered LaTeX: 4823 chars
-[compile_latex] Compilation succeeded, 2 page(s)
-[qa_critic] FAIL: 2 pages, retrying (1/3)
-[bullet_selector] Selected 4 jobs/1 projects, 14 bullets total (retry 1)
-[latex_assembler] Rendered LaTeX: 4102 chars
-[compile_latex] Compilation succeeded, 1 page(s)
-[qa_critic] PASS: 1 page
+- **Frontend (Vercel):** Push to GitHub — Vercel auto-deploys
+- **Pipeline (Azure):** See [05-AZURE-DEPLOYMENT.md](docs/05-AZURE-DEPLOYMENT.md) for the full guide
 
-✅ Pipeline complete!
-   PDF: output/resume.pdf
-   Selection report: output/selection_report.json
-   Pages: 1
-   Retries: 1
-   Status: success
-```
+---
 
-### Output files
+## Tech Stack
 
-| File | Description |
-|---|---|
-| `output/resume.pdf` | The tailored one-page resume |
-| `output/selection_report.json` | Full selection data including every chosen bullet and its `reason` — preview of the future suggestion UI |
+| Layer | Technology |
+|-------|-----------|
+| **Pipeline** | LangGraph (StateGraph with conditional edges) |
+| **LLM** | OpenRouter → Gemini 2.5 Flash Lite (configurable) |
+| **PDF** | Tectonic (LaTeX compiler) + Jinja2 templates |
+| **Backend API** | FastAPI (step-by-step pipeline execution) |
+| **Frontend** | Next.js 16 + TypeScript + Zustand |
+| **Database** | Neon PostgreSQL (source bank, user profiles) |
+| **Auth** | Firebase Authentication |
+| **Hosting** | Vercel (frontend) + Azure Container Apps (pipeline) |
+| **Tracing** | LangSmith (optional) |
+
+---
+
+## Environment Variables Reference
+
+### Pipeline (V1/.env)
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `OPENROUTER_API_KEY` | — | OpenRouter API key (required) |
+| `OPENROUTER_MODEL` | `google/gemini-2.5-flash-lite` | LLM model |
+| `OPENROUTER_MAX_TOKENS` | `16384` | Max tokens per LLM response |
+| `OPENROUTER_MAX_RETRIES` | `3` | Auto-retry on truncated JSON |
+| `LANGCHAIN_TRACING_V2` | `false` | Enable LangSmith tracing |
+| `LANGCHAIN_API_KEY` | — | LangSmith API key |
+| `LANGCHAIN_PROJECT` | `Rezzy` | LangSmith project name |
+
+### Web (web/.env.local)
+
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_API_URL` | Local pipeline URL (`http://localhost:5001`) |
+| `NEXT_PUBLIC_ACA_URL` | Azure pipeline URL (production) |
+| `DATABASE_URL` | Neon PostgreSQL connection string |
+| `NEXT_PUBLIC_FIREBASE_*` | Firebase Auth configuration |
 
 ---
 
 ## Troubleshooting
 
-### "tectonic: command not found"
-Tectonic is not on your PATH. Re-run the install command above, or check that the binary location is in your shell's `$PATH`.
-
-### "Error: OPENROUTER_API_KEY not set"
-Make sure you've copied `.env.example` to `.env` and filled in your actual API key. The key should start with `sk-or-`.
-
-### "OpenRouter: insufficient credits"
-Add credits at [https://openrouter.ai/credits](https://openrouter.ai/credits). Pipeline runs cost < $0.01 each with the default model.
-
-### "LaTeX compilation failed"
-Check the console output for the specific LaTeX error. Common causes:
-- Missing closing braces in bullet text (the escaping should handle this, but edge cases exist)
-- Extremely long bullet text that overflows a single line
-
-### First run is slow
-Tectonic downloads and caches LaTeX packages on its first run. Subsequent runs are much faster.
+| Problem | Solution |
+|---------|---------|
+| `tectonic: command not found` | `brew install tectonic` |
+| `OPENROUTER_API_KEY not set` | Create `V1/.env` with your key |
+| `Pipeline API unreachable` | Make sure Terminal 1 (uvicorn) is running |
+| `404 on /api/file` | The PDF hasn't been generated yet, or the path is wrong |
+| First run is slow | Tectonic downloads LaTeX packages on first use — cached after that |
+| `Could not import module "pipeline_api"` | Make sure you're in the `V1/` directory when running uvicorn |
+| `langgraph.json not found` | Make sure you're in the `V1/` directory when running `langgraph dev` |

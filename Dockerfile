@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libfontconfig1 \
     libgraphite2-3 \
     libharfbuzz0b \
-    libicu72 \
+    libicu76 \
     libssl3 \
     && curl --proto '=https' --tlsv1.2 -fsSL https://drop-sh.fullyjustified.net | sh \
     && mv tectonic /usr/local/bin/ \

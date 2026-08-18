@@ -11,6 +11,8 @@
   <img src="https://img.shields.io/badge/Next.js-16-000000?logo=next.js" alt="Next.js" />
   <img src="https://img.shields.io/badge/FastAPI-0.141-009688?logo=fastapi" alt="FastAPI" />
   <img src="https://img.shields.io/badge/Gemini_Flash_Lite-via_OpenRouter-4285F4?logo=google" alt="Gemini" />
+  <img src="https://img.shields.io/badge/Vercel-Deployed-000000?logo=vercel" alt="Vercel" />
+  <img src="https://img.shields.io/badge/Azure-Container_Apps-0078D4?logo=microsoftazure" alt="Azure" />
   <img src="https://img.shields.io/badge/LaTeX-Tectonic-008080" alt="LaTeX" />
 </p>
 
@@ -57,7 +59,10 @@ ResumeGenie maintains a **source bank** of all your past jobs, projects, and bul
 | **LLM** | [OpenRouter](https://openrouter.ai/) → Gemini 2.5 Flash Lite (configurable) |
 | **PDF** | [Tectonic](https://tectonic-typesetting.github.io/) (LaTeX compiler) + Jinja2 templates |
 | **Backend API** | [FastAPI](https://fastapi.tiangolo.com/) (step-by-step pipeline execution) |
-| **Frontend** | [Next.js 16](https://nextjs.org/) + TypeScript + Zustand + TanStack Query |
+| **Frontend** | [Next.js 16](https://nextjs.org/) + TypeScript + Zustand |
+| **Database** | [Neon](https://neon.tech/) PostgreSQL (source bank, user data) |
+| **Auth** | [Firebase](https://firebase.google.com/) Authentication |
+| **Hosting** | [Vercel](https://vercel.com/) (frontend) + [Azure Container Apps](https://azure.microsoft.com/en-us/products/container-apps) (pipeline) |
 | **Tracing** | [LangSmith](https://smith.langchain.com/) (optional, via env vars) |
 | **Language** | Python 3.12+ (pipeline) · TypeScript (web) |
 
@@ -127,36 +132,47 @@ ResumeGenie maintains a **source bank** of all your past jobs, projects, and bul
 git clone https://github.com/jonahr4/ResumeGenie.git
 cd ResumeGenie
 
-# Install Python dependencies
-pip install -r requirements.txt
+# Python setup
+python3 -m venv .venv
+source .venv/bin/activate
+cd V1 && pip install -r requirements.txt && cd ..
 
-# Create your .env file
-cp .env.example .env
-# Add your OPENROUTER_API_KEY
-
-# Install web dependencies
+# Web setup
 cd web && npm install && cd ..
+
+# Configure env vars (see GETTING_STARTED.md for details)
 ```
 
 ### Run via CLI
 
 ```bash
-python main.py --jd data/boston_dynamics.txt
+source .venv/bin/activate
+cd V1
+python main.py --jd data/sample_jd_backend.txt
 ```
 
-Output lands in `output/run_YYYY-MM-DD_HH-MM-SS/` with the PDF, LaTeX, trace, and selection report.
+Output lands in `V1/output/run_YYYY-MM-DD_HH-MM-SS/`.
 
-### Run via Web
+### Run via Web (3 terminals)
 
 ```bash
-# Terminal 1: Start the pipeline API
+# Terminal 1: Pipeline API
+source .venv/bin/activate && cd V1
 uvicorn pipeline_api:app --port 5001 --reload
 
-# Terminal 2: Start the frontend
+# Terminal 2: LangGraph Studio (optional, for debugging)
+source .venv/bin/activate && cd V1
+langgraph dev
+
+# Terminal 3: Web frontend
 cd web && npm run dev
 ```
 
 Open [localhost:3000/tailor](http://localhost:3000/tailor) → paste a JD → walk through the wizard.
+
+### Deploy to Production
+
+See [docs/05-AZURE-DEPLOYMENT.md](docs/05-AZURE-DEPLOYMENT.md) for the full Azure deployment guide.
 
 ### LangSmith Tracing (optional)
 
