@@ -218,60 +218,95 @@ export default function StepSuggestions() {
                   {entry.company}
                 </div>
                 <ul className="sug-resume-bullets">
-                  {entry.selected_bullets.map((bullet) => {
-                    const suggestion = entrySugs.suggestions.find((s) =>
-                      s.replaces_bullet_ids.includes(bullet.id)
-                    );
+                  {(() => {
+                    // Track which suggestions we've already rendered (to avoid duplicates on merges)
+                    const renderedSuggestions = new Set<number>();
 
-                    if (!suggestion) {
-                      // No suggestion for this bullet — show as-is
-                      return (
-                        <li key={bullet.id} className="sug-bullet unchanged">
-                          {bullet.text}
-                        </li>
+                    return entry.selected_bullets.map((bullet) => {
+                      const sugIndex = entrySugs.suggestions.findIndex((s) =>
+                        s.replaces_bullet_ids.includes(bullet.id)
                       );
-                    }
+                      const suggestion = sugIndex >= 0 ? entrySugs.suggestions[sugIndex] : null;
 
-                    const sugIndex = entrySugs.suggestions.indexOf(suggestion);
+                      if (!suggestion) {
+                        // No suggestion for this bullet — show as-is
+                        return (
+                          <li key={bullet.id} className="sug-bullet unchanged">
+                            {bullet.text}
+                          </li>
+                        );
+                      }
 
-                    return (
-                      <li
-                        key={bullet.id}
-                        className={`sug-bullet suggestion-item ${
-                          suggestion.accepted ? "accepted" : "pending"
-                        } ${isReadOnly ? "readonly" : ""}`}
-                        onClick={() =>
-                          !isReadOnly &&
-                          toggleSuggestion(entrySugs.entry_id, sugIndex)
-                        }
-                      >
-                        <div className="sug-bullet-row">
-                          <div className="sug-bullet-text">
-                            <DiffHighlight
-                              original={bullet.text}
-                              suggested={suggestion.text}
-                            />
-                          </div>
-                          <div className="sug-bullet-toggle">
-                            <WordDelta
-                              originalText={bullet.text}
-                              suggestedText={suggestion.text}
-                            />
-                            <div
-                              className={`sug-switch ${
-                                suggestion.accepted ? "on" : ""
-                              }`}
-                            >
-                              <div className="sug-switch-thumb" />
+                      const isMerge = suggestion.replaces_bullet_ids.length > 1;
+                      const isFirstOfMerge = suggestion.replaces_bullet_ids[0] === bullet.id;
+
+                      // If this is a merge and we already rendered this suggestion, show "merged away" indicator
+                      if (renderedSuggestions.has(sugIndex)) {
+                        return (
+                          <li
+                            key={bullet.id}
+                            className={`sug-bullet merged-away ${suggestion.accepted ? "accepted" : "pending"}`}
+                            onClick={() =>
+                              !isReadOnly &&
+                              toggleSuggestion(entrySugs.entry_id, sugIndex)
+                            }
+                          >
+                            <div className="sug-merged-away-text">
+                              <span className="sug-merged-icon">↑</span>
+                              <s>{bullet.text}</s>
+                            </div>
+                            <div className="sug-merged-label">merged above</div>
+                          </li>
+                        );
+                      }
+
+                      // Mark this suggestion as rendered
+                      renderedSuggestions.add(sugIndex);
+
+                      return (
+                        <li
+                          key={bullet.id}
+                          className={`sug-bullet suggestion-item ${
+                            suggestion.accepted ? "accepted" : "pending"
+                          } ${isReadOnly ? "readonly" : ""} ${isMerge ? "is-merge" : ""}`}
+                          onClick={() =>
+                            !isReadOnly &&
+                            toggleSuggestion(entrySugs.entry_id, sugIndex)
+                          }
+                        >
+                          {isMerge && (
+                            <div className="sug-merge-badge">
+                              ⛙ MERGES {suggestion.replaces_bullet_ids.length} BULLETS
+                            </div>
+                          )}
+                          <div className="sug-bullet-row">
+                            <div className="sug-bullet-text">
+                              <DiffHighlight
+                                original={bullet.text}
+                                suggested={suggestion.text}
+                              />
+                            </div>
+                            <div className="sug-bullet-toggle">
+                              <WordDelta
+                                originalText={bullet.text}
+                                suggestedText={suggestion.text}
+                              />
+                              <div
+                                className={`sug-switch ${
+                                  suggestion.accepted ? "on" : ""
+                                }`}
+                              >
+                                <div className="sug-switch-thumb" />
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div className="sug-bullet-reason">
-                          {suggestion.reason}
-                        </div>
-                      </li>
-                    );
-                  })}
+                          <div className="sug-bullet-reason">
+                            {suggestion.reason}
+                          </div>
+                        </li>
+                      );
+                    });
+                  })()}
                 </ul>
               </div>
             </div>

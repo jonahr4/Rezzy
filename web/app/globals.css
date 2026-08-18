@@ -2510,6 +2510,24 @@ textarea.input-field {
   color: #C62828;
 }
 
+/* ── Skill row character counter ── */
+.skill-row-chars {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  border-left: 1px solid var(--border);
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+.skill-row-chars.safe { color: var(--text-muted); }
+.skill-row-chars.warn { color: #F57F17; }
+.skill-row-chars.over { color: #C62828; }
+
 /* ── Add row / inline add ── */
 .skill-row-add {
   display: block;
@@ -3015,6 +3033,66 @@ textarea.input-field {
   opacity: 0.7;
   line-height: 1.4;
   margin-top: 4px;
+}
+
+/* ── Merge badge ── */
+.sug-merge-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  margin-bottom: 6px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7C4DFF;
+  background: rgba(124,77,255,0.08);
+  border: 1px solid rgba(124,77,255,0.2);
+  border-radius: 4px;
+}
+.sug-bullet.is-merge { border-left-color: #7C4DFF; }
+
+/* ── Merged-away bullet (secondary bullet absorbed into a merge) ── */
+.sug-bullet.merged-away {
+  opacity: 0.5;
+  padding: 6px 10px;
+  border-left-color: #7C4DFF;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.sug-bullet.merged-away:hover { opacity: 0.7; }
+.sug-bullet.merged-away.accepted {
+  opacity: 0.35;
+  text-decoration: line-through;
+}
+.sug-merged-away-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.sug-merged-away-text s {
+  color: var(--text-muted);
+}
+.sug-merged-icon {
+  font-size: 14px;
+  color: #7C4DFF;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.sug-merged-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  color: #7C4DFF;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 2px;
+  padding-left: 20px;
 }
 
 /* Toggle switch */

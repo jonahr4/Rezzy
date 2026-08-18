@@ -26,6 +26,24 @@ import WordBudget from "./WordBudget";
 
 const API_URL = "/api/pipeline/step";
 
+/**
+ * LaTeX skill line character budget.
+ * The resume template uses \small (~9.5pt) on US letter with ~190mm text width.
+ * After the bold label (e.g. "Languages: "), skill items get roughly 80 chars
+ * before LaTeX wraps to a second line. We use 80 as the safe limit.
+ */
+const SKILL_LINE_CHAR_LIMIT = 90;
+
+/** Count chars for a skill line: items joined by ", " */
+function countSkillLineChars(items: string[]): number {
+  return items.join(", ").length;
+}
+
+/** Capitalize first letter of each word */
+function capitalizeSkill(s: string): string {
+  return s.replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 /* ── Draggable Skill Chip ─────────────────────────── */
 
 function SortableSkillChip({
@@ -500,6 +518,17 @@ export default function StepSkills() {
                   />
                 )}
               </DroppableZone>
+              {/* Character counter */}
+              {(() => {
+                const charCount = countSkillLineChars(row.items);
+                const pct = Math.round((charCount / SKILL_LINE_CHAR_LIMIT) * 100);
+                const colorClass = pct > 100 ? 'over' : pct > 85 ? 'warn' : 'safe';
+                return (
+                  <div className={`skill-row-chars ${colorClass}`} title={`${charCount} / ${SKILL_LINE_CHAR_LIMIT} chars — line will wrap if exceeded`}>
+                    {charCount}/{SKILL_LINE_CHAR_LIMIT}
+                  </div>
+                );
+              })()}
               {!isReadOnly && (
                 <button
                   className="skill-row-remove"
@@ -533,7 +562,7 @@ export default function StepSkills() {
                   <SortableSkillChip
                     key={skill}
                     id={skill}
-                    label={skill}
+                    label={capitalizeSkill(skill)}
                     variant="suggested"
                   />
                 ))}

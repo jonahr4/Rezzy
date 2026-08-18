@@ -1,0 +1,29 @@
+# Don't send these to the Docker build context
+.git
+.venv
+.env*
+*.pyc
+__pycache__
+
+# Node.js
+node_modules
+web/node_modules
+web/.next
+V1/web/node_modules
+V1/web/.next
+
+# IDE
+.vscode
+.idea
+.agents
+
+# OS
+.DS_Store
+
+# Output artifacts (regenerated at runtime)
+output/
+V1/output/
+
+# Docs
+*.md
+!V1/requirements.txt
