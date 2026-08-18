@@ -129,6 +129,46 @@ export async function POST() {
     await sql`CREATE INDEX IF NOT EXISTS education_user_idx ON education    (user_id)`;
     await sql`CREATE INDEX IF NOT EXISTS skillgrp_user_idx  ON skill_groups (user_id)`;
 
+    // ── profiles (personal info for LaTeX header) ──────────────────
+    await sql`
+      CREATE TABLE IF NOT EXISTS profiles (
+        id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id     TEXT NOT NULL UNIQUE,
+        full_name   TEXT NOT NULL DEFAULT '',
+        phone       TEXT NOT NULL DEFAULT '',
+        email       TEXT NOT NULL DEFAULT '',
+        website     TEXT NOT NULL DEFAULT '',
+        linkedin    TEXT NOT NULL DEFAULT '',
+        github      TEXT NOT NULL DEFAULT '',
+        created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+        updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+      )
+    `;
+
+    // ── pipeline_runs ──────────────────────────────────────────────
+    await sql`
+      CREATE TABLE IF NOT EXISTS pipeline_runs (
+        id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id           TEXT NOT NULL,
+        company           TEXT,
+        role              TEXT,
+        jd_text           TEXT NOT NULL,
+        parsed_jd         JSONB,
+        confirmed_entries JSONB,
+        selected_content  JSONB,
+        ai_suggestions    JSONB,
+        skill_rows        JSONB,
+        pdf_url           TEXT,
+        latex_source      TEXT,
+        page_count        INT,
+        retry_count       INT DEFAULT 0,
+        status            TEXT NOT NULL DEFAULT 'running',
+        created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+        updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+      )
+    `;
+    await sql`CREATE INDEX IF NOT EXISTS pipeline_runs_user_idx ON pipeline_runs (user_id, created_at DESC)`;
+
     return NextResponse.json({ ok: true });
   } catch (e: unknown) {
     console.error('Migration error', e);

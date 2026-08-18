@@ -1,147 +1,185 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useRef, useEffect, useCallback } from "react";
+import { useTailorStore, type WizardStep } from "@/lib/tailorStore";
+import StepPasteJD from "@/components/tailor/StepPasteJD";
+import StepParsedJD from "@/components/tailor/StepParsedJD";
+import StepSkills from "@/components/tailor/StepSkills";
+import StepEntrySelect from "@/components/tailor/StepEntrySelect";
+import StepBulletSelect from "@/components/tailor/StepBulletSelect";
+import StepSuggestions from "@/components/tailor/StepSuggestions";
+import StepPreview from "@/components/tailor/StepPreview";
+import StepCompiling from "@/components/tailor/StepCompiling";
+import StepDone from "@/components/tailor/StepDone";
 
-const PIPELINE_STEPS = [
-  { id: 'parse',    label: 'Parse JD',         desc: 'Extract role, company, requirements' },
-  { id: 'match',    label: 'Match Content',     desc: 'Score entries & bullets against JD' },
-  { id: 'suggest',  label: 'AI Suggestions',    desc: 'Generate tailored alternatives' },
-  { id: 'select',   label: 'Review & Select',   desc: 'Pick final entries and bullets' },
-  { id: 'compile',  label: 'Compile Resume',    desc: 'Generate LaTeX → PDF' },
-];
+const STEP_LABELS = ["Paste JD", "Parsed", "Skills", "Entries", "Bullets", "Suggestions", "Preview", "Compiling", "Done"];
 
 export default function TailorPage() {
-  const [jd, setJd] = useState('');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const { currentStep, maxReachedStep, setStep } = useTailorStore();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const isScrollingProgrammatically = useRef(false);
 
-  function handleAnalyze() {
-    if (!jd.trim()) return;
-    setIsAnalyzing(true);
-    // TODO: Wire to pipeline API
-    setTimeout(() => setIsAnalyzing(false), 2000);
-  }
+  useEffect(() => {
+    if (!scrollRef.current) return;
+    const container = scrollRef.current;
+    const target = container.children[currentStep] as HTMLElement;
+    if (target) {
+      isScrollingProgrammatically.current = true;
+      target.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+      setTimeout(() => {
+        isScrollingProgrammatically.current = false;
+      }, 600);
+    }
+  }, [currentStep]);
+
+  useEffect(() => {
+    if (!scrollRef.current) return;
+    const container = scrollRef.current;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (isScrollingProgrammatically.current) return;
+        for (const entry of entries) {
+          if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+            const stepAttr = (entry.target as HTMLElement).dataset.step;
+            if (stepAttr != null) {
+              const step = parseInt(stepAttr, 10) as WizardStep;
+              const store = useTailorStore.getState();
+              if (step !== store.currentStep && step <= store.maxReachedStep) {
+                store.setStep(step);
+              }
+            }
+          }
+        }
+      },
+      { root: container, threshold: 0.5 }
+    );
+
+    const pages = container.querySelectorAll(".wizard-page");
+    pages.forEach((page) => observer.observe(page));
+    return () => observer.disconnect();
+  }, [maxReachedStep]);
+
+  const goToStep = useCallback(
+    (step: WizardStep) => {
+      if (step <= maxReachedStep) setStep(step);
+    },
+    [maxReachedStep, setStep]
+  );
+
+  const canGoBack = currentStep > 0;
+  const canGoForward = currentStep < maxReachedStep;
 
   return (
-    <>
-      {/* Page header */}
-      <div className="page-header">
-        <div className="page-header-content">
-          <div className="page-eyebrow">Pipeline</div>
-          <h1 className="page-title">New Tailoring Run</h1>
-          <p className="page-desc">
-            Paste a job description below to start. The pipeline will parse, match, suggest, and compile a tailored resume.
-          </p>
-        </div>
+    <div className="tailor-page">
+      {/* ── Top progress bar ── */}
+      <div className="tailor-progress">
+        {STEP_LABELS.map((label, i) => (
+          <button
+            key={i}
+            className={`progress-dot ${i <= maxReachedStep ? "reached" : ""} ${i === currentStep ? "active" : ""} ${i < currentStep ? "done" : ""}`}
+            onClick={() => goToStep(i as WizardStep)}
+            disabled={i > maxReachedStep}
+          >
+            <span className="dot-circle">
+              {i < currentStep ? "✓" : i + 1}
+            </span>
+            <span className="dot-label">{label}</span>
+          </button>
+        ))}
+        <div
+          className="progress-fill"
+          style={{ width: `${(currentStep / 8) * 100}%` }}
+        />
       </div>
 
-      <div className="page-content">
-        <div className="tailor-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 24, alignItems: 'start' }}>
-          {/* Left: JD input */}
-          <div>
-            <div className="input-group" style={{ marginBottom: 16 }}>
-              <label className="input-label" htmlFor="jd-input">
-                Job Description
-              </label>
-              <textarea
-                id="jd-input"
-                className="input-field"
-                placeholder="Paste the full job description here...&#10;&#10;Include the role title, company name, requirements, and any specifics about the position."
-                value={jd}
-                onChange={(e) => setJd(e.target.value)}
-                style={{
-                  minHeight: 320,
-                  resize: 'vertical',
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: 12,
-                  lineHeight: 1.7,
-                }}
-              />
-            </div>
+      {/* ── "Go to current step" floating button ── */}
+      {currentStep !== maxReachedStep && currentStep < maxReachedStep && (
+        <button
+          className="go-to-current"
+          onClick={() => setStep(maxReachedStep)}
+        >
+          Go to current step →
+        </button>
+      )}
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <button
-                className="btn btn-primary btn-lg"
-                onClick={handleAnalyze}
-                disabled={!jd.trim() || isAnalyzing}
-                id="btn-analyze-jd"
-              >
-                {isAnalyzing ? (
-                  <>
-                    <span className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} />
-                    Analyzing...
-                  </>
-                ) : (
-                  <>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                    </svg>
-                    Analyze JD
-                  </>
-                )}
-              </button>
+      {/* ── Side navigation arrows ── */}
+      {canGoBack && (
+        <button
+          className="wizard-arrow wizard-arrow-left"
+          onClick={() => goToStep((currentStep - 1) as WizardStep)}
+          aria-label="Previous step"
+        >
+          ‹
+        </button>
+      )}
+      {canGoForward && (
+        <button
+          className="wizard-arrow wizard-arrow-right"
+          onClick={() => goToStep((currentStep + 1) as WizardStep)}
+          aria-label="Next step"
+        >
+          ›
+        </button>
+      )}
 
-              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                {jd.length > 0 ? `${jd.length.toLocaleString()} characters` : ''}
-              </span>
-            </div>
-          </div>
-
-          {/* Right: Pipeline stepper */}
-          <div className="card" style={{ padding: 24 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--text-muted)', marginBottom: 20, fontFamily: 'var(--font-mono)' }}>
-              Pipeline Steps
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-              {PIPELINE_STEPS.map((step, i) => (
-                <div key={step.id} style={{ display: 'flex', gap: 14, position: 'relative' }}>
-                  {/* Connector line */}
-                  {i < PIPELINE_STEPS.length - 1 && (
-                    <div style={{
-                      position: 'absolute',
-                      left: 13,
-                      top: 28,
-                      width: 1,
-                      height: 'calc(100% - 4px)',
-                      background: 'var(--border)',
-                    }} />
-                  )}
-
-                  {/* Step indicator */}
-                  <div style={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: '50%',
-                    border: '2px solid var(--border)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: 'var(--text-muted)',
-                    flexShrink: 0,
-                    background: 'var(--surface)',
-                    fontFamily: 'var(--font-mono)',
-                    zIndex: 1,
-                  }}>
-                    {i + 1}
-                  </div>
-
-                  {/* Step info */}
-                  <div style={{ paddingBottom: 24 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>
-                      {step.label}
-                    </div>
-                    <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.4 }}>
-                      {step.desc}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+      {/* ── Horizontal scrollable pages ── */}
+      <div className="wizard-scroll" ref={scrollRef}>
+        <div className="wizard-page" data-step={0}>
+          <StepPasteJD />
         </div>
+        {maxReachedStep >= 1 && (
+          <div className="wizard-page" data-step={1}>
+            <StepParsedJD />
+          </div>
+        )}
+        {maxReachedStep >= 2 && (
+          <div className="wizard-page" data-step={2}>
+            <StepSkills />
+          </div>
+        )}
+        {maxReachedStep >= 3 && (
+          <div className="wizard-page" data-step={3}>
+            <StepEntrySelect />
+          </div>
+        )}
+        {maxReachedStep >= 4 && (
+          <div className="wizard-page" data-step={4}>
+            <StepBulletSelect />
+          </div>
+        )}
+        {maxReachedStep >= 5 && (
+          <div className="wizard-page" data-step={5}>
+            <StepSuggestions />
+          </div>
+        )}
+        {maxReachedStep >= 6 && (
+          <div className="wizard-page" data-step={6}>
+            <StepPreview />
+          </div>
+        )}
+        {maxReachedStep >= 7 && (
+          <div className="wizard-page" data-step={7}>
+            <StepCompiling />
+          </div>
+        )}
+        {maxReachedStep >= 8 && (
+          <div className="wizard-page" data-step={8}>
+            <StepDone />
+          </div>
+        )}
       </div>
-    </>
+
+      {/* ── Bottom page dots ── */}
+      <div className="wizard-dots">
+        {Array.from({ length: maxReachedStep + 1 }, (_, i) => (
+          <button
+            key={i}
+            className={`wizard-dot ${i === currentStep ? "active" : ""}`}
+            onClick={() => goToStep(i as WizardStep)}
+          />
+        ))}
+      </div>
+    </div>
   );
 }

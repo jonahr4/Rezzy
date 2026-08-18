@@ -5,23 +5,37 @@
 
 FROM python:3.12-slim
 
-# System deps: tectonic (LaTeX→PDF), build essentials
+# System deps + Tectonic (LaTeX→PDF compiler)
+# Using the official Tectonic installer script
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     ca-certificates \
-    && curl -sSL https://github.com/AhmedYoussefElnagar/tectonic-installer/releases/download/v0.14.1/tectonic-0.14.1-x86_64-unknown-linux-gnu.tar.gz \
-       | tar xz -C /usr/local/bin/ \
-    || pip install tectonic \
-    && apt-get purge -y curl \
-    && apt-get autoremove -y \
+    libfontconfig1 \
+    libgraphite2-3 \
+    libharfbuzz0b \
+    libicu72 \
+    libssl3 \
+    && curl --proto '=https' --tlsv1.2 -fsSL https://drop-sh.fullyjustified.net | sh \
+    && mv tectonic /usr/local/bin/ \
     && rm -rf /var/lib/apt/lists/*
+
+# Pre-warm Tectonic cache so first compile isn't slow
+# This downloads the ~200MB LaTeX package bundle at build time
+RUN echo '\documentclass{article}\begin{document}Hello\end{document}' > /tmp/test.tex \
+    && tectonic /tmp/test.tex || true \
+    && rm -f /tmp/test.tex /tmp/test.pdf
 
 WORKDIR /app
 
 # Install Python deps first (Docker layer cache)
 COPY V1/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt \
-    && pip install --no-cache-dir uvicorn[standard] fastapi python-multipart
+    && pip install --no-cache-dir \
+       uvicorn[standard] \
+       fastapi \
+       python-multipart \
+       pymupdf \
+       langsmith
 
 # Copy pipeline code
 COPY V1/src/ ./src/

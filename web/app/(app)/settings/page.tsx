@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/lib/auth-context';
 
 type Tab = 'profile' | 'preferences' | 'api-keys';
@@ -19,9 +19,61 @@ const THEMES = [
   { id: 'forest', label: 'Forest', desc: 'Deep greens' },
 ];
 
+/* ── Resume info field config ──────────────────────────── */
+const PROFILE_FIELDS = [
+  { key: 'full_name', label: 'Full Name',  placeholder: 'Jonah Rothman', maxLen: 60 },
+  { key: 'phone',     label: 'Phone',      placeholder: '(555) 123-4567', maxLen: 20 },
+  { key: 'email',     label: 'Email',       placeholder: 'you@example.com', maxLen: 80 },
+  { key: 'website',   label: 'Website',     placeholder: 'yoursite.com', maxLen: 80 },
+  { key: 'linkedin',  label: 'LinkedIn',    placeholder: 'linkedin.com/in/yourname', maxLen: 80 },
+  { key: 'github',    label: 'GitHub',      placeholder: 'github.com/yourname', maxLen: 80 },
+] as const;
+
+type ProfileData = Record<string, string>;
+
 /* ── Profile Tab ──────────────────────────────────────── */
 function ProfileTab() {
   const { user } = useAuth();
+  const uid = user?.uid;
+  function authH(): HeadersInit { return uid ? { 'x-user-id': uid } : {}; }
+
+  const [profile, setProfile] = useState<ProfileData>({});
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  // Load profile
+  const loadProfile = useCallback(async () => {
+    try {
+      const res = await fetch('/api/profile', { headers: authH() });
+      if (res.ok) {
+        const data = await res.json();
+        const p: ProfileData = {};
+        for (const f of PROFILE_FIELDS) p[f.key] = data[f.key] ?? '';
+        setProfile(p);
+      }
+    } catch { /* ignore */ }
+  }, [uid]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => { if (uid) loadProfile(); }, [uid, loadProfile]);
+
+  function updateField(key: string, val: string) {
+    setProfile(prev => ({ ...prev, [key]: val }));
+    setSaved(false);
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      await fetch('/api/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', ...authH() },
+        body: JSON.stringify(profile),
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch { /* ignore */ }
+    setSaving(false);
+  }
 
   const initials = user?.displayName
     ? user.displayName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
@@ -29,19 +81,12 @@ function ProfileTab() {
 
   return (
     <div className="card" style={{ padding: 28 }}>
+      {/* User identity */}
       <div style={{ display: 'flex', gap: 20, alignItems: 'center', marginBottom: 28 }}>
         <div style={{
-          width: 64,
-          height: 64,
-          borderRadius: '50%',
-          background: 'var(--accent)',
-          color: '#fff',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: 22,
-          fontWeight: 700,
-          fontFamily: 'var(--font-mono)',
+          width: 64, height: 64, borderRadius: '50%', background: 'var(--accent)',
+          color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-mono)',
         }}>
           {initials}
         </div>
@@ -52,42 +97,49 @@ function ProfileTab() {
           <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>
             {user?.email}
           </div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, fontFamily: 'var(--font-mono)' }}>
-            UID: {user?.uid?.slice(0, 12)}...
-          </div>
         </div>
       </div>
 
-      <div style={{ borderTop: '1px solid var(--border)', paddingTop: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <div className="input-group">
-          <label className="input-label" htmlFor="settings-name">Display Name</label>
-          <input
-            id="settings-name"
-            type="text"
-            className="input-field"
-            defaultValue={user?.displayName ?? ''}
-            placeholder="Your name"
-          />
+      {/* Resume personal info */}
+      <div style={{ borderTop: '1px solid var(--border)', paddingTop: 20 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
+          Resume Header Info
+        </div>
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>
+          This information appears at the top of your generated resumes.
+        </p>
+
+        <div className="profile-form">
+          {PROFILE_FIELDS.map(f => {
+            const val = profile[f.key] ?? '';
+            const len = val.length;
+            const pct = len / f.maxLen;
+            const countClass = pct > 1 ? 'over' : pct > 0.85 ? 'warn' : '';
+            return (
+              <div key={f.key} className="input-group">
+                <div className="profile-field-label">
+                  <span>{f.label}</span>
+                  <span className={`profile-char-count ${countClass}`}>{len}/{f.maxLen}</span>
+                </div>
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder={f.placeholder}
+                  value={val}
+                  onChange={(e) => updateField(f.key, e.target.value)}
+                  maxLength={f.maxLen}
+                />
+              </div>
+            );
+          })}
         </div>
 
-        <div className="input-group">
-          <label className="input-label" htmlFor="settings-email">Email</label>
-          <input
-            id="settings-email"
-            type="email"
-            className="input-field"
-            defaultValue={user?.email ?? ''}
-            disabled
-            style={{ opacity: 0.5 }}
-          />
-          <span style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
-            Managed by your sign-in provider
-          </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 20 }}>
+          <button className="btn btn-primary btn-sm" onClick={handleSave} disabled={saving} id="btn-save-profile">
+            {saving ? 'Saving...' : saved ? 'Saved' : 'Save Profile'}
+          </button>
+          {saved && <span style={{ fontSize: 12, color: '#2E7D32' }}>Profile saved</span>}
         </div>
-
-        <button className="btn btn-primary btn-sm" style={{ alignSelf: 'flex-start', marginTop: 4 }} id="btn-save-profile">
-          Save changes
-        </button>
       </div>
     </div>
   );
