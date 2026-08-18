@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTailorStore } from "@/lib/tailorStore";
 
 const API_URL = "/api/pipeline/step";
@@ -15,9 +15,11 @@ export default function StepParsedJD() {
     advanceStep,
   } = useTailorStore();
 
-  // Auto-advance: once parsed JD is loaded, call skills endpoint
+  const [skillsReady, setSkillsReady] = useState(false);
+
+  // Fetch skills data when parsed JD is available, but DON'T auto-advance
   useEffect(() => {
-    if (!parsedJD || loading) return;
+    if (!parsedJD || loading || skillsReady) return;
 
     const timer = setTimeout(async () => {
       setLoading(true, "Organizing skills for this role...");
@@ -33,7 +35,7 @@ export default function StepParsedJD() {
         const data = await res.json();
         if (data.error) throw new Error(data.error);
         setSkillsData(data.skill_rows, data.available_skills, data.suggested_skills);
-        advanceStep(); // Go to step 2 (Skills)
+        setSkillsReady(true);
       } catch (err) {
         console.error("Skills step failed:", err);
       } finally {
@@ -93,6 +95,17 @@ export default function StepParsedJD() {
             <div className="loading-spinner small" />
             <span>{loadingMessage}</span>
           </div>
+        )}
+
+        {/* Show continue button when skills data is ready */}
+        {skillsReady && !loading && (
+          <button
+            className="step-cta"
+            onClick={advanceStep}
+            style={{ marginTop: 28 }}
+          >
+            Continue to Skills →
+          </button>
         )}
       </div>
     </div>

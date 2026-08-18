@@ -194,7 +194,16 @@ export default function EntryModal({ entry, onSave, onClose }: Props) {
 
           {/* Summary */}
           <div className="input-group">
-            <label className="input-label">Summary (optional)</label>
+            <label className="input-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              Summary (optional)
+              <span className="info-tooltip-wrap">
+                <span className="info-tooltip-icon">i</span>
+                <span className="info-tooltip-text">
+                  The AI uses this context to fill in gaps and tailor your resume more effectively.
+                  Describe what the role/project involved, technologies used, or impact made.
+                </span>
+              </span>
+            </label>
             <textarea
               className="input-field"
               value={summary}

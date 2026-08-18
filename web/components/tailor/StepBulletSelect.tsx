@@ -141,9 +141,9 @@ export default function StepBulletSelect() {
                         </div>
                         <div className="bullet-check-text">
                           <p>{bullet.text}</p>
-                          {selectedBullet?.reason && (
+                          {bullet.reason && (
                             <span className="bullet-reason">
-                              {selectedBullet.reason}
+                              {bullet.reason}
                             </span>
                           )}
                         </div>

@@ -311,7 +311,21 @@ export const useTailorStore = create<TailorState>((set, get) => ({
     }
   },
 
-  setSelectedContent: (content) => set({ selectedContent: content }),
+  setSelectedContent: (content) => {
+    // When content is first set, copy reasons from selected_bullets into all_bullets
+    // so that toggling off and on preserves the AI-provided reason
+    const enriched = content.map((entry) => ({
+      ...entry,
+      all_bullets: entry.all_bullets.map((ab) => {
+        const selected = entry.selected_bullets.find((sb) => sb.id === ab.id);
+        if (selected?.reason && !ab.reason) {
+          return { ...ab, reason: selected.reason };
+        }
+        return ab;
+      }),
+    }));
+    set({ selectedContent: enriched });
+  },
 
   toggleBullet: (entryId, bulletId) => {
     const { selectedContent } = get();
@@ -329,6 +343,7 @@ export const useTailorStore = create<TailorState>((set, get) => ({
             ),
           };
         } else {
+          // Look in all_bullets (which now has reasons preserved)
           const bullet = entry.all_bullets.find((b) => b.id === bulletId);
           if (!bullet) return entry;
           return {
@@ -339,6 +354,7 @@ export const useTailorStore = create<TailorState>((set, get) => ({
       }),
     });
   },
+
 
   setSuggestions: (suggestions) =>
     set({

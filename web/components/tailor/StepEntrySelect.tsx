@@ -30,11 +30,12 @@ export default function StepEntrySelect() {
 
   if (allEntries.length === 0) return null;
 
+  const jobs = allEntries.filter((e) => e.type === "job");
+  const projects = allEntries.filter((e) => e.type === "project");
+
   const selectedCount = confirmedEntryIds.length;
-  const jobCount = allEntries.filter(
-    (e) => e.type === "job" && confirmedEntryIds.includes(e.id)
-  ).length;
-  const projCount = selectedCount - jobCount;
+  const jobCount = jobs.filter((e) => confirmedEntryIds.includes(e.id)).length;
+  const projCount = projects.filter((e) => confirmedEntryIds.includes(e.id)).length;
 
   const handleContinue = async () => {
     if (selectedCount === 0) return;
@@ -63,6 +64,55 @@ export default function StepEntrySelect() {
 
   const isReadOnly = currentStep > 3;
 
+  const scrollTo = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const renderEntry = (entry: typeof allEntries[0]) => {
+    const isSelected = confirmedEntryIds.includes(entry.id);
+    return (
+      <div
+        key={entry.id}
+        className={`entry-select-row ${isSelected ? "selected" : "excluded"} ${isReadOnly ? "readonly" : ""}`}
+        onClick={() => !isReadOnly && toggleEntry(entry.id)}
+      >
+        <div className="entry-check">
+          <div className={`check-box ${isSelected ? "checked" : ""}`}>
+            {isSelected && "✓"}
+          </div>
+        </div>
+        <div className="entry-select-info">
+          <div className="entry-select-top">
+            <span className={`entry-type-pill ${entry.type}`}>
+              {entry.type}
+            </span>
+            {entry.pinned && <span className="pin-badge">📌 Pinned</span>}
+          </div>
+          <div className="entry-select-title">
+            {entry.company ? `${entry.company} — ` : ""}
+            {entry.title}
+          </div>
+          <div className="entry-select-meta">
+            {entry.start_date} – {entry.end_date}
+            {entry.location && ` · ${entry.location}`}
+            {` · ${entry.bullet_count} bullets available`}
+          </div>
+          {entry.tags.length > 0 && (
+            <div className="entry-select-tags">
+              {entry.tags.slice(0, 6).map((t, i) => (
+                <span key={i} className="entry-select-tag">{t}</span>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className={`entry-rationale ${isSelected ? "selected" : "excluded"}`}>
+          {entry.summary || (isSelected ? "Selected for relevance" : "Less relevant to this role")}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="step-inner step-entries">
       <div className="step-header-bar">
@@ -84,50 +134,42 @@ export default function StepEntrySelect() {
         )}
       </div>
 
+      {/* Mini TOC nav */}
+      <div className="entry-toc-nav">
+        {jobs.length > 0 && (
+          <button className="entry-toc-btn" onClick={() => scrollTo("entry-section-jobs")}>
+            Experience ({jobCount}/{jobs.length})
+          </button>
+        )}
+        {projects.length > 0 && (
+          <button className="entry-toc-btn" onClick={() => scrollTo("entry-section-projects")}>
+            Projects ({projCount}/{projects.length})
+          </button>
+        )}
+      </div>
+
       <div className="entry-select-list">
-        {allEntries.map((entry) => {
-          const isSelected = confirmedEntryIds.includes(entry.id);
-          return (
-            <div
-              key={entry.id}
-              className={`entry-select-row ${isSelected ? "selected" : "excluded"} ${isReadOnly ? "readonly" : ""}`}
-              onClick={() => !isReadOnly && toggleEntry(entry.id)}
-            >
-              <div className="entry-check">
-                <div className={`check-box ${isSelected ? "checked" : ""}`}>
-                  {isSelected && "✓"}
-                </div>
-              </div>
-              <div className="entry-select-info">
-                <div className="entry-select-top">
-                  <span className={`entry-type-pill ${entry.type}`}>
-                    {entry.type}
-                  </span>
-                  {entry.pinned && <span className="pin-badge">📌 Pinned</span>}
-                </div>
-                <div className="entry-select-title">
-                  {entry.company ? `${entry.company} — ` : ""}
-                  {entry.title}
-                </div>
-                <div className="entry-select-meta">
-                  {entry.start_date} – {entry.end_date}
-                  {entry.location && ` · ${entry.location}`}
-                  {` · ${entry.bullet_count} bullets available`}
-                </div>
-                {entry.tags.length > 0 && (
-                  <div className="entry-select-tags">
-                    {entry.tags.slice(0, 6).map((t, i) => (
-                      <span key={i} className="entry-select-tag">{t}</span>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div className={`entry-rationale ${isSelected ? "selected" : "excluded"}`}>
-                {entry.summary || (isSelected ? "Selected for relevance" : "Less relevant to this role")}
-              </div>
+        {/* Jobs section */}
+        {jobs.length > 0 && (
+          <>
+            <div className="entry-section-header" id="entry-section-jobs">
+              <span className="entry-section-label">Experience</span>
+              <span className="entry-section-count">{jobCount} of {jobs.length} selected</span>
             </div>
-          );
-        })}
+            {jobs.map(renderEntry)}
+          </>
+        )}
+
+        {/* Projects section */}
+        {projects.length > 0 && (
+          <>
+            <div className="entry-section-header" id="entry-section-projects">
+              <span className="entry-section-label">Projects</span>
+              <span className="entry-section-count">{projCount} of {projects.length} selected</span>
+            </div>
+            {projects.map(renderEntry)}
+          </>
+        )}
       </div>
     </div>
   );
