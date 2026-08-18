@@ -262,9 +262,12 @@ img { display: block; max-width: 100%; }
   min-height: 100vh;
   background: var(--bg-primary);
   transition: margin-left 0.25s var(--ease-out), background 0.35s ease;
+  overflow-x: hidden;
+  max-width: calc(100vw - var(--sidebar-w));
 }
 .app-shell.sidebar-is-collapsed .app-main {
   margin-left: var(--sidebar-w-collapsed);
+  max-width: calc(100vw - var(--sidebar-w-collapsed));
 }
 
 /* ── Mobile top bar ── */
@@ -1840,6 +1843,7 @@ textarea.input-field {
   /* Main content fills full width */
   .app-main {
     margin-left: 0 !important;
+    max-width: 100vw !important;
   }
 
   /* Show close button, hide collapse button */
@@ -1906,11 +1910,13 @@ textarea.input-field {
 
 /* ── Tailor Page Shell ────────────────────────────── */
 .tailor-page {
-  height: calc(100vh - 64px);
+  height: 100dvh;
+  height: 100vh; /* fallback */
   display: flex;
   flex-direction: column;
   overflow: hidden;
   position: relative;
+  max-width: 100%;
 }
 
 /* ── Progress Bar (top) ─────────────────────────────── */
@@ -2005,6 +2011,7 @@ textarea.input-field {
   max-width: 100%;
   scroll-snap-align: start;
   overflow-y: auto;
+  overflow-x: hidden;
   animation: pageSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 @keyframes pageSlideIn {
@@ -3431,3 +3438,219 @@ textarea.input-field {
   letter-spacing: 0.05em;
 }
 
+/* ── Editable Skills (Preview Step) ──────────── */
+.preview-skill-editable {
+  position: relative;
+  cursor: pointer;
+  padding: 1px 4px;
+  margin: -1px -4px;
+  border-radius: 3px;
+  transition: background 0.15s, color 0.15s;
+}
+.preview-skill-editable:hover {
+  background: var(--accent-subtle);
+  color: var(--accent);
+}
+.preview-skill-x {
+  display: none;
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  width: 16px;
+  height: 16px;
+  font-size: 12px;
+  line-height: 16px;
+  text-align: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.15s;
+}
+.preview-skill-editable:hover .preview-skill-x {
+  display: block;
+}
+.preview-skill-x:hover {
+  background: #C62828;
+  color: white;
+  border-color: #C62828;
+}
+.preview-skill-edit-input {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  color: var(--accent);
+  background: var(--accent-subtle);
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  padding: 1px 4px;
+  outline: none;
+  min-width: 40px;
+}
+
+/* ════════════════════════════════════════════════════════
+   PIPELINE — Responsive Overrides
+   ════════════════════════════════════════════════════════ */
+
+/* ── Medium screens (≤1024px) ── */
+@media (max-width: 1024px) {
+  /* Suggestion columns: stack vertically */
+  .sug-columns {
+    grid-template-columns: 1fr !important;
+    gap: 16px;
+    padding: 0 16px;
+  }
+
+  /* Entry grid: drop the rationale column */
+  .entry-select-row {
+    grid-template-columns: 40px 1fr !important;
+    gap: 12px;
+  }
+  .entry-rationale {
+    grid-column: 1 / -1;
+    margin-left: 52px;
+  }
+
+  /* Reduce step padding */
+  .step-inner { padding: 32px 20px; }
+
+  /* Progress dots: allow scroll */
+  .tailor-progress {
+    overflow-x: auto;
+    scrollbar-width: none;
+    justify-content: center;
+    padding: 12px 16px;
+    gap: 0;
+  }
+  .tailor-progress::-webkit-scrollbar { display: none; }
+  .progress-dot { padding: 0 10px; flex-shrink: 0; }
+}
+
+/* ── Tablet / small laptop (≤768px) ── */
+@media (max-width: 768px) {
+  /* Account for mobile topbar */
+  .tailor-page {
+    height: calc(100dvh - var(--mobile-topbar-h, 56px));
+    height: calc(100vh - var(--mobile-topbar-h, 56px));
+  }
+
+  /* Wizard arrows: smaller and tighter */
+  .wizard-arrow {
+    width: 32px;
+    height: 48px;
+    font-size: 22px;
+  }
+  .wizard-arrow-left { left: 4px; }
+  .wizard-arrow-right { right: 4px; }
+
+  /* Step header: stack vertically */
+  .step-header-bar {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .step-header-bar > div { text-align: center; }
+  .step-title { font-size: 22px; }
+
+  /* Headline: smaller */
+  .step-headline { font-size: clamp(1.5rem, 6vw, 2.5rem); }
+
+  /* JD textarea: tighter */
+  .jd-textarea-wrap { max-width: 100%; }
+  .jd-textarea { padding: 14px; font-size: 12px; }
+
+  /* Skills: tighter */
+  .skill-row-left { flex: 0 0 120px; }
+
+  /* Bullet entries: full width */
+  .bullet-entries { max-width: 100%; }
+  .entry-select-list { max-width: 100%; }
+
+  /* Preview resume card */
+  .preview-resume { padding: 20px 16px; }
+
+  /* Go to current button */
+  .go-to-current {
+    bottom: 50px;
+    font-size: 10px;
+    padding: 8px 16px;
+  }
+
+  /* Progress bar: compact */
+  .dot-label { display: none; }
+  .dot-circle { width: 24px; height: 24px; font-size: 10px; }
+  .progress-dot { padding: 0 6px; }
+
+  /* Entry TOC nav */
+  .entry-toc-nav { padding: 8px 0; }
+  .entry-toc-btn { font-size: 10px; padding: 5px 10px; }
+
+  /* Section headers */
+  .entry-section-header { padding: 14px 0 8px; }
+  .entry-section-label { font-size: 16px; }
+}
+
+/* ── Small mobile (≤480px) ── */
+@media (max-width: 480px) {
+  .step-inner { padding: 20px 12px; }
+  .step-title { font-size: 18px; }
+  .step-desc { font-size: 12px; }
+
+  /* CTA button: full width on tiny screens */
+  .step-cta {
+    width: 100%;
+    justify-content: center;
+    font-size: 11px;
+    padding: 10px 16px;
+  }
+
+  /* Entry grid: single column, no checkbox offset */
+  .entry-select-row {
+    grid-template-columns: 32px 1fr !important;
+    gap: 8px;
+    padding: 14px 0;
+  }
+  .entry-rationale { margin-left: 40px; font-size: 11px; }
+  .entry-select-title { font-size: 14px; }
+
+  /* Skills: stack label on top */
+  .skill-row {
+    flex-direction: column;
+  }
+  .skill-row-left {
+    flex: none;
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    min-height: auto;
+    padding: 6px 10px;
+  }
+  .skill-row-remove {
+    border-left: none;
+    border-top: 1px solid var(--border);
+    width: 100%;
+    height: 32px;
+  }
+
+  /* Bullet check row */
+  .bullet-check-row {
+    grid-template-columns: 28px 1fr;
+    gap: 8px;
+    padding: 10px 0;
+  }
+
+  /* Word budget */
+  .word-budget { padding: 8px 12px 10px; }
+  .word-budget-count { font-size: 14px; }
+  .word-budget-pct { font-size: 18px; }
+
+  /* Done stats */
+  .done-stats { gap: 24px; }
+  .done-stat-num { font-size: 28px; }
+  .done-headline { font-size: 22px; }
+
+  /* Compile */
+  .compile-animation { width: 70px; height: 70px; }
+  .compile-text { font-size: 12px; }
+}

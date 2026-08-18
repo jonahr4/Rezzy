@@ -5,23 +5,20 @@ import { useEffect } from 'react';
 /**
  * ContainerWakeup
  *
- * Silently pings the Azure Container App /health endpoint the moment
- * any page loads. Since ACA scales to zero when idle, this gives the
- * container 5-15s to warm up before the user actually hits "New Tailoring".
+ * Silently pings the pipeline health endpoint via the Next.js API proxy
+ * the moment any page loads. Since ACA scales to zero when idle, this
+ * gives the container 5-15s to warm up before the user hits "New Tailoring".
+ *
+ * Uses /api/pipeline/health (server-side proxy) to avoid CORS issues.
  *
  * Renders nothing — drop it in the root layout and forget about it.
  */
 export function ContainerWakeup() {
   useEffect(() => {
-    // Prefer ACA URL for wake-up (the one that scales to zero)
-    // Falls back to API_URL for local dev
-    const acaUrl = process.env.NEXT_PUBLIC_ACA_URL || process.env.NEXT_PUBLIC_API_URL;
-    if (!acaUrl) return;
-
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30_000);
 
-    fetch(`${acaUrl}/health`, {
+    fetch('/api/pipeline/health', {
       signal: controller.signal,
       cache: 'no-store',
     })

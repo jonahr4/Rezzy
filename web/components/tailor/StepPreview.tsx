@@ -6,6 +6,67 @@ import WordBudget from "./WordBudget";
 
 const API_URL = "/api/pipeline/step";
 
+/* ── Editable skill chip ─────────────────────── */
+
+function EditableSkill({
+  skill,
+  rowId,
+  onUpdate,
+  onRemove,
+  readOnly,
+}: {
+  skill: string;
+  rowId: string;
+  onUpdate: (rowId: string, oldSkill: string, newSkill: string) => void;
+  onRemove: (rowId: string, skill: string) => void;
+  readOnly: boolean;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(skill);
+
+  if (readOnly) return <>{skill}</>;
+
+  if (editing) {
+    return (
+      <input
+        className="preview-skill-edit-input"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={() => {
+          if (draft.trim() && draft.trim() !== skill) onUpdate(rowId, skill, draft.trim());
+          setEditing(false);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            if (draft.trim() && draft.trim() !== skill) onUpdate(rowId, skill, draft.trim());
+            setEditing(false);
+          }
+          if (e.key === "Escape") { setDraft(skill); setEditing(false); }
+        }}
+        autoFocus
+        style={{ width: `${Math.max(draft.length, 4)}ch` }}
+      />
+    );
+  }
+
+  return (
+    <span
+      className="preview-skill-editable"
+      onClick={() => { setDraft(skill); setEditing(true); }}
+    >
+      {skill}
+      <button
+        className="preview-skill-x"
+        onClick={(e) => { e.stopPropagation(); onRemove(rowId, skill); }}
+        title="Remove skill"
+      >
+        ×
+      </button>
+    </span>
+  );
+}
+
 /* ── Editable bullet ─────────────────────────── */
 
 function EditableBullet({
@@ -54,6 +115,7 @@ function EditableBullet({
   );
 }
 
+
 /* ── Main StepPreview ─────────────────────────── */
 
 export default function StepPreview() {
@@ -65,6 +127,8 @@ export default function StepPreview() {
     loading,
     loadingMessage,
     updateBulletText,
+    updateSkillItem,
+    removeSkillItem,
     setLoading,
     setResult,
     advanceStep,
@@ -178,7 +242,18 @@ export default function StepPreview() {
                 <div key={row.id} className="preview-skill-line">
                   <span className="preview-skill-label">{row.label}:</span>{" "}
                   <span className="preview-skill-items">
-                    {row.items.join(", ")}
+                    {row.items.map((skill, i) => (
+                      <span key={skill}>
+                        <EditableSkill
+                          skill={skill}
+                          rowId={row.id}
+                          onUpdate={updateSkillItem}
+                          onRemove={removeSkillItem}
+                          readOnly={isReadOnly}
+                        />
+                        {i < row.items.length - 1 && ", "}
+                      </span>
+                    ))}
                   </span>
                 </div>
               ) : null

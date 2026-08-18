@@ -132,6 +132,8 @@ interface TailorState {
 
   // Step 6: Preview editing
   updateBulletText: (entryId: string, bulletId: string, newText: string) => void;
+  updateSkillItem: (rowId: string, oldSkill: string, newSkill: string) => void;
+  removeSkillItem: (rowId: string, skill: string) => void;
 
   // Step 7: Compiling & QA
   qaAttempts: QaAttempt[];
@@ -380,7 +382,7 @@ export const useTailorStore = create<TailorState>((set, get) => ({
   },
 
   updateBulletText: (entryId, bulletId, newText) => {
-    const { selectedContent } = get();
+    const { selectedContent, suggestions } = get();
     set({
       selectedContent: selectedContent.map((entry) => {
         if (entry.entry_id !== entryId) return entry;
@@ -391,8 +393,43 @@ export const useTailorStore = create<TailorState>((set, get) => ({
           ),
         };
       }),
+      // Un-accept any suggestion that targeted this bullet (user manually overrode it)
+      suggestions: suggestions.map((es) => {
+        if (es.entry_id !== entryId) return es;
+        return {
+          ...es,
+          suggestions: es.suggestions.map((s) =>
+            s.accepted && s.replaces_bullet_ids.includes(bulletId)
+              ? { ...s, accepted: false }
+              : s
+          ),
+        };
+      }),
     });
   },
+
+  updateSkillItem: (rowId, oldSkill, newSkill) => {
+    const { skillRows } = get();
+    set({
+      skillRows: skillRows.map((r) =>
+        r.id === rowId
+          ? { ...r, items: r.items.map((s) => (s === oldSkill ? newSkill : s)) }
+          : r
+      ),
+    });
+  },
+
+  removeSkillItem: (rowId, skill) => {
+    const { skillRows } = get();
+    set({
+      skillRows: skillRows.map((r) =>
+        r.id === rowId
+          ? { ...r, items: r.items.filter((s) => s !== skill) }
+          : r
+      ),
+    });
+  },
+
 
   addQaAttempt: (attempt) => set((state) => ({ qaAttempts: [...state.qaAttempts, attempt] })),
 

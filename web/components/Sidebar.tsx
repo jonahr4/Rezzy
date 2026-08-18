@@ -6,11 +6,8 @@ import { useAuth } from '@/lib/auth-context';
 import { signOut } from '@/lib/firebase';
 import { useSidebar } from './SidebarContext';
 
-const ACA_URL = process.env.NEXT_PUBLIC_ACA_URL || process.env.NEXT_PUBLIC_API_URL || '';
-
 function preWarmContainer() {
-  if (!ACA_URL) return;
-  fetch(`${ACA_URL}/health`, { cache: 'no-store' }).catch(() => {});
+  fetch('/api/pipeline/health', { cache: 'no-store' }).catch(() => {});
 }
 
 /* ── SVG Icons ─────────────────────────────────────── */
