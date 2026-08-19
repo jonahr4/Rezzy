@@ -1,9 +1,29 @@
 "use client";
 
+import { useMemo } from "react";
 import { useTailorStore } from "@/lib/tailorStore";
 
 export default function StepDone() {
   const { result, selectedContent, reset } = useTailorStore();
+
+  // Create a blob URL from the base64 PDF
+  const pdfUrl = useMemo(() => {
+    if (!result?.pdf_base64) return null;
+    try {
+      const bytes = Uint8Array.from(atob(result.pdf_base64), (c) => c.charCodeAt(0));
+      const blob = new Blob([bytes], { type: "application/pdf" });
+      return URL.createObjectURL(blob);
+    } catch {
+      return null;
+    }
+  }, [result?.pdf_base64]);
+
+  // Fallback to /api/file for local dev
+  const viewUrl = pdfUrl
+    ? pdfUrl
+    : result?.pdf_path
+      ? `/api/file?path=${encodeURIComponent(result.pdf_path)}`
+      : null;
 
   if (!result) return null;
 
@@ -17,10 +37,16 @@ export default function StepDone() {
     <div className="step-inner step-done">
       <div className="step-content-centered">
         <div className={`done-icon ${passed ? "pass" : "warn"}`}>
-          {passed ? "✓" : "⚠"}
+          {passed ? (
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <path d="M8 16L14 22L24 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          ) : (
+            <span>!</span>
+          )}
         </div>
         <h2 className="done-headline">
-          {passed ? "Resume Ready!" : "Resume Generated"}
+          {passed ? "Resume Ready" : "Resume Generated"}
         </h2>
         {!passed && result.qa_feedback && (
           <p className="done-warning">{result.qa_feedback}</p>
@@ -42,14 +68,23 @@ export default function StepDone() {
         </div>
 
         <div className="done-actions">
-          {result.pdf_path && (
+          {viewUrl && (
             <a
-              href={`/api/file?path=${encodeURIComponent(result.pdf_path)}`}
+              href={viewUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="step-cta"
             >
-              View PDF ↗
+              View PDF
+            </a>
+          )}
+          {pdfUrl && (
+            <a
+              href={pdfUrl}
+              download="resume.pdf"
+              className="step-cta secondary"
+            >
+              Download PDF
             </a>
           )}
           <button className="step-cta secondary" onClick={reset}>

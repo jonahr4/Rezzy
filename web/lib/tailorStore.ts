@@ -111,6 +111,7 @@ interface TailorState {
   moveSkill: (skill: string, fromContainer: string, toContainer: string) => void;
   addSkillRow: () => void;
   removeSkillRow: (rowId: string) => void;
+  moveSkillRow: (rowId: string, direction: 'up' | 'down') => void;
   renameSkillRow: (rowId: string, newLabel: string) => void;
   addCustomSkill: (rowId: string, skill: string) => void;
 
@@ -142,6 +143,7 @@ interface TailorState {
   // Step 8: Result
   result: {
     pdf_path: string | null;
+    pdf_base64: string | null;
     page_count: number | null;
     qa_feedback: string | null;
     run_dir: string | null;
@@ -280,6 +282,17 @@ export const useTailorStore = create<TailorState>((set, get) => ({
       skillRows: skillRows.filter((r) => r.id !== rowId),
       availableSkills: [...availableSkills, ...row.items],
     });
+  },
+
+  moveSkillRow: (rowId, direction) => {
+    const { skillRows } = get();
+    const idx = skillRows.findIndex((r) => r.id === rowId);
+    if (idx < 0) return;
+    const newIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (newIdx < 0 || newIdx >= skillRows.length) return;
+    const rows = [...skillRows];
+    [rows[idx], rows[newIdx]] = [rows[newIdx], rows[idx]];
+    set({ skillRows: rows });
   },
 
   renameSkillRow: (rowId, newLabel) => {

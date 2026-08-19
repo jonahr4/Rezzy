@@ -196,6 +196,7 @@ export default function StepPreview() {
             } else if (eventType === "done") {
               setResult({
                 pdf_path: eventData.pdf_path,
+                pdf_base64: eventData.pdf_base64 || null,
                 page_count: eventData.page_count,
                 qa_feedback: eventData.qa_feedback,
                 run_dir: eventData.run_dir,

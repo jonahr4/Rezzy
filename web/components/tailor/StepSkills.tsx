@@ -278,6 +278,7 @@ export default function StepSkills() {
     moveSkill,
     addSkillRow,
     removeSkillRow,
+    moveSkillRow,
     renameSkillRow,
     addCustomSkill,
     setLoading,
@@ -485,9 +486,25 @@ export default function StepSkills() {
         {/* ── Active skill rows (middle) ── */}
         <div className="skills-zone skills-zone-active">
           <div className="skills-zone-label">Your Resume Skills</div>
-          {skillRows.map((row) => (
+          {skillRows.map((row, rowIndex) => (
             <div key={row.id} className="skill-row">
               <div className="skill-row-left">
+                {!isReadOnly && (
+                  <div className="skill-row-arrows">
+                    <button
+                      className="skill-row-arrow"
+                      onClick={() => moveSkillRow(row.id, 'up')}
+                      disabled={rowIndex === 0}
+                      title="Move up"
+                    >▲</button>
+                    <button
+                      className="skill-row-arrow"
+                      onClick={() => moveSkillRow(row.id, 'down')}
+                      disabled={rowIndex === skillRows.length - 1}
+                      title="Move down"
+                    >▼</button>
+                  </div>
+                )}
                 <EditableLabel
                   value={row.label}
                   onChange={(v) => renameSkillRow(row.id, v)}
@@ -505,7 +522,7 @@ export default function StepSkills() {
                     <SortableSkillChip
                       key={skill}
                       id={skill}
-                      label={skill}
+                      label={capitalizeSkill(skill)}
                       variant="active"
                       onRemove={!isReadOnly ? () => removeSkillFromRow(skill, row.id) : undefined}
                       onRename={!isReadOnly ? (newName) => renameSkillInRow(skill, newName, row.id) : undefined}

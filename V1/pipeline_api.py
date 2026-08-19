@@ -54,6 +54,17 @@ app.add_middleware(
 _session: dict = {}
 
 
+def _encode_pdf(pdf_path: str | None) -> str | None:
+    """Read a PDF file and return it as a base64 string."""
+    if not pdf_path:
+        return None
+    try:
+        with open(pdf_path, "rb") as f:
+            return base64.b64encode(f.read()).decode("ascii")
+    except Exception:
+        return None
+
+
 def _render_pdf_preview(pdf_path: str | None) -> str | None:
     """Render the first page of a PDF to a base64 PNG string."""
     if not pdf_path:
@@ -530,6 +541,7 @@ def step_compile(req: CompileRequest):
             "latex_source": state.get("latex_source", ""),
             "run_dir": str(run_dir),
             "status": state.get("status"),
+            "pdf_base64": _encode_pdf(state.get("pdf_path")),
         })
 
     return StreamingResponse(generate(), media_type="text/event-stream")
