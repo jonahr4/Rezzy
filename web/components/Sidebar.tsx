@@ -116,7 +116,6 @@ export function Sidebar() {
         {/* Expanded: logo + name + chevron all in one row */}
         {!collapsed && (
           <div className="sidebar-brand-inner">
-            <img src="/Logo.svg" alt="Rezzy Logo" style={{ height: 34, width: 'auto' }} />
             <div className="sidebar-brand-name" style={{ fontSize: 24, marginTop: 2 }}>
               Rez<span>zy</span>
             </div>

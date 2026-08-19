@@ -43,6 +43,19 @@
         └──────────┘ └──────────┘    └──────────┘
 ```
 
+## PDF Delivery
+
+The compiled PDF is delivered from the pipeline to the frontend via the compile SSE stream:
+
+1. Pipeline compiles LaTeX to PDF on the Azure container
+2. The `done` SSE event includes `pdf_base64` — the entire PDF encoded as a base64 string
+3. The frontend decodes it to a Blob and creates an object URL for viewing/downloading
+4. Locally, a fallback to `/api/file?path=...` is available for direct filesystem access
+
+This approach avoids the need for shared filesystem or blob storage between Vercel and Azure. The PDFs are typically 30-50 KB, well within SSE payload limits.
+
+---
+
 ## Data Access Abstraction
 
 > **Design principle:** The source-of-truth data access sits behind a clean function interface so that swapping hardcoded JSON for a real database later is a small, localized change — not a rewrite of the graph logic.

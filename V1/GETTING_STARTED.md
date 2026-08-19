@@ -77,7 +77,7 @@ Rezzy/
 │   │       ├── StepBullets.tsx
 │   │       ├── StepSuggestions.tsx
 │   │       ├── StepPreview.tsx
-│   │       ├── StepCompile.tsx
+│   │       ├── StepCompiling.tsx
 │   │       └── WordBudget.tsx
 │   ├── lib/
 │   │   ├── tailorStore.ts      # Zustand store for wizard state
@@ -182,7 +182,7 @@ Opens at `http://localhost:3000`
 1. Go to `http://localhost:3000/tailor`
 2. Paste a job description
 3. Walk through the wizard: Skills → Entries → Bullets → Suggestions → Preview → Compile
-4. The compiled PDF is served at `/api/file?path=output/run_.../resume.pdf`
+4. The compiled PDF is delivered as base64 in the SSE stream and opened via blob URL (works both locally and on production)
 
 ---
 

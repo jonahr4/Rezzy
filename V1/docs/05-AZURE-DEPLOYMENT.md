@@ -91,7 +91,7 @@ az containerapp update \
 
 ### Quick one-liner (after initial setup)
 ```bash
-docker build --platform linux/amd64 -t rezzyacr.azurecr.io/rezzy-pipeline:latest -f Dockerfile . && docker push rezzyacr.azurecr.io/rezzy-pipeline:latest && az containerapp update --name rezzy-pipeline --resource-group Rezzy-rg --image rezzyacr.azurecr.io/rezzy-pipeline:latest
+az acr login --name rezzyacr && docker build --platform linux/amd64 -t rezzyacr.azurecr.io/rezzy-pipeline:latest -f Dockerfile . && docker push rezzyacr.azurecr.io/rezzy-pipeline:latest && az containerapp update --name rezzy-pipeline --resource-group Rezzy-rg --image rezzyacr.azurecr.io/rezzy-pipeline:latest
 ```
 
 ---
@@ -166,11 +166,49 @@ The Dockerfile at the repo root packages:
 - Pipeline code from `V1/src/` and `V1/pipeline_api.py`
 - Data files from `V1/data/`
 
+**Port:** Uvicorn listens on port **8000** (configured in the Dockerfile CMD). The Azure Container App ingress routes external HTTPS traffic to this port. If you recreate the app, use `--target-port 8000`.
+
 The `.dockerignore` excludes `node_modules`, `.venv`, `.git`, and other heavy directories to keep the build context small (~5 MB).
 
 ---
 
+## Recreating the Container App from Scratch
+
+If the app gets stuck or you need to start fresh:
+
+```bash
+# Delete the old app
+az containerapp delete --name rezzy-pipeline --resource-group Rezzy-rg --yes
+
+# Recreate with the correct image, port, and env vars
+az containerapp create \
+  --name rezzy-pipeline \
+  --resource-group Rezzy-rg \
+  --environment managedEnvironment-Rezzyrg-92bf \
+  --image rezzyacr.azurecr.io/rezzy-pipeline:latest \
+  --registry-server rezzyacr.azurecr.io \
+  --registry-username rezzyacr \
+  --registry-password "$(az acr credential show --name rezzyacr --query 'passwords[0].value' -o tsv)" \
+  --target-port 8000 \
+  --ingress external \
+  --cpu 0.5 --memory 1.0Gi \
+  --min-replicas 0 --max-replicas 1 \
+  --env-vars OPENROUTER_API_KEY=<your-key> OPENROUTER_MODEL=google/gemini-2.5-flash-lite
+
+# Verify
+curl https://rezzy-pipeline.livelybay-96c41090.eastus.azurecontainerapps.io/health
+```
+
+---
+
 ## Troubleshooting
+
+### "authentication required" when pushing to ACR
+Your Docker registry login expired. Re-authenticate:
+```bash
+az acr login --name rezzyacr
+```
+Then retry the push. ACR tokens expire after ~3 hours.
 
 ### "ACR Tasks requests are not permitted"
 Your subscription doesn't support `az acr build` (cloud builds). Use local Docker builds instead:
@@ -182,8 +220,22 @@ docker push ...
 ### Container App shows "Hello World" page
 The pipeline image hasn't been deployed yet. Run the update process above.
 
+### Container App stuck in "InProgress" provisioning
+A previous update is still running. Wait 5-10 minutes and check:
+```bash
+az containerapp show --name rezzy-pipeline --resource-group Rezzy-rg --query "properties.provisioningState" -o tsv
+```
+If stuck for >15 min, delete and recreate:
+```bash
+az containerapp delete --name rezzy-pipeline --resource-group Rezzy-rg --yes
+# Then run the full create command from the "Recreating from scratch" section
+```
+
 ### 404 on `/step/parse-jd`
 The Container App is running an old or wrong image. Check which image is deployed in Azure Portal → Containers, then redeploy.
 
 ### Logs show import errors
 A Python dependency is missing from `requirements.txt` or the Dockerfile's extra pip install list. Update and rebuild.
+
+### PDF not loading on production
+The pipeline returns the compiled PDF as base64 in the `done` SSE event. The frontend creates a blob URL from it. If the pipeline was deployed before this change, redeploy with the latest image.

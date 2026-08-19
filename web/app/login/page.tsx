@@ -138,7 +138,6 @@ function LoginContent() {
       <div className="auth-card">
         {/* Logo */}
         <div className="auth-logo" style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center' }}>
-          <img src="/Logo.svg" alt="Rezzy Logo" style={{ height: 36, width: 'auto' }} />
           <div>Rez<span>zy</span></div>
         </div>
 
