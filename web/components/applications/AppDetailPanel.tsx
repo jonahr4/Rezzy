@@ -107,6 +107,7 @@ export default function AppDetailPanel({ app, onClose, onStatusChange, onDelete,
   const { user } = useAuth();
   const [jdExpanded, setJdExpanded] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [confirmDel, setConfirmDel] = useState(false);
 
   const patch = useCallback(async (fields: Partial<Application>) => {
     await fetch(`/api/applications/${app.id}`, {
@@ -118,7 +119,6 @@ export default function AppDetailPanel({ app, onClose, onStatusChange, onDelete,
   }, [app.id, user, onUpdate]);
 
   async function handleDelete() {
-    if (!confirm(`Delete ${app.company} — ${app.role}?`)) return;
     setDeleting(true);
     await fetch(`/api/applications/${app.id}`, {
       method: "DELETE",
