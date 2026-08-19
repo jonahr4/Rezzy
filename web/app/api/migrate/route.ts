@@ -169,6 +169,31 @@ export async function POST() {
     `;
     await sql`CREATE INDEX IF NOT EXISTS pipeline_runs_user_idx ON pipeline_runs (user_id, created_at DESC)`;
 
+    // ── applications ───────────────────────────────────────────────
+    await sql`
+      CREATE TABLE IF NOT EXISTS applications (
+        id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id       TEXT NOT NULL,
+        company       TEXT NOT NULL,
+        role          TEXT NOT NULL,
+        job_url       TEXT,
+        date_applied  DATE NOT NULL DEFAULT CURRENT_DATE,
+        status        TEXT NOT NULL DEFAULT 'need_to_apply',
+        notes         TEXT,
+        pdf_blob_url  TEXT,
+        jd_text       TEXT,
+        jd_summary    TEXT,
+        jd_skills     JSONB NOT NULL DEFAULT '[]',
+        parsed_jd     JSONB,
+        skill_rows    JSONB,
+        created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+        updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+      )
+    `;
+    await sql`CREATE INDEX IF NOT EXISTS applications_user_idx ON applications (user_id, created_at DESC)`;
+    await sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS jd_summary TEXT`;
+    await sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS jd_skills JSONB NOT NULL DEFAULT '[]'`;
+
     return NextResponse.json({ ok: true });
   } catch (e: unknown) {
     console.error('Migration error', e);

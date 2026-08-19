@@ -1,10 +1,13 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTailorStore } from "@/lib/tailorStore";
+import TrackModal from "@/components/applications/TrackModal";
 
 export default function StepDone() {
   const { result, selectedContent, reset } = useTailorStore();
+  const [showModal, setShowModal] = useState(false);
+  const [tracked, setTracked] = useState(false);
 
   // Create a blob URL from the base64 PDF
   const pdfUrl = useMemo(() => {
@@ -69,21 +72,12 @@ export default function StepDone() {
 
         <div className="done-actions">
           {viewUrl && (
-            <a
-              href={viewUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="step-cta"
-            >
+            <a href={viewUrl} target="_blank" rel="noopener noreferrer" className="step-cta">
               View PDF
             </a>
           )}
           {pdfUrl && (
-            <a
-              href={pdfUrl}
-              download="resume.pdf"
-              className="step-cta secondary"
-            >
+            <a href={pdfUrl} download="resume.pdf" className="step-cta secondary">
               Download PDF
             </a>
           )}
@@ -91,7 +85,30 @@ export default function StepDone() {
             Start Over
           </button>
         </div>
+
+        {/* Track as Application */}
+        <div className="done-track-section">
+          {tracked ? (
+            <div className="done-tracked-confirm">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M3 8l3.5 3.5L13 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+              Saved to Application Tracker
+            </div>
+          ) : (
+            <button className="done-track-btn" onClick={() => setShowModal(true)}>
+              Track as Application
+            </button>
+          )}
+        </div>
       </div>
+
+      {showModal && (
+        <TrackModal
+          onClose={() => setShowModal(false)}
+          onSaved={() => { setShowModal(false); setTracked(true); }}
+        />
+      )}
     </div>
   );
 }

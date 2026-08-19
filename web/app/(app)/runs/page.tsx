@@ -23,6 +23,7 @@ export default function RunsPage() {
   const [runs, setRuns] = useState<Run[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [trackedRunIds, setTrackedRunIds] = useState<Set<string>>(new Set());
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [expandedData, setExpandedData] = useState<any>(null);
 
@@ -57,6 +58,23 @@ export default function RunsPage() {
       month: 'short', day: 'numeric', year: 'numeric',
       hour: 'numeric', minute: '2-digit',
     });
+  }
+
+  async function trackRun(run: Run) {
+    if (!uid) return;
+    const res = await fetch('/api/applications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-user-id': uid },
+      body: JSON.stringify({
+        company: run.company ?? 'Unknown',
+        role: run.role ?? 'Unknown',
+        status: 'applied',
+        date_applied: new Date(run.created_at).toISOString().split('T')[0],
+        jd_text: expandedData?.jd_text ?? null,
+        parsed_jd: expandedData?.parsed_jd ?? null,
+      }),
+    });
+    if (res.ok) setTrackedRunIds((prev) => new Set(prev).add(run.id));
   }
 
   return (

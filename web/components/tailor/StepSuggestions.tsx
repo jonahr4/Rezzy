@@ -213,10 +213,6 @@ export default function StepSuggestions() {
                 <span className="sug-col-label suggested">Suggested</span>
               </div>
               <div className="sug-resume-card suggested">
-                <div className="sug-resume-title">{entry.title}</div>
-                <div className="sug-resume-company">
-                  {entry.company}
-                </div>
                 <ul className="sug-resume-bullets">
                   {(() => {
                     // Track which suggestions we've already rendered (to avoid duplicates on merges)

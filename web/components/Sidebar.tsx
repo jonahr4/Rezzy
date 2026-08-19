@@ -68,6 +68,13 @@ const icons = {
       <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
   ),
+  applications: (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <rect x="2" y="5" width="14" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.5"/>
+      <path d="M6 5V3.5A1.5 1.5 0 0 1 7.5 2h3A1.5 1.5 0 0 1 12 3.5V5" stroke="currentColor" strokeWidth="1.5"/>
+      <path d="M5 10h8M5 13h5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+    </svg>
+  ),
 };
 
 type NavItem = {
@@ -86,6 +93,12 @@ const NAV_ITEMS: { section: string; items: NavItem[] }[] = [
       { href: '/tailor',       label: 'New Tailoring',  icon: icons.tailor, preWarm: true },
       { href: '/source-bank',  label: 'Source Bank',    icon: icons.sourceBank },
       { href: '/runs',         label: 'Run History',    icon: icons.runs },
+    ],
+  },
+  {
+    section: 'Application Tracker',
+    items: [
+      { href: '/applications', label: 'Applications',   icon: icons.applications },
     ],
   },
   {
