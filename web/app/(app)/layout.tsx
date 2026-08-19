@@ -11,6 +11,7 @@ const PAGE_NAMES: Record<string, string> = {
   '/tailor':      'New Tailoring',
   '/runs':        'Run History',
   '/settings':    'Settings',
+  '/applications': 'Application Tracker',
 };
 
 function AppShellInner({ children }: { children: React.ReactNode }) {
