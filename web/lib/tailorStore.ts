@@ -93,6 +93,8 @@ interface TailorState {
   setLoading: (loading: boolean, message?: string) => void;
 
   // Step 0: JD input
+  runId: string | null;
+  setRunId: (id: string | null) => void;
   jdText: string;
   setJdText: (text: string) => void;
 
@@ -165,6 +167,7 @@ const initialState = {
   maxReachedStep: 0 as WizardStep,
   loading: false,
   loadingMessage: "",
+  runId: null,
   jdText: "",
   parsedJD: null,
   skillRows: [] as SkillRow[],
@@ -195,6 +198,7 @@ export const useTailorStore = create<TailorState>((set, get) => ({
   setLoading: (loading, message = "") =>
     set({ loading, loadingMessage: message }),
 
+  setRunId: (id) => set({ runId: id }),
   setJdText: (text) => set({ jdText: text }),
 
   setParsedJD: (jd) => set({ parsedJD: jd }),

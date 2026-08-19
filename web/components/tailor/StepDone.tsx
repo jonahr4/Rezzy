@@ -1,11 +1,51 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useTailorStore } from "@/lib/tailorStore";
 import TrackModal from "@/components/applications/TrackModal";
+import { useAuth } from "@/lib/auth-context";
 
 export default function StepDone() {
-  const { result, selectedContent, reset } = useTailorStore();
+  const { result, selectedContent, reset, runId, skillRows, parsedJD, jdText } = useTailorStore();
+  const { user } = useAuth();
+
+  // Finalize run in DB when done step mounts — always runs, even on QA fail (2 pages)
+  useEffect(() => {
+    if (!runId || !result || !user?.uid) return;
+
+    const uid = user.uid;
+    const coName = parsedJD?.company_name ?? null;
+    const roleName = parsedJD?.role_title ?? null;
+
+    // 1. Save all run metadata
+    fetch(`/api/pipeline/${runId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", "x-user-id": uid },
+      body: JSON.stringify({
+        status: "done",
+        page_count: result.page_count ?? null,
+        selected_content: selectedContent ?? null,
+        skill_rows: skillRows ?? null,
+        jd_text: jdText ?? null,
+        parsed_jd: parsedJD ?? null,
+        company: coName,
+        role: roleName,
+      }),
+    });
+
+    // 2. Upload PDF to Vercel Blob (even if QA failed)
+    if (result.pdf_base64) {
+      fetch(`/api/pipeline/${runId}/pdf`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-user-id": uid },
+        body: JSON.stringify({
+          pdf_base64: result.pdf_base64,
+          company: coName,
+          role: roleName,
+        }),
+      }).catch(e => console.error("PDF upload failed:", e));
+    }
+  }, [runId]); // eslint-disable-line react-hooks/exhaustive-deps
   const [showModal, setShowModal] = useState(false);
   const [tracked, setTracked] = useState(false);
 

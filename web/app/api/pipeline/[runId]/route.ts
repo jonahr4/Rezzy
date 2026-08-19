@@ -40,6 +40,7 @@ export async function PATCH(
       UPDATE pipeline_runs SET
         company           = COALESCE(${body.company ?? null}, company),
         role              = COALESCE(${body.role ?? null}, role),
+        jd_text           = COALESCE(${body.jd_text ?? null}, jd_text),
         parsed_jd         = COALESCE(${body.parsed_jd ? JSON.stringify(body.parsed_jd) : null}::jsonb, parsed_jd),
         confirmed_entries = COALESCE(${body.confirmed_entries ? JSON.stringify(body.confirmed_entries) : null}::jsonb, confirmed_entries),
         selected_content  = COALESCE(${body.selected_content ? JSON.stringify(body.selected_content) : null}::jsonb, selected_content),
