@@ -13,7 +13,16 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: '/(.*)',
+        // Allow same-origin iframe for PDF viewer routes
+        source: '/api/pipeline/:runId/pdf',
+        headers: [
+          { key: 'X-Frame-Options',           value: 'SAMEORIGIN' },
+          { key: 'X-Content-Type-Options',     value: 'nosniff' },
+          { key: 'Referrer-Policy',            value: 'strict-origin-when-cross-origin' },
+        ],
+      },
+      {
+        source: '/((?!api/pipeline/.*/pdf).*)',
         headers: [
           { key: 'X-Frame-Options',           value: 'DENY' },
           { key: 'X-Content-Type-Options',     value: 'nosniff' },
