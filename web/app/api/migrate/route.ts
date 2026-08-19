@@ -182,6 +182,7 @@ export async function POST() {
         status        TEXT NOT NULL DEFAULT 'need_to_apply',
         notes         TEXT,
         pdf_blob_url  TEXT,
+        run_id        UUID REFERENCES pipeline_runs(id),
         jd_text       TEXT,
         jd_summary    TEXT,
         jd_skills     JSONB NOT NULL DEFAULT '[]',
@@ -193,6 +194,7 @@ export async function POST() {
     `;
     await sql`CREATE INDEX IF NOT EXISTS applications_user_idx ON applications (user_id, created_at DESC)`;
     await sql`ALTER TABLE pipeline_runs ADD COLUMN IF NOT EXISTS pdf_base64 TEXT`;
+    await sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS run_id UUID`;
     await sql`ALTER TABLE pipeline_runs ADD COLUMN IF NOT EXISTS jd_text TEXT`;
     await sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS jd_summary TEXT`;
     await sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS jd_skills JSONB NOT NULL DEFAULT '[]'`;

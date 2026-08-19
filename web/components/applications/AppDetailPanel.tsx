@@ -14,6 +14,7 @@ export interface Application {
   status: AppStatus;
   notes: string | null;
   pdf_blob_url: string | null;
+  run_id: string | null;
   jd_text: string | null;
   jd_summary: string | null;
   jd_skills: string[];
@@ -202,21 +203,24 @@ export default function AppDetailPanel({ app, onClose, onStatusChange, onDelete,
           </a>
         )}
 
-        {/* PDF */}
-        {app.pdf_blob_url && (
-          <div className="detail-section">
-            <div className="detail-section-label">
-              Resume PDF
-              <div className="detail-pdf-actions">
-                <a href={app.pdf_blob_url} target="_blank" rel="noopener noreferrer" className="detail-pdf-action-btn">View</a>
-                <a href={app.pdf_blob_url} download="resume.pdf" className="detail-pdf-action-btn">Download</a>
+        {/* PDF — serve via pipeline PDF route using run_id */}
+        {app.run_id && (() => {
+          const pdfSrc = `/api/pipeline/${app.run_id}/pdf${user?.uid ? `?uid=${user.uid}` : ''}`;
+          return (
+            <div className="detail-section">
+              <div className="detail-section-label">
+                Resume PDF
+                <div className="detail-pdf-actions">
+                  <a href={pdfSrc} target="_blank" rel="noopener noreferrer" className="detail-pdf-action-btn">View</a>
+                  <a href={pdfSrc} download="resume.pdf" className="detail-pdf-action-btn">Download</a>
+                </div>
+              </div>
+              <div className="detail-pdf-frame">
+                <iframe src={pdfSrc} title="Resume PDF" className="detail-pdf-iframe" />
               </div>
             </div>
-            <div className="detail-pdf-frame">
-              <iframe src={app.pdf_blob_url} title="Resume PDF" className="detail-pdf-iframe" />
-            </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Skills */}
         {app.jd_skills && app.jd_skills.length > 0 && (

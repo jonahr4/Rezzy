@@ -227,6 +227,7 @@ export default function RunsPage() {
           date_applied: new Date(run.created_at).toISOString().split('T')[0],
           jd_text: run.jd_text ?? null,
           parsed_jd: run.parsed_jd ?? null,
+          run_id: run.id,
         }),
       });
       if (res.ok) setTrackedRunIds(prev => new Set(prev).add(run.id));

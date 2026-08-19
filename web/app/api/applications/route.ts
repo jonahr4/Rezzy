@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
   const userId = uid(req);
   try {
     const rows = await sql`
-      SELECT id, company, role, job_url, date_applied, status, notes, pdf_blob_url,
+      SELECT id, company, role, job_url, date_applied, status, notes, pdf_blob_url, run_id,
              jd_text, jd_summary, jd_skills, parsed_jd, created_at, updated_at
       FROM applications
       WHERE user_id = ${userId}
@@ -28,18 +28,17 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const {
       company, role, job_url, date_applied, status,
-      notes, pdf_base64, jd_text, parsed_jd, skill_rows
+      notes, pdf_base64, jd_text, parsed_jd, skill_rows, run_id
     } = body;
 
     if (!company || !role) {
       return NextResponse.json({ error: 'company and role are required' }, { status: 400 });
     }
 
-    // Extract skills and summary from parsed_jd
     const jd_skills = parsed_jd?.skills ?? parsed_jd?.required_skills ?? [];
     const jd_summary = parsed_jd?.summary ?? parsed_jd?.description ?? null;
 
-    // Upload PDF to Vercel Blob
+    // Upload PDF to Vercel Blob (private)
     let pdf_blob_url: string | null = null;
     if (pdf_base64) {
       try {
@@ -47,10 +46,10 @@ export async function POST(req: NextRequest) {
         const safeCo = company.replace(/[^a-zA-Z0-9]/g, '-');
         const filename = `resumes/${userId}/${safeCo}-${Date.now()}.pdf`;
         const blob = await put(filename, pdfBytes, {
-          access: 'public',
+          access: 'private',
           contentType: 'application/pdf',
         });
-        pdf_blob_url = blob.url;
+        pdf_blob_url = blob.pathname;
       } catch (e) {
         console.error('Blob upload error:', e);
       }
@@ -59,7 +58,7 @@ export async function POST(req: NextRequest) {
     const [row] = await sql`
       INSERT INTO applications (
         user_id, company, role, job_url, date_applied, status,
-        notes, pdf_blob_url, jd_text, jd_summary, jd_skills, parsed_jd, skill_rows
+        notes, pdf_blob_url, run_id, jd_text, jd_summary, jd_skills, parsed_jd, skill_rows
       )
       VALUES (
         ${userId}, ${company}, ${role},
@@ -68,6 +67,7 @@ export async function POST(req: NextRequest) {
         ${status || 'applied'},
         ${notes || null},
         ${pdf_blob_url},
+        ${run_id || null},
         ${jd_text || null},
         ${jd_summary},
         ${JSON.stringify(jd_skills)}::jsonb,

@@ -11,7 +11,7 @@ interface TrackModalProps {
 
 export default function TrackModal({ onClose, onSaved }: TrackModalProps) {
   const { user } = useAuth();
-  const { result, parsedJD, jdText, skillRows } = useTailorStore();
+  const { result, parsedJD, jdText, skillRows, runId } = useTailorStore();
 
   const [company, setCompany] = useState(parsedJD?.company_name ?? "");
   const [role, setRole] = useState(parsedJD?.role_title ?? "");
@@ -48,6 +48,7 @@ export default function TrackModal({ onClose, onSaved }: TrackModalProps) {
           jd_text: jdText ?? null,
           parsed_jd: parsedJD ?? null,
           skill_rows: skillRows ?? null,
+          run_id: runId ?? null,
         }),
       });
 
