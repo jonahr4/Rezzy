@@ -33,6 +33,7 @@ export async function GET(req: NextRequest) {
   try {
     const rows = await sql`
       SELECT id, company, role, status, page_count, retry_count, pdf_url,
+             (pdf_base64 IS NOT NULL) AS has_pdf,
              jd_text, parsed_jd, selected_content, skill_rows, created_at
       FROM pipeline_runs
       WHERE user_id = ${userId}

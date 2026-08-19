@@ -12,6 +12,7 @@ interface Run {
   page_count: number | null;
   retry_count: number;
   pdf_url: string | null;
+  has_pdf: boolean;
   jd_text: string | null;
   parsed_jd: Record<string, unknown> | null;
   selected_content: Array<{ title: string; company: string; selected_bullets: Array<{ text: string }> }> | null;
@@ -26,12 +27,13 @@ function formatDate(iso: string) {
   });
 }
 
-function RunDetailPanel({ run, onClose, onTrack, isTracked, isTracking }: {
+function RunDetailPanel({ run, onClose, onTrack, isTracked, isTracking, uid }: {
   run: Run;
   onClose: () => void;
   onTrack: (run: Run) => void;
   isTracked: boolean;
   isTracking: boolean;
+  uid: string | undefined;
 }) {
   const skills = run.parsed_jd
     ? ((run.parsed_jd.required_skills as string[] | undefined) ?? (run.parsed_jd.skills as string[] | undefined) ?? [])
@@ -68,20 +70,24 @@ function RunDetailPanel({ run, onClose, onTrack, isTracked, isTracking }: {
         </div>
 
         {/* PDF actions */}
-        {run.pdf_url && (
-          <div className="detail-section">
-            <div className="detail-section-label">
-              Resume PDF
-              <div className="detail-pdf-actions">
-                <a href={run.pdf_url} target="_blank" rel="noopener noreferrer" className="detail-pdf-action-btn">View</a>
-                <a href={run.pdf_url} download="resume.pdf" className="detail-pdf-action-btn">Download</a>
+        {(run.has_pdf || run.pdf_url) && (() => {
+          // Always serve via our API route (blob store is private, needs proxy)
+          const pdfSrc = `/api/pipeline/${run.id}/pdf${uid ? `?uid=${uid}` : ''}`;
+          return (
+            <div className="detail-section">
+              <div className="detail-section-label">
+                Resume PDF
+                <div className="detail-pdf-actions">
+                  <a href={pdfSrc} target="_blank" rel="noopener noreferrer" className="detail-pdf-action-btn">View</a>
+                  <a href={pdfSrc} download="resume.pdf" className="detail-pdf-action-btn">Download</a>
+                </div>
+              </div>
+              <div className="detail-pdf-frame">
+                <iframe src={pdfSrc} title="Resume PDF" className="detail-pdf-iframe" />
               </div>
             </div>
-            <div className="detail-pdf-frame">
-              <iframe src={run.pdf_url} title="Resume PDF" className="detail-pdf-iframe" />
-            </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Skills */}
         {skills.length > 0 && (
@@ -320,6 +326,7 @@ export default function RunsPage() {
             onTrack={trackRun}
             isTracked={trackedRunIds.has(selected.id)}
             isTracking={tracking === selected.id}
+            uid={uid}
           />
         )}
       </div>

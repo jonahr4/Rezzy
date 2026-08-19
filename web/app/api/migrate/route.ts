@@ -159,6 +159,7 @@ export async function POST() {
         ai_suggestions    JSONB,
         skill_rows        JSONB,
         pdf_url           TEXT,
+        pdf_base64        TEXT,
         latex_source      TEXT,
         page_count        INT,
         retry_count       INT DEFAULT 0,
@@ -191,6 +192,8 @@ export async function POST() {
       )
     `;
     await sql`CREATE INDEX IF NOT EXISTS applications_user_idx ON applications (user_id, created_at DESC)`;
+    await sql`ALTER TABLE pipeline_runs ADD COLUMN IF NOT EXISTS pdf_base64 TEXT`;
+    await sql`ALTER TABLE pipeline_runs ADD COLUMN IF NOT EXISTS jd_text TEXT`;
     await sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS jd_summary TEXT`;
     await sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS jd_skills JSONB NOT NULL DEFAULT '[]'`;
 

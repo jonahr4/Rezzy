@@ -33,17 +33,13 @@ export default function StepDone() {
       }),
     });
 
-    // 2. Upload PDF to Vercel Blob (even if QA failed)
+    // 2. Save PDF base64 to DB (blob store is private, serve via /api/pipeline/[runId]/pdf)
     if (result.pdf_base64) {
       fetch(`/api/pipeline/${runId}/pdf`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-user-id": uid },
-        body: JSON.stringify({
-          pdf_base64: result.pdf_base64,
-          company: coName,
-          role: roleName,
-        }),
-      }).catch(e => console.error("PDF upload failed:", e));
+        body: JSON.stringify({ pdf_base64: result.pdf_base64 }),
+      }).catch(e => console.error("PDF save failed:", e));
     }
   }, [runId]); // eslint-disable-line react-hooks/exhaustive-deps
   const [showModal, setShowModal] = useState(false);
