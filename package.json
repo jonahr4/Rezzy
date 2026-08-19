@@ -1,0 +1,21 @@
+{
+  "name": "rezzy",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently --names \"pipeline,web,graph\" --prefix-colors \"cyan,magenta,yellow\" \"npm run pipeline\" \"npm run web\" \"npm run graph\"",
+    "dev:no-graph": "concurrently --names \"pipeline,web\" --prefix-colors \"cyan,magenta\" \"npm run pipeline\" \"npm run web\"",
+    "pipeline": "bash -c 'source .venv/bin/activate && cd V1 && uvicorn pipeline_api:app --port 5001 --reload'",
+    "web": "cd web && npm run dev",
+    "graph": "bash -c 'source .venv/bin/activate && cd V1 && langgraph dev'",
+    "deploy:login": "az acr login --name rezzyacr",
+    "deploy:build": "docker build --platform linux/amd64 -t rezzyacr.azurecr.io/rezzy-pipeline:latest -f Dockerfile .",
+    "deploy:push": "az acr login --name rezzyacr && docker push rezzyacr.azurecr.io/rezzy-pipeline:latest",
+    "deploy:update": "az containerapp update --name rezzy-pipeline --resource-group Rezzy-rg --image rezzyacr.azurecr.io/rezzy-pipeline:latest",
+    "deploy": "npm run deploy:build && npm run deploy:push && npm run deploy:update",
+    "health": "curl -s https://rezzy-pipeline.livelybay-96c41090.eastus.azurecontainerapps.io/health | python3 -m json.tool"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  }
+}
