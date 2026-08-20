@@ -90,7 +90,19 @@ export default function ApplicationsPage() {
     setDragOverCol(null);
   }
 
+  const [search, setSearch] = useState("");
+
   const totalApps = apps.length;
+
+  // Filter apps by search query (company, role, or skills)
+  const query = search.trim().toLowerCase();
+  const filteredApps = query
+    ? apps.filter((a) =>
+        a.company.toLowerCase().includes(query) ||
+        a.role.toLowerCase().includes(query) ||
+        (a.jd_skills ?? []).some((s: string) => s.toLowerCase().includes(query))
+      )
+    : apps;
 
   return (
     <div className={`kanban-shell ${selected ? "detail-open" : ""}`}>
@@ -100,7 +112,26 @@ export default function ApplicationsPage() {
           <h1 className="page-title" style={{ marginBottom: 2 }}>Application Tracker</h1>
           <p className="page-subtitle" style={{ marginBottom: 0 }}>
             {totalApps} application{totalApps !== 1 ? "s" : ""} tracked
+            {query && ` · ${filteredApps.length} matching`}
           </p>
+        </div>
+        <div className="kanban-search-wrap">
+          <svg className="kanban-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            className="kanban-search-input"
+            type="text"
+            placeholder="Search company, role, or skill\u2026"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          {search && (
+            <button className="kanban-search-clear" onClick={() => setSearch("")} title="Clear search">
+              \u00d7
+            </button>
+          )}
         </div>
       </div>
 
@@ -109,7 +140,7 @@ export default function ApplicationsPage() {
         <div className="kanban-board">
           {STATUS_ORDER.map((status) => {
             const cfg = STATUS_CONFIG[status];
-            const colApps = apps.filter((a) => a.status === status);
+            const colApps = filteredApps.filter((a) => a.status === status);
             const isOver = dragOverCol === status;
 
             return (

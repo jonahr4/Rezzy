@@ -4340,6 +4340,53 @@ textarea.input-field {
   border-bottom: 1px solid var(--border);
 }
 
+/* Search bar */
+.kanban-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.kanban-search-icon {
+  position: absolute;
+  left: 10px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+.kanban-search-input {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 7px 30px 7px 32px;
+  font-size: 13px;
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  width: 240px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.kanban-search-input::placeholder {
+  color: var(--text-muted);
+}
+.kanban-search-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-subtle);
+}
+.kanban-search-clear {
+  position: absolute;
+  right: 6px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.kanban-search-clear:hover {
+  color: var(--text-primary);
+}
+
 .kanban-layout {
   display: flex;
   flex: 1;
