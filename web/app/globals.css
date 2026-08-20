@@ -27,6 +27,9 @@
   --warning-bg:    rgba(194,65,12,0.08);
   --danger:        #B91C1C;
   --danger-bg:     rgba(185,28,28,0.08);
+  --gauge-green:   #22C55E;
+  --gauge-yellow:  #F59E0B;
+  --gauge-red:     #EF4444;
   --info:          #4F46E5;
   --info-bg:       rgba(79,70,229,0.06);
 
@@ -66,6 +69,9 @@
   --warning:       #C27A3A;
   --warning-bg:    rgba(194,122,58,0.08);
   --danger:        #B85450;
+  --gauge-green:   #22C55E;
+  --gauge-yellow:  #F59E0B;
+  --gauge-red:     #EF4444;
   --danger-bg:     rgba(184,84,80,0.08);
   --info:          #5B5DBB;
   --info-bg:       rgba(91,93,187,0.06);
@@ -106,6 +112,9 @@
   --warning:       #E65100;
   --warning-bg:    rgba(230,81,0,0.08);
   --danger:        #C62828;
+  --gauge-green:   #22C55E;
+  --gauge-yellow:  #F59E0B;
+  --gauge-red:     #EF4444;
   --danger-bg:     rgba(198,40,40,0.08);
   --info:          #1565C0;
   --info-bg:       rgba(21,101,192,0.06);
@@ -146,6 +155,9 @@
   --warning:       #D97706;
   --warning-bg:    rgba(217,119,6,0.08);
   --danger:        #DC2626;
+  --gauge-green:   #22C55E;
+  --gauge-yellow:  #F59E0B;
+  --gauge-red:     #EF4444;
   --danger-bg:     rgba(220,38,38,0.08);
   --info:          #2563EB;
   --info-bg:       rgba(37,99,235,0.06);
@@ -186,6 +198,9 @@
   --warning:       #FFB547;
   --warning-bg:    rgba(255,181,71,0.10);
   --danger:        #FF5C5C;
+  --gauge-green:   #22C55E;
+  --gauge-yellow:  #F59E0B;
+  --gauge-red:     #EF4444;
   --danger-bg:     rgba(255,92,92,0.10);
   --info:          #47B5FF;
   --info-bg:       rgba(71,181,255,0.10);
@@ -2114,7 +2129,7 @@ textarea.input-field {
 }
 .step-header-bar {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 24px;
   margin-bottom: 32px;
@@ -2124,6 +2139,37 @@ textarea.input-field {
   margin-right: auto;
 }
 .step-header-bar > div { text-align: left; }
+.step-header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-shrink: 0;
+}
+
+/* ── Page Gauge (dial) ──────────────────────────────────────── */
+.page-gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  user-select: none;
+}
+.page-gauge svg {
+  display: block;
+  overflow: visible;
+}
+.page-gauge-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: center;
+  transition: color 0.4s ease;
+  white-space: nowrap;
+}
+
+/* ── Gauge CSS vars for light/dark themes ───────────────────── */
 .step-title {
   font-size: 28px;
   font-weight: 900;

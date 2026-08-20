@@ -2,7 +2,8 @@
 
 import { useTailorStore } from "@/lib/tailorStore";
 import { useState } from "react";
-import WordBudget, { WordDelta } from "./WordBudget";
+import { WordDelta } from "./WordBudget";
+import PageGauge from "./PageGauge";
 
 const API_URL = "/api/pipeline/step";
 
@@ -110,7 +111,6 @@ export default function StepSuggestions() {
 
   return (
     <div className="step-inner step-suggestions-v2">
-      <WordBudget />
       <div className="step-header-bar">
         <div>
           <h2 className="step-title">Review Suggestions</h2>
@@ -119,11 +119,14 @@ export default function StepSuggestions() {
             Toggle suggestions on the right to apply them.
           </p>
         </div>
-        {!isReadOnly && (
-          <button className="step-cta" onClick={handleContinue}>
-            Continue to Preview →
-          </button>
-        )}
+        <div className="step-header-right">
+          {!isReadOnly && (
+            <button className="step-cta" onClick={handleContinue}>
+              Continue to Preview →
+            </button>
+          )}
+          <PageGauge />
+        </div>
       </div>
 
       {/* Entry tabs */}

@@ -22,7 +22,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { useDroppable } from "@dnd-kit/core";
 import { useTailorStore } from "@/lib/tailorStore";
-import WordBudget from "./WordBudget";
+import PageGauge from "./PageGauge";
 
 const API_URL = "/api/pipeline/step";
 
@@ -432,8 +432,6 @@ export default function StepSkills() {
 
   return (
     <div className="step-inner step-skills">
-      <WordBudget />
-
       <div className="step-header-bar">
         <div>
           <h2 className="step-title">Arrange Skills</h2>
@@ -442,15 +440,18 @@ export default function StepSkills() {
             Drag to rearrange, + to add.
           </p>
         </div>
-        {!isReadOnly && (
-          <button
-            className="step-cta"
-            onClick={handleContinue}
-            disabled={totalPlaced === 0}
-          >
-            Continue with {totalPlaced} skills →
-          </button>
-        )}
+        <div className="step-header-right">
+          {!isReadOnly && (
+            <button
+              className="step-cta"
+              onClick={handleContinue}
+              disabled={totalPlaced === 0}
+            >
+              Continue with {totalPlaced} skills →
+            </button>
+          )}
+          <PageGauge />
+        </div>
       </div>
 
       <DndContext

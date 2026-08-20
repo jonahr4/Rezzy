@@ -470,18 +470,20 @@ def step_compile(req: CompileRequest):
                     "preview": preview_b64,
                 })
                 state["retry_count"] = attempt + 1
-                state["qa_fix_instructions"] = state["qa_feedback"]
+                # In the web flow, the user has already made their bullet/entry choices —
+                # do NOT call bullet_selector (it would override user selections with LLM picks).
+                # Instead only tighten spacing (spacing_tier auto-increases from retry_count)
+                # and recompile.
                 yield from send_event("progress", {
                     "stage": "qa_fixing",
-                    "message": f"Fixing issues and recompiling (attempt {attempt + 2}/{max_retries})...",
+                    "message": f"Tightening layout and recompiling (attempt {attempt + 2}/{max_retries})...",
                     "attempt": attempt + 2,
                 })
-                state.update(bullet_selector(state))
                 state.update(latex_assembler(state))
                 state.update(compile_latex(state))
                 log_step(
                     node="retry",
-                    summary=f"Retry {attempt + 1}/{max_retries}: {state.get('qa_feedback', '')[:80]}",
+                    summary=f"Retry {attempt + 1}/{max_retries} — spacing tier {min(attempt + 1, 2)}, content unchanged",
                 )
             else:
                 # Final attempt failed

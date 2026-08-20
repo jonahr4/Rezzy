@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTailorStore } from "@/lib/tailorStore";
-import WordBudget from "./WordBudget";
+import PageGauge from "./PageGauge";
 
 const API_URL = "/api/pipeline/step";
 
@@ -66,7 +66,6 @@ export default function StepBulletSelect() {
 
   return (
     <div className="step-inner step-bullets">
-      <WordBudget />
       <div className="step-header-bar">
         <div>
           <h2 className="step-title">Select Bullets</h2>
@@ -75,15 +74,18 @@ export default function StepBulletSelect() {
             Toggle bullets to include or exclude.
           </p>
         </div>
-        {!isReadOnly && (
-          <button
-            className="step-cta"
-            onClick={handleContinue}
-            disabled={totalBullets === 0}
-          >
-            Continue with {totalBullets} bullets →
-          </button>
-        )}
+        <div className="step-header-right">
+          {!isReadOnly && (
+            <button
+              className="step-cta"
+              onClick={handleContinue}
+              disabled={totalBullets === 0}
+            >
+              Continue with {totalBullets} bullets →
+            </button>
+          )}
+          <PageGauge />
+        </div>
       </div>
 
       <div className="bullet-entries">

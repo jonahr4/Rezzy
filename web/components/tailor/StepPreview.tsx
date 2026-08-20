@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTailorStore } from "@/lib/tailorStore";
-import WordBudget from "./WordBudget";
+import PageGauge from "./PageGauge";
 
 const API_URL = "/api/pipeline/step";
 
@@ -216,20 +216,21 @@ export default function StepPreview() {
 
   return (
     <div className="step-inner step-preview">
-      <WordBudget />
-
       <div className="step-header-bar">
         <div>
-          <h2 className="step-title">Review & Edit</h2>
+          <h2 className="step-title">Review &amp; Edit</h2>
           <p className="step-desc">
             Click any bullet to edit. This is your final review before compilation.
           </p>
         </div>
-        {!isReadOnly && (
-          <button className="step-cta" onClick={handleCompile}>
-            Compile Resume →
-          </button>
-        )}
+        <div className="step-header-right">
+          {!isReadOnly && (
+            <button className="step-cta" onClick={handleCompile}>
+              Compile Resume →
+            </button>
+          )}
+          <PageGauge />
+        </div>
       </div>
 
       {/* ── Resume preview card ── */}

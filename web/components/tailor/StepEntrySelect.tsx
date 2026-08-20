@@ -1,6 +1,7 @@
 "use client";
 
 import { useTailorStore } from "@/lib/tailorStore";
+import PageGauge from "./PageGauge";
 
 const API_URL = "/api/pipeline/step";
 
@@ -123,15 +124,18 @@ export default function StepEntrySelect() {
             Toggle any to include or exclude.
           </p>
         </div>
-        {!isReadOnly && (
-          <button
-            className="step-cta"
-            onClick={handleContinue}
-            disabled={selectedCount === 0}
-          >
-            Continue with {selectedCount} entries →
-          </button>
-        )}
+        <div className="step-header-right">
+          {!isReadOnly && (
+            <button
+              className="step-cta"
+              onClick={handleContinue}
+              disabled={selectedCount === 0}
+            >
+              Continue with {selectedCount} entries →
+            </button>
+          )}
+          <PageGauge />
+        </div>
       </div>
 
       {/* Mini TOC nav */}
