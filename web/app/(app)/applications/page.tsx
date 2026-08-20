@@ -157,7 +157,7 @@ export default function ApplicationsPage() {
                         <div className="kanban-card-footer-row">
                           <span className="kanban-card-date">{formatDate(app.date_applied)}</span>
                           <div className="kanban-card-icons">
-                            {app.pdf_blob_url && (
+                            {(app.pdf_blob_url || app.run_id) && (
                               <span className="kanban-card-icon" title="Has resume PDF">
                                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                                   <path d="M2 1h5l3 3v7H2V1Z" stroke="currentColor" strokeWidth="1.1"/>

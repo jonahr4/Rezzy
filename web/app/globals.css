@@ -4324,6 +4324,8 @@ textarea.input-field {
   flex-wrap: wrap;
   gap: 4px;
   margin-top: 4px;
+  overflow: hidden;
+  max-height: 56px; /* ~2 rows of tags */
 }
 .kanban-card-skill {
   font-size: 10px;
@@ -4334,8 +4336,11 @@ textarea.input-field {
   border: 1px solid var(--border);
   color: var(--text-muted);
   white-space: nowrap;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.kanban-card-skill.muted { opacity: 0.6; }
+.kanban-card-skill.muted { opacity: 0.6; max-width: none; }
 
 /* ── Empty / Skeleton ──────────────────────────────── */
 .kanban-empty-col {
