@@ -56,8 +56,28 @@ def qa_critic(state: dict) -> dict:
     print(f"   📄 Page count: {page_count}")
 
     if page_count != 1:
-        # Too many pages — need to trim
-        feedback = f"Resume is {page_count} pages — must be exactly 1 page. Select fewer bullets or shorter phrasings."
+        # Too many pages — need to trim. Be specific about how much to cut.
+        retry = retry_count + 1  # this will be the retry number after this return
+        if retry >= 3:
+            feedback = (
+                f"CRITICAL: Resume is {page_count} pages on attempt {retry}/3. "
+                "This is the LAST chance. You MUST aggressively cut: reduce to 2 bullets per entry, "
+                "use the absolute shortest bullet variants, and drop the least-relevant entry entirely if needed. "
+                "The template spacing is already at maximum compression."
+            )
+        elif retry >= 2:
+            feedback = (
+                f"Resume is {page_count} pages on attempt {retry}/3. Previous cuts were NOT enough. "
+                "You MUST reduce bullet count by at least 3-4 more bullets total. "
+                "Drop to 3 bullets max per job and 2 per project. "
+                "Prefer the shortest 1-line bullets — reject any bullet over 25 words."
+            )
+        else:
+            feedback = (
+                f"Resume is {page_count} pages — must be exactly 1 page. "
+                "Reduce total bullet count by 2-3. Drop to the lower end of each range: "
+                "3-4 bullets for jobs, 2 for projects. Prefer short 1-line bullets."
+            )
         print(f"   ✗ FAIL — {feedback}")
         log_step(
             node="QA Critic",

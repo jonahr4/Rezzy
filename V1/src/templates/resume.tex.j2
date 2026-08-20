@@ -33,25 +33,31 @@
 \raggedright
 \setlength{\tabcolsep}{0in}
 
-% Sections formatting
+% ─── SPACING TIER (set by pipeline based on retry count) ──────
+% Tier 0 = default spacing (first attempt)
+% Tier 1 = tighter spacing (after 1 failed attempt)
+% Tier 2 = maximum compression (after 2+ failed attempts)
+(% set tier = spacing_tier | default(0) %)
+
+% Section title formatting — tighter on higher tiers
 \titleformat{\section}{
-  \vspace{-5pt}\scshape\raggedright\large
-}{}{0em}{}[\color{black}\titlerule \vspace{-4pt}]
+  \vspace{(% if tier >= 2 %)-7pt(% elif tier >= 1 %)-6pt(% else %)-5pt(% endif %)}\scshape\raggedright\large
+}{}{0em}{}[\color{black}\titlerule \vspace{(% if tier >= 2 %)-6pt(% elif tier >= 1 %)-5pt(% else %)-4pt(% endif %)}]
 
 
-% Custom commands
+% Custom commands with tier-aware spacing
 \newcommand{\resumeItem}[1]{
   \item\small{
-    {#1 \vspace{-2pt}}
+    {#1 \vspace{(% if tier >= 2 %)-4pt(% elif tier >= 1 %)-3pt(% else %)-2pt(% endif %)}}
   }
 }
 
 \newcommand{\resumeSubheading}[4]{
-  \vspace{-2pt}\item\small
+  \vspace{(% if tier >= 2 %)-4pt(% elif tier >= 1 %)-3pt(% else %)-2pt(% endif %)}\item\small
     \begin{tabular*}{0.98\textwidth}[t]{l@{\extracolsep{\fill}}r}
       \textbf{#1} & #2 \\
       \textit{#3} & \textit{#4} \\
-    \end{tabular*}\vspace{-6pt}
+    \end{tabular*}\vspace{(% if tier >= 2 %)-8pt(% elif tier >= 1 %)-7pt(% else %)-6pt(% endif %)}
 }
 
 \newcommand{\resumeProjectHeading}[3]{
@@ -59,11 +65,11 @@
     \begin{tabular*}{0.98\textwidth}{l@{\extracolsep{\fill}}r}
       #1 & #2 \\
       \textit{#3} & \\
-    \end{tabular*}\vspace{-6pt}
+    \end{tabular*}\vspace{(% if tier >= 2 %)-8pt(% elif tier >= 1 %)-7pt(% else %)-6pt(% endif %)}
 }
 
 \newcommand{\resumeItemListStart}{\begin{itemize}}
-\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-2pt}}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{(% if tier >= 2 %)-4pt(% elif tier >= 1 %)-3pt(% else %)-2pt(% endif %)}}
 \newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
 \newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
 
@@ -84,9 +90,9 @@
 \end{center}
 
 % ─── EDUCATION ───────────────────────────────────
-\vspace{-3mm}
+\vspace{(% if tier >= 2 %)-5mm(% elif tier >= 1 %)-4mm(% else %)-3mm(% endif %)}
 \section{Education}
-\vspace{1.0mm}
+\vspace{(% if tier >= 2 %)-0.5mm(% elif tier >= 1 %)0.0mm(% else %)1.0mm(% endif %)}
   \resumeSubHeadingListStart
   (% for edu in education %)
     \vspace{-2pt}\item\small
@@ -103,9 +109,9 @@
   \resumeSubHeadingListEnd
 
 % ─── TECHNICAL SKILLS ────────────────────────────
-\vspace{-3.0mm}
+\vspace{(% if tier >= 2 %)-5.0mm(% elif tier >= 1 %)-4.0mm(% else %)-3.0mm(% endif %)}
 \section{Technical Skills}
-\vspace{1.0mm}
+\vspace{(% if tier >= 2 %)-0.5mm(% elif tier >= 1 %)0.0mm(% else %)1.0mm(% endif %)}
  \begin{itemize}[leftmargin=0.15in, label={}]
     \small{\item{
     (% for cat in skill_categories %)
@@ -116,9 +122,9 @@
 
 % ─── EXPERIENCE ──────────────────────────────────
 (% if jobs %)
-\vspace{-3.0mm}
+\vspace{(% if tier >= 2 %)-5.0mm(% elif tier >= 1 %)-4.0mm(% else %)-3.0mm(% endif %)}
 \section{Experience}
-\vspace{1.0mm}
+\vspace{(% if tier >= 2 %)-0.5mm(% elif tier >= 1 %)0.0mm(% else %)1.0mm(% endif %)}
   \resumeSubHeadingListStart
   (% for job in jobs %)
     \resumeSubheading
@@ -135,9 +141,9 @@
 
 % ─── PROJECTS ────────────────────────────────────
 (% if projects %)
-\vspace{-3.0mm}
+\vspace{(% if tier >= 2 %)-5.0mm(% elif tier >= 1 %)-4.0mm(% else %)-3.0mm(% endif %)}
 \section{Personal Projects}
-\vspace{1.0mm}
+\vspace{(% if tier >= 2 %)-0.5mm(% elif tier >= 1 %)0.0mm(% else %)1.0mm(% endif %)}
   \resumeSubHeadingListStart
   (% for proj in projects %)
     (% set link_parts = [] %)

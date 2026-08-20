@@ -78,6 +78,13 @@ def latex_assembler(state: dict) -> dict:
         skills = source_bank.get("skills", [])
         skill_categories = _categorize_skills(skills)
 
+    # Determine spacing tier based on retry count
+    # Tier 0 = default spacing, Tier 1 = tighter, Tier 2 = maximum compression
+    retry_count = state.get("retry_count", 0)
+    spacing_tier = min(retry_count, 2)  # 0, 1, or 2
+    if spacing_tier > 0:
+        print(f"   ⚡ Spacing tier {spacing_tier} (retry {retry_count}) — tightening layout")
+
     # Render template
     env = _get_template_env()
     template = env.get_template("resume.tex.j2")
@@ -87,6 +94,7 @@ def latex_assembler(state: dict) -> dict:
         skill_categories=skill_categories,
         jobs=jobs,
         projects=projects,
+        spacing_tier=spacing_tier,
         escape=_escape_latex,
     )
 

@@ -100,11 +100,28 @@ def bullet_selector(state: dict) -> dict:
     source_bank = state["source_bank"]
     confirmed_ids = state["confirmed_entries"]
     qa_feedback = state.get("qa_feedback")
+    retry_count = state.get("retry_count", 0)
     entries = source_bank["entries"]
 
     print("\n🎯 [Node 2: Bullet Selector] Selecting bullets for each entry...")
     if qa_feedback:
-        print(f"   ⚠ QA feedback from previous attempt: {qa_feedback[:100]}...")
+        print(f"   ⚠ QA feedback (retry {retry_count}/3): {qa_feedback[:120]}...")
+    
+    # On retries, prepend explicit bullet count caps to qa_feedback
+    if retry_count >= 2:
+        cap_msg = (
+            "HARD LIMIT: You are on retry 3 — maximum compression. "
+            "Return AT MOST 2 bullets per entry. Prefer the shortest bullets (under 20 words). "
+            "If you still exceed 1 page, the pipeline will fail. "
+        )
+        qa_feedback = cap_msg + (qa_feedback or "")
+    elif retry_count >= 1:
+        cap_msg = (
+            "IMPORTANT: This is a retry — the previous selection was too long. "
+            "Return AT MOST 3 bullets per job entry and 2 per project entry. "
+            "Strongly prefer short 1-line bullets (under 22 words). "
+        )
+        qa_feedback = cap_msg + (qa_feedback or "")
 
     enriched = []
     for eid in confirmed_ids:
