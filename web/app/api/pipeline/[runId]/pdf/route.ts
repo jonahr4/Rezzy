@@ -27,6 +27,7 @@ export async function POST(
       const blob = await put(filename, pdfBytes, {
         access: 'private',
         contentType: 'application/pdf',
+        allowOverwrite: true,
       });
       blobPathname = blob.pathname;
       console.log('Blob uploaded:', blob.pathname, blob.url);

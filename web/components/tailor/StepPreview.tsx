@@ -112,12 +112,14 @@ function EditableBullet({
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onBlur={() => {
+            if (!draft.trim()) { onRemove(); return; }
             if (draft.trim() !== text) onSave(draft.trim());
             setEditing(false);
           }}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
+              if (!draft.trim()) { onRemove(); return; }
               if (draft.trim() !== text) onSave(draft.trim());
               setEditing(false);
             }

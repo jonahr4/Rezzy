@@ -62,8 +62,18 @@ def latex_assembler(state: dict) -> dict:
     skills = source_bank.get("skills", [])
 
     # Split selected content into jobs and projects (preserving user-arranged order)
-    jobs = [s for s in selected_content if s["type"] == "job"]
-    projects = [s for s in selected_content if s["type"] == "project"]
+    # Filter out empty/placeholder bullets that would render as lone dots in LaTeX
+    def _clean_bullets(entries):
+        for e in entries:
+            e["selected_bullets"] = [
+                b for b in e["selected_bullets"]
+                if b.get("text", "").strip()
+                and b["text"].strip() != "New bullet point — click to edit"
+            ]
+        return entries
+
+    jobs = _clean_bullets([s for s in selected_content if s["type"] == "job"])
+    projects = _clean_bullets([s for s in selected_content if s["type"] == "project"])
 
     # Group skills into categories for the template
     # Use user-arranged skill_rows from the UI if available, else fall back to hardcoded categories
