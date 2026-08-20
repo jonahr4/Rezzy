@@ -41,8 +41,8 @@
 
 % Section title formatting — tighter on higher tiers
 \titleformat{\section}{
-  \vspace{(% if tier >= 2 %)-7pt(% elif tier >= 1 %)-6pt(% else %)-5pt(% endif %)}\scshape\raggedright\large
-}{}{0em}{}[\color{black}\titlerule \vspace{(% if tier >= 2 %)-6pt(% elif tier >= 1 %)-5pt(% else %)-4pt(% endif %)}]
+  \vspace{(% if tier >= 2 %)-9pt(% elif tier >= 1 %)-7pt(% else %)-5pt(% endif %)}\scshape\raggedright\large
+}{}{0em}{}[\color{black}\titlerule \vspace{(% if tier >= 2 %)-7pt(% elif tier >= 1 %)-5pt(% else %)-4pt(% endif %)}]
 
 
 % Custom commands with tier-aware spacing
@@ -90,9 +90,9 @@
 \end{center}
 
 % ─── EDUCATION ───────────────────────────────────
-\vspace{(% if tier >= 2 %)-5mm(% elif tier >= 1 %)-4mm(% else %)-3mm(% endif %)}
+\vspace{(% if tier >= 2 %)-6mm(% elif tier >= 1 %)-4.5mm(% else %)-3mm(% endif %)}
 \section{Education}
-\vspace{(% if tier >= 2 %)-0.5mm(% elif tier >= 1 %)0.0mm(% else %)1.0mm(% endif %)}
+\vspace{(% if tier >= 2 %)-1.5mm(% elif tier >= 1 %)-0.5mm(% else %)1.0mm(% endif %)}
   \resumeSubHeadingListStart
   (% for edu in education %)
     \vspace{-2pt}\item\small
@@ -109,9 +109,9 @@
   \resumeSubHeadingListEnd
 
 % ─── TECHNICAL SKILLS ────────────────────────────
-\vspace{(% if tier >= 2 %)-5.0mm(% elif tier >= 1 %)-4.0mm(% else %)-3.0mm(% endif %)}
+\vspace{(% if tier >= 2 %)-6.5mm(% elif tier >= 1 %)-4.5mm(% else %)-3.0mm(% endif %)}
 \section{Technical Skills}
-\vspace{(% if tier >= 2 %)-0.5mm(% elif tier >= 1 %)0.0mm(% else %)1.0mm(% endif %)}
+\vspace{(% if tier >= 2 %)-1.5mm(% elif tier >= 1 %)-0.5mm(% else %)1.0mm(% endif %)}
  \begin{itemize}[leftmargin=0.15in, label={}]
     \small{\item{
     (% for cat in skill_categories %)
@@ -122,9 +122,9 @@
 
 % ─── EXPERIENCE ──────────────────────────────────
 (% if jobs %)
-\vspace{(% if tier >= 2 %)-5.0mm(% elif tier >= 1 %)-4.0mm(% else %)-3.0mm(% endif %)}
+\vspace{(% if tier >= 2 %)-6.5mm(% elif tier >= 1 %)-4.5mm(% else %)-3.0mm(% endif %)}
 \section{Experience}
-\vspace{(% if tier >= 2 %)-0.5mm(% elif tier >= 1 %)0.0mm(% else %)1.0mm(% endif %)}
+\vspace{(% if tier >= 2 %)-1.5mm(% elif tier >= 1 %)-0.5mm(% else %)1.0mm(% endif %)}
   \resumeSubHeadingListStart
   (% for job in jobs %)
     \resumeSubheading
@@ -141,9 +141,9 @@
 
 % ─── PROJECTS ────────────────────────────────────
 (% if projects %)
-\vspace{(% if tier >= 2 %)-5.0mm(% elif tier >= 1 %)-4.0mm(% else %)-3.0mm(% endif %)}
+\vspace{(% if tier >= 2 %)-6.5mm(% elif tier >= 1 %)-4.5mm(% else %)-3.0mm(% endif %)}
 \section{Personal Projects}
-\vspace{(% if tier >= 2 %)-0.5mm(% elif tier >= 1 %)0.0mm(% else %)1.0mm(% endif %)}
+\vspace{(% if tier >= 2 %)-1.5mm(% elif tier >= 1 %)-0.5mm(% else %)1.0mm(% endif %)}
   \resumeSubHeadingListStart
   (% for proj in projects %)
     (% set link_parts = [] %)

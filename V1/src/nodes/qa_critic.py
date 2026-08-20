@@ -60,23 +60,23 @@ def qa_critic(state: dict) -> dict:
         retry = retry_count + 1  # this will be the retry number after this return
         if retry >= 3:
             feedback = (
-                f"CRITICAL: Resume is {page_count} pages on attempt {retry}/3. "
-                "This is the LAST chance. You MUST aggressively cut: reduce to 2 bullets per entry, "
-                "use the absolute shortest bullet variants, and drop the least-relevant entry entirely if needed. "
-                "The template spacing is already at maximum compression."
+                f"Resume is {page_count} pages on attempt {retry}/3. "
+                "Final attempt — tightening spacing to maximum compression. "
+                "If still overflowing, consider reducing to 2-3 bullets per entry "
+                "or shortening the longest bullets."
             )
         elif retry >= 2:
             feedback = (
-                f"Resume is {page_count} pages on attempt {retry}/3. Previous cuts were NOT enough. "
-                "You MUST reduce bullet count by at least 3-4 more bullets total. "
-                "Drop to 3 bullets max per job and 2 per project. "
-                "Prefer the shortest 1-line bullets — reject any bullet over 25 words."
+                f"Resume is {page_count} pages on attempt {retry}/3. "
+                "Increasing layout compression. Reduce bullet count by 2-3 more total. "
+                "Aim for 3 bullets max per job and 2 per project. "
+                "Prefer concise 1-line bullets."
             )
         else:
             feedback = (
-                f"Resume is {page_count} pages — must be exactly 1 page. "
-                "Reduce total bullet count by 2-3. Drop to the lower end of each range: "
-                "3-4 bullets for jobs, 2 for projects. Prefer short 1-line bullets."
+                f"Resume is {page_count} pages — adjusting to fit 1 page. "
+                "Tightening spacing and reducing total bullet count by 2-3. "
+                "Drop to the lower end of each range: 3-4 bullets for jobs, 2 for projects."
             )
         print(f"   ✗ FAIL — {feedback}")
         log_step(
