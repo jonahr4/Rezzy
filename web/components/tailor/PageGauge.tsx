@@ -183,7 +183,6 @@ export default function PageGauge() {
   }
 
   const totalWords = FIXED_OVERHEAD + skillWords + entryWords;
-  console.log('[PageGauge]', { confirmedCount: confirmedEntryIds.length, allCount: allEntries.length, selCount: selectedContent.length, skillWords, entryWords, totalWords });
   const { label, zone } = getZone(totalWords);
   const angle = useAnimated(wordsToAngle(totalWords));
 

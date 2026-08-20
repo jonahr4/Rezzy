@@ -144,6 +144,21 @@ def bullet_selector(state: dict) -> dict:
             "selected_bullets": selected_bullets,
         })
 
+    # Sort entries reverse-chronologically (most recent first) as default order
+    import calendar as _cal
+    def _parse_date(d):
+        if not d or d == "Present":
+            return (9999, 12)
+        parts = d.strip().split()
+        if len(parts) == 2:
+            try:
+                m = list(_cal.month_abbr).index(parts[0])
+                return (int(parts[1]), m)
+            except (ValueError, IndexError):
+                pass
+        return (0, 0)
+    enriched.sort(key=lambda s: _parse_date(s.get("end_date", "")), reverse=True)
+
     # Print summary
     total_bullets = sum(len(s["selected_bullets"]) for s in enriched)
     print(f"   ✓ Selected {total_bullets} bullets across {len(enriched)} entries:")

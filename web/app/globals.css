@@ -3226,6 +3226,8 @@ textarea.input-field {
 /* Skills */
 .preview-skills { margin-bottom: 4px; }
 .preview-skill-line {
+  display: flex;
+  align-items: baseline;
   font-size: 11px;
   line-height: 1.4;
   margin-bottom: 1px;
@@ -3246,6 +3248,7 @@ textarea.input-field {
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 2px;
+  gap: 0;
 }
 .preview-entry-title {
   font-weight: 800;
@@ -3258,6 +3261,8 @@ textarea.input-field {
   color: var(--text-muted);
 }
 .preview-entry-right { text-align: right; flex-shrink: 0; }
+.preview-entry-left { flex: 1; min-width: 0; }
+.preview-entry-header > .drag-handle { margin-top: 2px; }
 .preview-entry-dates {
   font-size: 11px;
   font-family: var(--font-body);
@@ -3288,6 +3293,49 @@ textarea.input-field {
   background: var(--accent-subtle);
   outline: 1px dashed var(--accent);
 }
+.preview-bullet {
+  position: relative;
+}
+.preview-bullet-delete {
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 4px;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+}
+.preview-bullet:hover .preview-bullet-delete {
+  opacity: 0.6;
+}
+.preview-bullet-delete:hover {
+  opacity: 1 !important;
+  color: var(--gauge-red, #e74c3c);
+}
+
+/* Add bullet button */
+.preview-add-bullet {
+  background: none;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 10.5px;
+  padding: 3px 10px;
+  margin-top: 4px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  font-family: var(--font-body);
+}
+.preview-add-bullet:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
 
 /* Editing state */
 .preview-bullet.editing {
@@ -3308,6 +3356,83 @@ textarea.input-field {
   outline: none;
   background: var(--accent-subtle);
 }
+
+/* ── Drag-and-drop reordering ── */
+
+.drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  cursor: grab;
+  color: var(--text-muted);
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+.drag-handle:active { cursor: grabbing; }
+
+.drag-handle-sm {
+  width: 14px;
+  height: 14px;
+  margin-right: 2px;
+}
+
+.drag-handle-bullet {
+  width: 14px;
+  height: 14px;
+  margin-right: 2px;
+  margin-top: 3px;
+  align-self: flex-start;
+}
+
+/* Show handles on hover */
+.preview-draggable:hover > .drag-handle,
+.preview-draggable:hover > .preview-entry-header > .drag-handle,
+.preview-bullet-row:hover > .drag-handle {
+  opacity: 0.5;
+}
+.preview-draggable:hover > .drag-handle:hover,
+.preview-draggable:hover > .preview-entry-header > .drag-handle:hover,
+.preview-bullet-row:hover > .drag-handle:hover {
+  opacity: 1;
+  color: var(--accent);
+}
+
+/* Dragging state */
+.preview-draggable.dragging {
+  opacity: 0.35;
+}
+
+/* Drop target indicator */
+.preview-draggable.drop-target {
+  position: relative;
+}
+.preview-draggable.drop-target::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: 0;
+  right: 0;
+  height: 2.5px;
+  background: var(--accent);
+  border-radius: 2px;
+  z-index: 5;
+}
+
+/* Bullet row: grip + bullet inline */
+.preview-bullet-row {
+  display: flex;
+  align-items: flex-start;
+}
+.preview-bullet-row > li {
+  flex: 1;
+  min-width: 0;
+}
+
+
 
 /* ── Step 7: Compiling ─────────────────────────────── */
 .step-compiling { display: flex; align-items: center; justify-content: center; }

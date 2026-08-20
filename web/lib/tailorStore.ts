@@ -137,6 +137,11 @@ interface TailorState {
   updateBulletText: (entryId: string, bulletId: string, newText: string) => void;
   updateSkillItem: (rowId: string, oldSkill: string, newSkill: string) => void;
   removeSkillItem: (rowId: string, skill: string) => void;
+  removeBullet: (entryId: string, bulletId: string) => void;
+  addBullet: (entryId: string) => void;
+  reorderEntries: (type: "job" | "project", fromIndex: number, toIndex: number) => void;
+  reorderBullets: (entryId: string, fromIndex: number, toIndex: number) => void;
+  reorderSkillRows: (fromIndex: number, toIndex: number) => void;
 
   // Step 7: Compiling & QA
   qaAttempts: QaAttempt[];
@@ -447,10 +452,84 @@ export const useTailorStore = create<TailorState>((set, get) => ({
     });
   },
 
+  removeBullet: (entryId, bulletId) => {
+    const { selectedContent } = get();
+    set({
+      selectedContent: selectedContent.map((entry) => {
+        if (entry.entry_id !== entryId) return entry;
+        return {
+          ...entry,
+          selected_bullets: entry.selected_bullets.filter((b) => b.id !== bulletId),
+        };
+      }),
+    });
+  },
+
+  addBullet: (entryId) => {
+    const { selectedContent } = get();
+    set({
+      selectedContent: selectedContent.map((entry) => {
+        if (entry.entry_id !== entryId) return entry;
+        const newId = `custom_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+        return {
+          ...entry,
+          selected_bullets: [
+            ...entry.selected_bullets,
+            { id: newId, text: "New bullet point — click to edit" },
+          ],
+        };
+      }),
+    });
+  },
+
 
   addQaAttempt: (attempt) => set((state) => ({ qaAttempts: [...state.qaAttempts, attempt] })),
 
   setResult: (result) => set({ result }),
+
+  reorderEntries: (type, fromIndex, toIndex) => {
+    const { selectedContent } = get();
+    // Get indices of entries of this type within the full array
+    const typeIndices = selectedContent
+      .map((e, i) => (e.type === type ? i : -1))
+      .filter((i) => i !== -1);
+    if (fromIndex < 0 || fromIndex >= typeIndices.length) return;
+    if (toIndex < 0 || toIndex >= typeIndices.length) return;
+    const newContent = [...selectedContent];
+    const movedItem = newContent[typeIndices[fromIndex]];
+    // Remove from old position
+    newContent.splice(typeIndices[fromIndex], 1);
+    // Recalculate target position after removal
+    const remainingTypeIndices = newContent
+      .map((e, i) => (e.type === type ? i : -1))
+      .filter((i) => i !== -1);
+    const insertAt = toIndex >= remainingTypeIndices.length
+      ? (remainingTypeIndices.length > 0 ? remainingTypeIndices[remainingTypeIndices.length - 1] + 1 : newContent.length)
+      : remainingTypeIndices[toIndex];
+    newContent.splice(insertAt, 0, movedItem);
+    set({ selectedContent: newContent });
+  },
+
+  reorderBullets: (entryId, fromIndex, toIndex) => {
+    const { selectedContent } = get();
+    set({
+      selectedContent: selectedContent.map((entry) => {
+        if (entry.entry_id !== entryId) return entry;
+        const bullets = [...entry.selected_bullets];
+        const [moved] = bullets.splice(fromIndex, 1);
+        bullets.splice(toIndex, 0, moved);
+        return { ...entry, selected_bullets: bullets };
+      }),
+    });
+  },
+
+  reorderSkillRows: (fromIndex, toIndex) => {
+    const { skillRows } = get();
+    const rows = [...skillRows];
+    const [moved] = rows.splice(fromIndex, 1);
+    rows.splice(toIndex, 0, moved);
+    set({ skillRows: rows });
+  },
 
   reset: () => set(initialState),
 }));

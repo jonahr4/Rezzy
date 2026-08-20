@@ -61,7 +61,7 @@ def latex_assembler(state: dict) -> dict:
     education = source_bank.get("education", [])
     skills = source_bank.get("skills", [])
 
-    # Split selected content into jobs and projects (preserving selection order)
+    # Split selected content into jobs and projects (preserving user-arranged order)
     jobs = [s for s in selected_content if s["type"] == "job"]
     projects = [s for s in selected_content if s["type"] == "project"]
 
