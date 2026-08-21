@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 
 type Tab = 'profile' | 'preferences' | 'api-keys';
@@ -138,6 +139,9 @@ function ProfileTab() {
           <button className="btn btn-primary btn-sm" onClick={handleSave} disabled={saving} id="btn-save-profile">
             {saving ? 'Saving...' : saved ? 'Saved' : 'Save Profile'}
           </button>
+          <Link href="/onboarding" className="btn btn-ghost btn-sm">
+            Re-run Onboarding
+          </Link>
           {saved && <span style={{ fontSize: 12, color: '#2E7D32' }}>Profile saved</span>}
         </div>
       </div>

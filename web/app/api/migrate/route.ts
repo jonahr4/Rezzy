@@ -138,8 +138,10 @@ export async function POST() {
         phone       TEXT NOT NULL DEFAULT '',
         email       TEXT NOT NULL DEFAULT '',
         website     TEXT NOT NULL DEFAULT '',
+        location    TEXT NOT NULL DEFAULT '',
         linkedin    TEXT NOT NULL DEFAULT '',
         github      TEXT NOT NULL DEFAULT '',
+        summary     TEXT NOT NULL DEFAULT '',
         created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
         updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
       )

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import TutorialModal from '@/components/TutorialModal';
 import { useAuth } from '@/lib/auth-context';
 import { STATUS_CONFIG, STATUS_ORDER } from '@/components/applications/AppDetailPanel';
 import type { AppStatus } from '@/components/applications/AppDetailPanel';
@@ -25,6 +26,12 @@ export default function DashboardPage() {
   const firstName = user?.displayName?.split(' ')[0] ?? 'there';
   const [stats, setStats] = useState<DashStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showTutorial, setShowTutorial] = useState(false);
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.search.includes('tutorial=true')) {
+      setShowTutorial(true);
+    }
+  }, []);
 
   const fetchStats = useCallback(async () => {
     if (!user) return;
@@ -68,6 +75,7 @@ export default function DashboardPage() {
 
   return (
     <>
+      {showTutorial && <TutorialModal />}
       <div className="page-header">
         <div className="page-header-content">
           <div className="page-eyebrow">Dashboard</div>

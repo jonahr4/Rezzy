@@ -1147,7 +1147,7 @@ img { display: block; max-width: 100%; }
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  padding: 48px 40px;
+  padding: 32px;
   width: 100%; max-width: 420px;
   box-shadow: var(--shadow-lg);
   position: relative; z-index: 1;
@@ -5578,4 +5578,82 @@ textarea.input-field {
   font-size: 11px; font-weight: 600;
   color: var(--text-muted); letter-spacing: 0.3px;
   text-align: center;
+}
+
+/* Onboarding slider transitions */
+.slide-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+}
+.slide-enter-right {
+  animation: slideInRight 0.4s var(--ease-out) forwards;
+}
+.slide-enter-left {
+  animation: slideInLeft 0.4s var(--ease-out) forwards;
+}
+.slide-exit-left {
+  animation: slideOutLeft 0.4s var(--ease-out) forwards;
+  position: absolute; top: 0; width: 100%;
+}
+.slide-exit-right {
+  animation: slideOutRight 0.4s var(--ease-out) forwards;
+  position: absolute; top: 0; width: 100%;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(50px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideInLeft {
+  from { transform: translateX(-50px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideOutLeft {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(-50px); opacity: 0; }
+}
+@keyframes slideOutRight {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(50px); opacity: 0; }
+}
+
+.onboarding-card {
+  width: 100%; max-width: 620px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 48px;
+  box-shadow: var(--shadow-md);
+  margin: 0 auto;
+}
+
+@media (max-width: 600px) {
+  .onboarding-card {
+    padding: 32px 20px;
+    border-radius: var(--radius-lg);
+  }
+}
+
+/* Onboarding Review overrides */
+.onboarding-review-wrapper .modal-backdrop {
+  display: none !important;
+}
+.onboarding-review-wrapper .review-modal {
+  position: static !important;
+  transform: none !important;
+  width: 100% !important;
+  max-width: none !important;
+  max-height: 500px !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+.onboarding-review-wrapper .entry-modal-header {
+  display: none !important; /* Hide the modal's default header since we have our own */
+}
+.onboarding-review-wrapper .entry-modal-footer {
+  border-top: 1px solid var(--border) !important;
 }

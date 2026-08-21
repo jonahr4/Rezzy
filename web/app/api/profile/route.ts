@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   const userId = uid(req);
   const body = await req.json();
-  const { full_name, phone, email, website, linkedin, github } = body;
+  const { full_name, phone, email, website, linkedin, github} = body;
 
   // Enforce character limits
   for (const [field, limit] of Object.entries(CHAR_LIMITS)) {
@@ -47,9 +47,9 @@ export async function PUT(req: NextRequest) {
 
   try {
     const rows = await sql`
-      INSERT INTO profiles (user_id, full_name, phone, email, website, linkedin, github)
+      INSERT INTO profiles (user_id, full_name, phone, email, website, linkedin, github, location)
       VALUES (${userId}, ${full_name ?? ''}, ${phone ?? ''}, ${email ?? ''},
-              ${website ?? ''}, ${linkedin ?? ''}, ${github ?? ''})
+              ${website ?? ''}, ${linkedin ?? ''}, ${github ?? ''}, ${location ?? ''})
       ON CONFLICT (user_id) DO UPDATE SET
         full_name  = COALESCE(${full_name ?? null}, profiles.full_name),
         phone      = COALESCE(${phone ?? null}, profiles.phone),
@@ -57,6 +57,7 @@ export async function PUT(req: NextRequest) {
         website    = COALESCE(${website ?? null}, profiles.website),
         linkedin   = COALESCE(${linkedin ?? null}, profiles.linkedin),
         github     = COALESCE(${github ?? null}, profiles.github),
+        location   = COALESCE(${location ?? null}, profiles.location),
         updated_at = now()
       RETURNING *
     `;
