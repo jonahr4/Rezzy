@@ -1,3 +1,14 @@
+// Polyfill for Math.sumPrecise (used by unpdf/pdfjs on older Node versions)
+if (typeof (Math as any).sumPrecise !== 'function') {
+  (Math as any).sumPrecise = function (values: Iterable<number>) {
+    let sum = 0;
+    for (const v of values) {
+      sum += v;
+    }
+    return sum;
+  };
+}
+
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 import OpenAI from 'openai';

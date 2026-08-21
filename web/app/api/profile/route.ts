@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   const userId = uid(req);
   const body = await req.json();
-  const { full_name, phone, email, website, linkedin, github} = body;
+  const { full_name, phone, email, website, linkedin, github, location } = body;
 
   // Enforce character limits
   for (const [field, limit] of Object.entries(CHAR_LIMITS)) {

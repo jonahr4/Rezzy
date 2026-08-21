@@ -79,8 +79,19 @@ export default function OnboardingPage() {
       setUploadStatus('Checking for duplicates...');
 
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? `Error ${res.status}`);
+        let errMsg = `Error ${res.status}`;
+        try {
+          const err = await res.json();
+          errMsg = err.error ?? err.message ?? errMsg;
+        } catch {
+          // If it fails to parse JSON (e.g. 502 HTML from proxy)
+          if (res.status === 502 || res.status === 504) {
+            errMsg = 'The AI server took too long or is currently overloaded. Please try again.';
+          } else {
+            errMsg = 'An unexpected server error occurred (' + res.status + ').';
+          }
+        }
+        throw new Error(errMsg);
       }
       const result: ResumeParseResult = await res.json();
 
@@ -91,7 +102,7 @@ export default function OnboardingPage() {
       // Move to review step
       setTimeout(() => {
         setDirection('right');
-        setStep(2);
+        setStep(3);
       }, 400);
 
     } catch (e: unknown) {
@@ -118,7 +129,7 @@ export default function OnboardingPage() {
 
       
       // 0. Save Profile
-      await fetch('/api/profile', { method: 'POST', headers, body: JSON.stringify(profileData) });
+      await fetch('/api/profile', { method: 'PUT', headers, body: JSON.stringify(profileData) });
 
       // 1. Save New Entries
       for (const entry of selection.entries) {
@@ -150,7 +161,7 @@ export default function OnboardingPage() {
     } catch (e) {
       setUploadError('Failed to save data. Please try again.');
       setDirection('left');
-      setStep(2);
+      setStep(3);
     }
   }
 
@@ -270,7 +281,7 @@ export default function OnboardingPage() {
                     try {
                       const token = await user?.getIdToken();
                       await fetch('/api/profile', {
-                        method: 'POST',
+                        method: 'PUT',
                         headers: {
                           'Content-Type': 'application/json',
                           'x-user-id': user?.uid ?? '',
@@ -289,7 +300,7 @@ export default function OnboardingPage() {
           )}
 
           {/* Step 1: Uploading/Parsing */}
-          {(step === 3 || step === 4) && (
+          {(step === 2 || step === 4) && (
             <div className={`onboarding-card ${direction === 'right' ? 'slide-enter-right' : 'slide-enter-left'}`} style={{ textAlign: 'center', padding: '64px 32px' }}>
               <div className="spinner" style={{ width: 40, height: 40, borderWidth: 3, margin: '0 auto 24px', borderColor: 'var(--accent)', borderRightColor: 'transparent' }} />
               <h1 className="onboarding-title" style={{ fontSize: 24, marginBottom: 16 }}>{uploadStatus}</h1>
