@@ -2,6 +2,7 @@
 
 import { useTailorStore } from "@/lib/tailorStore";
 import { useAuth } from "@/lib/auth-context";
+import { pipelineHeaders } from "@/lib/pipeline-headers";
 
 const API_URL = "/api/pipeline/step";
 
@@ -33,7 +34,7 @@ export default function StepPasteJD() {
       // Parse the JD
       const res = await fetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: pipelineHeaders(user?.uid),
         body: JSON.stringify({ step: "parse-jd", jd_text: jdText }),
       });
       const data = await res.json();

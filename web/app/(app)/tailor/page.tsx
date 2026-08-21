@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
+import { useAuth } from "@/lib/auth-context";
 import { useTailorStore, type WizardStep } from "@/lib/tailorStore";
 import StepPasteJD from "@/components/tailor/StepPasteJD";
 import StepParsedJD from "@/components/tailor/StepParsedJD";
@@ -16,8 +17,23 @@ const STEP_LABELS = ["Paste JD", "Parsed", "Skills", "Entries", "Bullets", "Sugg
 
 export default function TailorPage() {
   const { currentStep, maxReachedStep, setStep } = useTailorStore();
+  const { user } = useAuth();
   const scrollRef = useRef<HTMLDivElement>(null);
   const isScrollingProgrammatically = useRef(false);
+  const [hasSourceData, setHasSourceData] = useState<boolean | null>(null); // null = loading
+
+  // Check if user has source bank data (entries) before allowing pipeline
+  useEffect(() => {
+    if (!user?.uid) return;
+    fetch("/api/pipeline/source-bank", {
+      headers: { "x-user-id": user.uid },
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        setHasSourceData((data.entries ?? []).length > 0);
+      })
+      .catch(() => setHasSourceData(false));
+  }, [user?.uid]);
 
   useEffect(() => {
     if (!scrollRef.current) return;
@@ -69,6 +85,31 @@ export default function TailorPage() {
 
   const canGoBack = currentStep > 0;
   const canGoForward = currentStep < maxReachedStep;
+
+  // Show empty state if user has no source bank data
+  if (hasSourceData === false) {
+    return (
+      <div className="tailor-page">
+        <div className="tailor-empty-state">
+          <div className="tailor-empty-icon">
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Z" />
+              <path d="M14 2v6h6" />
+              <line x1="12" y1="18" x2="12" y2="12" />
+              <line x1="9" y1="15" x2="15" y2="15" />
+            </svg>
+          </div>
+          <h2 className="tailor-empty-title">Set up your Source Bank first</h2>
+          <p className="tailor-empty-desc">
+            Add your experience, projects, education, and skills so we can tailor your resume to any job.
+          </p>
+          <a href="/source-bank" className="step-cta">
+            Go to Source Bank →
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="tailor-page">

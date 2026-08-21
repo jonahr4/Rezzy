@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useAuth } from "@/lib/auth-context";
+import { pipelineHeaders } from "@/lib/pipeline-headers";
 import { useTailorStore } from "@/lib/tailorStore";
 import PageGauge from "./PageGauge";
 
@@ -18,6 +20,7 @@ export default function StepBulletSelect() {
     advanceStep,
     currentStep,
   } = useTailorStore();
+  const { user } = useAuth();
 
   const [expandedEntry, setExpandedEntry] = useState<string | null>(
     selectedContent[0]?.entry_id ?? null
@@ -36,7 +39,7 @@ export default function StepBulletSelect() {
     try {
       const res = await fetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: pipelineHeaders(user?.uid),
         body: JSON.stringify({
           step: "suggest",
           parsed_jd: parsedJD,

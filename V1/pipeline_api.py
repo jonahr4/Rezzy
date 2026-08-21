@@ -34,7 +34,6 @@ from src.nodes.ai_suggestion_gen import ai_suggestion_gen
 from src.nodes.latex_assembler import latex_assembler
 from src.nodes.compile_latex import compile_latex
 from src.nodes.qa_critic import qa_critic
-from src.loader import load_source_bank
 from src.trace import start_pipeline, log_step, render_trace, finish_pipeline
 from langsmith import traceable
 
@@ -130,29 +129,39 @@ def _update_runs_index(run_dir: Path, jd_source: str, final_state: dict, elapsed
 
 class ParseJDRequest(BaseModel):
     jd_text: str
+    source_bank: dict | None = None
 
 class SelectEntriesRequest(BaseModel):
     parsed_jd: dict
+    source_bank: dict | None = None
 
 class SelectBulletsRequest(BaseModel):
     parsed_jd: dict
     confirmed_entries: list[str]
+    source_bank: dict | None = None
 
 class SuggestRequest(BaseModel):
     parsed_jd: dict
     selected_content: list[dict]
+    source_bank: dict | None = None
 
 class CompileRequest(BaseModel):
     selected_content: list[dict]
     parsed_jd: dict
     skill_rows: list[dict] | None = None
+    source_bank: dict | None = None
 
 
 # ── Helpers ───────────────────────────────────────────────
 
-def _load_bank() -> dict:
-    """Load source bank from disk."""
-    return load_source_bank("data/source_bank.json")
+def _load_bank(override: dict | None = None) -> dict:
+    """Use the provided source bank (from DB via Next.js). No fallback to static files."""
+    if not override:
+        raise HTTPException(
+            status_code=422,
+            detail="source_bank is required. The Next.js proxy must inject per-user data from the database."
+        )
+    return override
 
 
 # ── Endpoints ─────────────────────────────────────────────
@@ -175,7 +184,7 @@ def step_parse_jd(req: ParseJDRequest):
 
     state = {
         "job_description_raw": req.jd_text,
-        "source_bank": _load_bank(),
+        "source_bank": _load_bank(req.source_bank),
     }
     result = jd_parser(state)
 
@@ -198,6 +207,7 @@ def step_parse_jd(req: ParseJDRequest):
 
 class SkillsRequest(BaseModel):
     parsed_jd: dict
+    source_bank: dict | None = None
 
 
 @app.post("/step/skills")
@@ -205,7 +215,7 @@ class SkillsRequest(BaseModel):
 def step_skills(req: SkillsRequest):
     """Step 1.5: Organize and suggest skills for the resume."""
     session = _get_or_create_session()
-    bank = _load_bank()
+    bank = _load_bank(req.source_bank)
     all_skills = bank.get("skills", [])
 
     from src.llm import chat
@@ -275,7 +285,7 @@ Return JSON:
 def step_select_entries(req: SelectEntriesRequest):
     """Step 1.5: Select which entries to include."""
     session = _get_or_create_session()
-    bank = _load_bank()
+    bank = _load_bank(req.source_bank)
     state = {
         "parsed_jd": req.parsed_jd,
         "source_bank": bank,
@@ -324,7 +334,7 @@ def step_select_entries(req: SelectEntriesRequest):
 def step_select_bullets(req: SelectBulletsRequest):
     """Step 2: Select bullets for each confirmed entry."""
     session = _get_or_create_session()
-    bank = _load_bank()
+    bank = _load_bank(req.source_bank)
     state = {
         "parsed_jd": req.parsed_jd,
         "source_bank": bank,
@@ -360,7 +370,7 @@ def step_select_bullets(req: SelectBulletsRequest):
 def step_suggest(req: SuggestRequest):
     """Step 2.5: Generate AI suggestions."""
     session = _get_or_create_session()
-    bank = _load_bank()
+    bank = _load_bank(req.source_bank)
     state = {
         "parsed_jd": req.parsed_jd,
         "source_bank": bank,
@@ -402,7 +412,7 @@ def step_compile(req: CompileRequest):
         state: dict = {
             "selected_content": req.selected_content,
             "parsed_jd": req.parsed_jd,
-            "source_bank": _load_bank(),
+            "source_bank": _load_bank(req.source_bank),
             "confirmed_entries": session.get("confirmed_entries", [e["entry_id"] for e in req.selected_content]),
         }
         if skill_rows:
@@ -549,7 +559,5 @@ def step_compile(req: CompileRequest):
     return StreamingResponse(generate(), media_type="text/event-stream")
 
 
-@app.get("/source-bank")
-def get_source_bank():
-    """Return the full source bank for the UI."""
-    return _load_bank()
+# NOTE: Source bank is now served per-user from the Next.js DB route
+# at /api/pipeline/source-bank. No static file endpoint here.

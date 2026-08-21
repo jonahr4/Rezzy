@@ -21,6 +21,8 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useDroppable } from "@dnd-kit/core";
+import { useAuth } from "@/lib/auth-context";
+import { pipelineHeaders } from "@/lib/pipeline-headers";
 import { useTailorStore } from "@/lib/tailorStore";
 import PageGauge from "./PageGauge";
 
@@ -285,6 +287,7 @@ export default function StepSkills() {
     setEntries,
     advanceStep,
   } = useTailorStore();
+  const { user } = useAuth();
 
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -399,7 +402,7 @@ export default function StepSkills() {
     try {
       const res = await fetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: pipelineHeaders(user?.uid),
         body: JSON.stringify({
           step: "select-entries",
           parsed_jd: parsedJD,

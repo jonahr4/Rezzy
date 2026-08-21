@@ -1,5 +1,7 @@
 "use client";
 
+import { useAuth } from "@/lib/auth-context";
+import { pipelineHeaders } from "@/lib/pipeline-headers";
 import { useTailorStore } from "@/lib/tailorStore";
 import PageGauge from "./PageGauge";
 
@@ -18,6 +20,7 @@ export default function StepEntrySelect() {
     advanceStep,
     currentStep,
   } = useTailorStore();
+  const { user } = useAuth();
 
   // Show loading while entries are being fetched
   if (allEntries.length === 0 && loading) {
@@ -46,7 +49,7 @@ export default function StepEntrySelect() {
     try {
       const res = await fetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: pipelineHeaders(user?.uid),
         body: JSON.stringify({
           step: "select-bullets",
           parsed_jd: parsedJD,

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import { useAuth } from "@/lib/auth-context";
+import { pipelineHeaders } from "@/lib/pipeline-headers";
 import { useTailorStore } from "@/lib/tailorStore";
 import PageGauge from "./PageGauge";
 
@@ -218,6 +220,7 @@ export default function StepPreview() {
     setResult,
     advanceStep,
   } = useTailorStore();
+  const { user } = useAuth();
 
   const isReadOnly = currentStep > 6;
   const jobs = selectedContent.filter((e) => e.type === "job");
@@ -248,7 +251,7 @@ export default function StepPreview() {
     try {
       const res = await fetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: pipelineHeaders(user?.uid),
         body: JSON.stringify({
           step: "compile",
           selected_content: useTailorStore.getState().selectedContent,

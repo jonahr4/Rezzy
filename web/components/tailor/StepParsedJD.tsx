@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useAuth } from "@/lib/auth-context";
+import { pipelineHeaders } from "@/lib/pipeline-headers";
 import { useTailorStore } from "@/lib/tailorStore";
 
 const API_URL = "/api/pipeline/step";
@@ -14,6 +16,7 @@ export default function StepParsedJD() {
     setSkillsData,
     advanceStep,
   } = useTailorStore();
+  const { user } = useAuth();
 
   const [skillsReady, setSkillsReady] = useState(false);
 
@@ -26,7 +29,7 @@ export default function StepParsedJD() {
       try {
         const res = await fetch(API_URL, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: pipelineHeaders(user?.uid),
           body: JSON.stringify({
             step: "skills",
             parsed_jd: parsedJD,

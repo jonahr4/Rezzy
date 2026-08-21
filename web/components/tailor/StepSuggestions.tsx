@@ -1,5 +1,7 @@
 "use client";
 
+import { useAuth } from "@/lib/auth-context";
+import { pipelineHeaders } from "@/lib/pipeline-headers";
 import { useTailorStore } from "@/lib/tailorStore";
 import { useState } from "react";
 import { WordDelta } from "./WordBudget";
@@ -51,6 +53,7 @@ export default function StepSuggestions() {
     advanceStep,
     currentStep,
   } = useTailorStore();
+  const { user } = useAuth();
 
   const [activeEntry, setActiveEntry] = useState<string | null>(null);
 
