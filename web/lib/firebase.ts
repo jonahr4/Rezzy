@@ -88,6 +88,7 @@ export async function confirmPhoneCode(
 // ── Sign Out ─────────────────────────────────────────
 export async function signOut() {
   await firebaseSignOut(auth);
+  window.location.href = '/';
 }
 
 export function getIdToken(): Promise<string | null> {
