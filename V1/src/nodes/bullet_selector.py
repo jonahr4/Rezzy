@@ -129,7 +129,12 @@ def bullet_selector(state: dict) -> dict:
         if not entry:
             continue
 
-        selected_bullets = _select_bullets_for_entry(entry, parsed_jd, qa_feedback)
+        # Bypass LLM if bullet bank is completely empty
+        if not entry.get("bullets"):
+            print(f"   ⚠️ Entry {entry.get('title')} has no bullets. Bypassing AI generation.")
+            selected_bullets = []
+        else:
+            selected_bullets = _select_bullets_for_entry(entry, parsed_jd, qa_feedback)
 
         enriched.append({
             "entry_id": entry["id"],

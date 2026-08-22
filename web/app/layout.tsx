@@ -16,7 +16,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" data-theme="warm-dusk">
+    <html lang="en" data-theme="warm-indigo" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{ __html: '(function(){try{var t=localStorage.getItem("rezzy_theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}})()' }}
+        />
+      </head>
       <body>
         <AuthProvider>
           {/* Wake up ACA container immediately on any page load */}

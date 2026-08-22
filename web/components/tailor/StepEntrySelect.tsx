@@ -74,15 +74,19 @@ export default function StepEntrySelect() {
   };
 
   const renderEntry = (entry: typeof allEntries[0]) => {
-    const isSelected = confirmedEntryIds.includes(entry.id);
+    const isMissingBullets = entry.bullet_count === 0;
+    const isSelected = !isMissingBullets && confirmedEntryIds.includes(entry.id);
+    const cannotToggle = isReadOnly || isMissingBullets;
+
     return (
       <div
         key={entry.id}
-        className={`entry-select-row ${isSelected ? "selected" : "excluded"} ${isReadOnly ? "readonly" : ""}`}
-        onClick={() => !isReadOnly && toggleEntry(entry.id)}
+        className={`entry-select-row ${isSelected ? "selected" : "excluded"} ${cannotToggle ? "readonly" : ""}`}
+        onClick={() => !cannotToggle && toggleEntry(entry.id)}
+        style={{ opacity: isMissingBullets ? 0.6 : 1 }}
       >
         <div className="entry-check">
-          <div className={`check-box ${isSelected ? "checked" : ""}`}>
+          <div className={`check-box ${isSelected ? "checked" : ""}`} style={{ background: isMissingBullets ? 'var(--bg-card)' : undefined, borderColor: isMissingBullets ? 'var(--border)' : undefined, cursor: isMissingBullets ? 'not-allowed' : undefined }}>
             {isSelected && "✓"}
           </div>
         </div>
@@ -92,6 +96,19 @@ export default function StepEntrySelect() {
               {entry.type}
             </span>
             {entry.pinned && <span className="pin-badge">📌 Pinned</span>}
+            {isMissingBullets && (
+              <span style={{ 
+                display: 'inline-flex', alignItems: 'center', gap: 4, 
+                color: 'var(--danger)', fontSize: 10, fontWeight: 700, 
+                textTransform: 'lowercase', letterSpacing: '0.02em', 
+                fontFamily: 'var(--font-mono)' 
+              }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                </svg>
+                error - no bullets
+              </span>
+            )}
           </div>
           <div className="entry-select-title">
             {entry.company ? `${entry.company} — ` : ""}
@@ -110,8 +127,10 @@ export default function StepEntrySelect() {
             </div>
           )}
         </div>
-        <div className={`entry-rationale ${isSelected ? "selected" : "excluded"}`}>
-          {entry.summary || (isSelected ? "Selected for relevance" : "Less relevant to this role")}
+        <div className={`entry-rationale ${isSelected ? "selected" : "excluded"}`} style={{ color: isMissingBullets ? 'var(--danger)' : undefined }}>
+          {isMissingBullets 
+            ? "Cannot select: This entry has no bullet points for the AI to tailor. Add bullets in your Source Bank."
+            : (entry.summary || (isSelected ? "Selected for relevance" : "Less relevant to this role"))}
         </div>
       </div>
     );

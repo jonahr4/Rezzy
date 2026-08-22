@@ -13,11 +13,11 @@ const TABS: { key: Tab; label: string }[] = [
 ];
 
 const THEMES = [
-  { id: 'warm-dusk', label: 'Warm Dusk', desc: 'Default warm palette' },
-  { id: 'cool-night', label: 'Cool Night', desc: 'Deep blue tones' },
+  { id: 'warm-indigo', label: 'Warm Indigo', desc: 'Default warm palette' },
+  { id: 'warm-dusk', label: 'Warm Dusk', desc: 'Slightly muted warm tones' },
+  { id: 'classic', label: 'Classic', desc: 'Neutral grey & white' },
+  { id: 'clean', label: 'Clean', desc: 'Pure white & sharp contrast' },
   { id: 'midnight', label: 'Midnight', desc: 'True dark mode' },
-  { id: 'ocean', label: 'Ocean', desc: 'Teal and seafoam' },
-  { id: 'forest', label: 'Forest', desc: 'Deep greens' },
 ];
 
 /* ── Resume info field config ──────────────────────────── */
@@ -151,11 +151,17 @@ function ProfileTab() {
 
 /* ── Preferences Tab ──────────────────────────────────── */
 function PreferencesTab() {
-  const [currentTheme, setCurrentTheme] = useState('warm-dusk');
+  const [currentTheme, setCurrentTheme] = useState('warm-indigo');
+
+  useEffect(() => {
+    const saved = localStorage.getItem('rezzy_theme');
+    if (saved) setCurrentTheme(saved);
+  }, []);
 
   function applyTheme(themeId: string) {
     setCurrentTheme(themeId);
     document.documentElement.setAttribute('data-theme', themeId);
+    localStorage.setItem('rezzy_theme', themeId);
   }
 
   return (

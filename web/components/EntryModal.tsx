@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import type { Entry, EntryType, Bullet } from '@/lib/entries';
+import BulletGenerationModal from './BulletGenerationModal';
 
 interface Props {
   entry?: Entry | null;
@@ -31,8 +32,37 @@ export default function EntryModal({ entry, onSave, onClose }: Props) {
   const [skillInput, setSkillInput]   = useState('');
   const [skills, setSkills]           = useState<string[]>(entry?.skills ?? []);
   const [url, setUrl]                 = useState(entry?.links?.live ?? entry?.links?.repo ?? '');
+
   const [saving, setSaving]           = useState(false);
+  const [generating, setGenerating]   = useState(false);
   const [error, setError]             = useState('');
+
+  async function handleGenerateBullets() {
+    if (!summary || summary.trim().split(/\s+/).length < 10) {
+      setError('Not enough information. Add a detailed summary to generate bullets.');
+      return;
+    }
+    setGenerating(true);
+    setError('');
+    try {
+      const res = await fetch('/api/generate-bullets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, organization: org, summary })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to generate');
+      
+      const newBs = data.bullets.map((text: string) => ({ id: crypto.randomUUID(), text }));
+      const existing = bullets.filter(b => b.text.trim());
+      setBullets([...existing, ...newBs]);
+    } catch (e: any) {
+      setError(e.message || 'An error occurred generating bullets');
+    } finally {
+      setGenerating(false);
+    }
+  }
+
 
   const firstInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => { firstInputRef.current?.focus(); }, []);
@@ -107,6 +137,7 @@ export default function EntryModal({ entry, onSave, onClose }: Props) {
 
   return (
     <>
+      <BulletGenerationModal isOpen={generating} />
       {/* Backdrop */}
       <div className="modal-backdrop" onClick={onClose} />
 
@@ -217,9 +248,16 @@ export default function EntryModal({ entry, onSave, onClose }: Props) {
           <div className="input-group">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
               <label className="input-label" style={{ marginBottom: 0 }}>Bullet Points</label>
-              <button type="button" className="btn btn-ghost btn-sm" onClick={() => addBullet()} style={{ fontSize: 12 }}>
-                + Add bullet
-              </button>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {summary && summary.trim().split(/\s+/).length >= 10 && (
+                  <button type="button" className="btn btn-outline btn-sm" onClick={handleGenerateBullets} disabled={generating} style={{ fontSize: 12 }}>
+                    Generate from summary
+                  </button>
+                )}
+                <button type="button" className="btn btn-ghost btn-sm" onClick={() => addBullet()} style={{ fontSize: 12 }}>
+                  + Add bullet
+                </button>
+              </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {bullets.map((b, i) => (

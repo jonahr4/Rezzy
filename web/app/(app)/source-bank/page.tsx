@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/auth-context';
 import EntryModal from '@/components/EntryModal';
 import SkillsEditor, { makeDefaultGroups } from '@/components/SkillsEditor';
 import ResumeReviewModal from '@/components/ResumeReviewModal';
+import BulletGenerationModal from '@/components/BulletGenerationModal';
 import type { ImportSelection } from '@/components/ResumeReviewModal';
 import type { ResumeParseResult } from '@/app/api/parse-resume/route';
 import {
@@ -47,10 +48,12 @@ function ProjectIcon() {
 }
 
 /* ── Entry Card ── */
-function EntryCard({ entry, onEdit, onDelete }: {
+function EntryCard({ entry, onEdit, onDelete, onGenerateBullets, isGenerating }: {
   entry: Entry;
   onEdit: () => void;
   onDelete: () => void;
+  onGenerateBullets: (id: string) => void;
+  isGenerating: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
   const dateStr = [entry.start_date, entry.end_date].filter(Boolean).join(' – ') || null;
@@ -65,6 +68,16 @@ function EntryCard({ entry, onEdit, onDelete }: {
               {isJob ? <JobIcon /> : <ProjectIcon />}
               {isJob ? 'Experience' : 'Project'}
             </span>
+            {(!entry.bullets || entry.bullets.length === 0) && (
+              <span style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 4 }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                </svg>
+                <span style={{ color: 'var(--danger)', fontSize: 11, fontWeight: 700, textTransform: 'lowercase', fontFamily: 'var(--font-mono)', letterSpacing: '0.02em' }}>
+                  error
+                </span>
+              </span>
+            )}
             {entry.pinned && (
               <span className="entry-pin-badge" style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none">
@@ -126,6 +139,36 @@ function EntryCard({ entry, onEdit, onDelete }: {
         <div className="entry-card-body">
           {entry.summary && (
             <p className="entry-summary">{entry.summary}</p>
+          )}
+
+          {(!entry.bullets || entry.bullets.length === 0) && (
+            <div style={{ marginTop: 16, padding: 20, borderRadius: 8, background: 'var(--bg-elevated)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                <span style={{ color: 'var(--text)', fontWeight: 700, fontSize: 13 }}>
+                  No bullet points found
+                </span>
+                <span style={{ color: 'var(--danger)', fontWeight: 600, fontSize: 12, textTransform: 'capitalize' }}>
+                  Error
+                </span>
+                <div style={{ width: 8, height: 8, background: 'var(--warning)' }}></div>
+              </div>
+
+              
+              {(!entry.summary || entry.summary.trim().split(/\s+/).length < 10) ? (
+                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                  (Add a longer summary in edit mode to auto-generate bullets)
+                </div>
+              ) : (
+                <button
+                  className="btn btn-outline"
+                  style={{ width: '100%', justifyContent: 'center' }}
+                  onClick={() => onGenerateBullets(entry.id)}
+                  disabled={isGenerating}
+                >
+                  {isGenerating ? 'Generating...' : 'Generate bullets from summary'}
+                </button>
+              )}
+            </div>
           )}
           {entry.bullets?.length > 0 && (
             <ul className="entry-bullets">
@@ -313,7 +356,31 @@ export default function SourceBankPage() {
   const { user } = useAuth();
   const uid = user?.uid;
 
+  
   const [activeTab, setActiveTab]       = useState<Tab>('all');
+  const [generatingBulletsId, setGeneratingBulletsId] = useState<string | null>(null);
+
+  async function handleGenerateBullets(id: string) {
+    if (!user) return;
+    setGeneratingBulletsId(id);
+    try {
+      const res = await fetch(`/api/entries/${id}/generate-bullets`, {
+        method: 'POST',
+        headers: authHeaders(user.uid),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to generate bullets');
+      }
+      const updated = await res.json();
+      setEntries(prev => prev.map(e => (e.id === id ? updated : e)));
+    } catch (e: any) {
+      alert(e.message || 'An error occurred while generating bullets.');
+    } finally {
+      setGeneratingBulletsId(null);
+    }
+  }
+
   const [entries, setEntries]           = useState<Entry[]>([]);
   const [education, setEducation]       = useState<Education[]>([]);
   const [skillGroups, setSkillGroups]   = useState<SkillGroup[]>([]);
@@ -784,6 +851,8 @@ export default function SourceBankPage() {
                         entry={entry}
                         onEdit={() => setEntryModal({ open: true, entry })}
                         onDelete={() => handleDeleteEntry(entry.id)}
+                        onGenerateBullets={handleGenerateBullets}
+                        isGenerating={generatingBulletsId === entry.id}
                       />
                     ))}
                   </div>

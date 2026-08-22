@@ -1337,19 +1337,19 @@ img { display: block; max-width: 100%; }
 }
 .entry-modal {
   position: fixed;
-  top: 0; right: 0; bottom: 0;
-  width: min(540px, 100vw);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(640px, calc(100vw - 48px));
+  max-height: calc(100vh - 80px);
   background: var(--bg-card);
-  border-left: 1px solid var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   z-index: 301;
   display: flex;
   flex-direction: column;
   box-shadow: var(--shadow-lg);
-  animation: slideInRight 0.25s var(--ease-out);
-}
-@keyframes slideInRight {
-  from { transform: translateX(100%); opacity: 0; }
-  to   { transform: translateX(0);    opacity: 1; }
+  animation: fadeScaleIn 0.2s var(--ease-out);
+  overflow: hidden;
 }
 
 /* ── Centered Review Modal (distinct from side-drawer entry-modal) ── */

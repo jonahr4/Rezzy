@@ -21,9 +21,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         location     = COALESCE(${location ?? null}, location),
         pinned       = COALESCE(${pinned ?? null}, pinned),
         summary      = COALESCE(${summary ?? null}, summary),
-        bullets      = COALESCE(${bullets != null ? JSON.stringify(bullets) + '::jsonb' : null}::jsonb, bullets),
-        skills       = COALESCE(${skills != null ? JSON.stringify(skills) + '::jsonb' : null}::jsonb, skills),
-        links        = COALESCE(${links != null ? JSON.stringify(links) + '::jsonb' : null}::jsonb, links),
+        bullets      = COALESCE(${bullets != null ? JSON.stringify(bullets) : null}::jsonb, bullets),
+        skills       = COALESCE(${skills != null ? JSON.stringify(skills) : null}::jsonb, skills),
+        links        = COALESCE(${links != null ? JSON.stringify(links) : null}::jsonb, links),
         updated_at   = now()
       WHERE id = ${id} AND user_id = ${userId}
       RETURNING *
