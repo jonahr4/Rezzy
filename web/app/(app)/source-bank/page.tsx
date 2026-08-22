@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/lib/auth-context';
+import { useDataStore } from '@/lib/dataStore';
 import EntryModal from '@/components/EntryModal';
 import SkillsEditor, { makeDefaultGroups } from '@/components/SkillsEditor';
 import ResumeReviewModal from '@/components/ResumeReviewModal';
@@ -381,10 +382,11 @@ export default function SourceBankPage() {
     }
   }
 
-  const [entries, setEntries]           = useState<Entry[]>([]);
-  const [education, setEducation]       = useState<Education[]>([]);
-  const [skillGroups, setSkillGroups]   = useState<SkillGroup[]>([]);
-  const [loading, setLoading]           = useState(true);
+  const { entries: cachedEntries, setEntries, education: cachedEdu, setEducation, skillGroups: cachedSkills, setSkillGroups } = useDataStore();
+  const entries = cachedEntries || [];
+  const education = cachedEdu || [];
+  const skillGroups = cachedSkills || [];
+  const [loading, setLoading]           = useState(!(cachedEntries && cachedEdu && cachedSkills));
   const [skillsSaving, setSkillsSaving] = useState(false);
 
   // Modal state
@@ -402,6 +404,10 @@ export default function SourceBankPage() {
   /* ── Load data ── */
   const load = useCallback(async () => {
     if (!uid) return;
+    if (cachedEntries && cachedEdu && cachedSkills) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const headers = authHeaders(uid);
@@ -602,7 +608,7 @@ export default function SourceBankPage() {
   /* ── Filtered entries for display ── */
   const filteredEntries = activeTab === 'all' || activeTab === 'education' || activeTab === 'skills'
     ? entries
-    : entries.filter(e => e.type === activeTab as EntryType);
+    : (entries || []).filter(e => e.type === activeTab as EntryType);
 
   /* ── Sort entries: pinned first, then oldest → newest by start_date ── */
   function parseDate(d: string | null | undefined): number {
@@ -620,10 +626,10 @@ export default function SourceBankPage() {
 
   /* ── Counts for tab badges ── */
   const counts = {
-    all:       entries.length + education.length,
-    job:       entries.filter(e => e.type === 'job').length,
-    project:   entries.filter(e => e.type === 'project').length,
-    education: education.length,
+    all:       (entries || []).length + (education || []).length,
+    job:       (entries || []).filter(e => e.type === 'job').length,
+    project:   (entries || []).filter(e => e.type === 'project').length,
+    education: (education || []).length,
     skills:    skillGroups.reduce((sum, g) => sum + g.skills.length, 0),
   };
 
@@ -773,7 +779,7 @@ export default function SourceBankPage() {
             {/* Education tab */}
             {activeTab === 'education' && (
               <>
-                {education.length === 0 ? (
+                {(education || []).length === 0 ? (
                   <div className="card" style={{ padding: '60px 24px', textAlign: 'center' }}>
                     <div style={{ marginBottom: 16, opacity: 0.25, display: 'flex', justifyContent: 'center' }}>
                       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
@@ -786,7 +792,7 @@ export default function SourceBankPage() {
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    {education.map(edu => (
+                    {(education || []).map(edu => (
                       <EducationCard
                         key={edu.id}
                         edu={edu}
@@ -803,11 +809,11 @@ export default function SourceBankPage() {
             {activeTab !== 'skills' && activeTab !== 'education' && (
               <>
                 {/* All tab: show education cards too */}
-                {activeTab === 'all' && education.length > 0 && (
+                {activeTab === 'all' && (education || []).length > 0 && (
                   <div style={{ marginBottom: 16 }}>
                     <div className="sidebar-section-label" style={{ marginBottom: 8 }}>Education</div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                      {education.map(edu => (
+                      {(education || []).map(edu => (
                         <EducationCard
                           key={edu.id}
                           edu={edu}

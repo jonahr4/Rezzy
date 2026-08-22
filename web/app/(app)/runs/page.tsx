@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/lib/auth-context';
+import { useDataStore } from '@/lib/dataStore';
 import Link from 'next/link';
 
 interface Run {
@@ -181,19 +182,21 @@ export default function RunsPage() {
   const uid = user?.uid;
   const authH = useCallback((): HeadersInit => uid ? { 'x-user-id': uid } : {}, [uid]);
 
-  const [runs, setRuns] = useState<Run[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { runs: cachedRuns, setRuns } = useDataStore();
+  const runs = cachedRuns || [];
+  const [loading, setLoading] = useState(!cachedRuns);
   const [selected, setSelected] = useState<Run | null>(null);
   const [trackedRunIds, setTrackedRunIds] = useState<Set<string>>(new Set());
   const [tracking, setTracking] = useState<string | null>(null);
 
   const loadRuns = useCallback(async () => {
+    if (cachedRuns) { setLoading(false); return; }
     try {
       const res = await fetch('/api/pipeline', { headers: authH() });
       if (res.ok) setRuns(await res.json());
     } catch { /* ignore */ }
     setLoading(false);
-  }, [authH]);
+  }, [authH, cachedRuns, setRuns]);
 
   useEffect(() => { if (uid) loadRuns(); }, [uid, loadRuns]);
 

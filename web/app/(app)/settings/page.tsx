@@ -13,8 +13,8 @@ const TABS: { key: Tab; label: string }[] = [
 ];
 
 const THEMES = [
-  { id: 'warm-indigo', label: 'Warm Indigo', desc: 'Default warm palette' },
-  { id: 'warm-dusk', label: 'Warm Dusk', desc: 'Slightly muted warm tones' },
+  { id: 'warm-dusk', label: 'Warm Dusk', desc: 'Default slightly muted warm tones' },
+  { id: 'warm-indigo', label: 'Warm Indigo', desc: 'Warm indigo palette' },
   { id: 'classic', label: 'Classic', desc: 'Neutral grey & white' },
   { id: 'clean', label: 'Clean', desc: 'Pure white & sharp contrast' },
   { id: 'midnight', label: 'Midnight', desc: 'True dark mode' },

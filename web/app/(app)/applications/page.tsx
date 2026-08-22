@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useAuth } from "@/lib/auth-context";
+import { useDataStore } from "@/lib/dataStore";
 import AppDetailPanel, {
   Application,
   AppStatus,
@@ -15,8 +16,9 @@ function formatDate(d: string) {
 
 export default function ApplicationsPage() {
   const { user } = useAuth();
-  const [apps, setApps] = useState<Application[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { applications: cachedApps, setApplications: setApps } = useDataStore();
+  const apps = cachedApps || [];
+  const [loading, setLoading] = useState(!cachedApps);
   const [selected, setSelected] = useState<Application | null>(null);
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOverCol, setDragOverCol] = useState<AppStatus | null>(null);
@@ -24,13 +26,14 @@ export default function ApplicationsPage() {
 
   const fetchApps = useCallback(async () => {
     if (!user) return;
+    if (cachedApps) { setLoading(false); return; }
     const res = await fetch("/api/applications", {
       headers: { "x-user-id": user.uid },
     });
     const data = await res.json();
     setApps(data.applications ?? []);
     setLoading(false);
-  }, [user]);
+  }, [user, cachedApps, setApps]);
 
   useEffect(() => { fetchApps(); }, [fetchApps]);
 

@@ -21,10 +21,19 @@ export default function StepBulletSelect() {
     currentStep,
   } = useTailorStore();
   const { user } = useAuth();
-
-  const [expandedEntry, setExpandedEntry] = useState<string | null>(
-    selectedContent[0]?.entry_id ?? null
+  
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(
+    new Set(selectedContent.map((e) => e.entry_id))
   );
+
+  const toggleExpand = (id: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const totalBullets = selectedContent.reduce(
     (sum, e) => sum + e.selected_bullets.length,
@@ -91,75 +100,116 @@ export default function StepBulletSelect() {
         </div>
       </div>
 
-      <div className="bullet-entries">
-        {selectedContent.map((entry) => {
-          const isExpanded = expandedEntry === entry.entry_id;
-          const selectedIds = new Set(
-            entry.selected_bullets.map((b) => b.id)
-          );
+      <div className="bullet-entries-wrap">
+        {(() => {
+          const jobs = selectedContent.filter((e) => e.type === "job");
+          const projects = selectedContent.filter((e) => e.type === "project");
+
+          const scrollTo = (id: string) => {
+            const el = document.getElementById(id);
+            if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+          };
+
+          const renderEntry = (entry: typeof selectedContent[0]) => {
+            const selectedIds = new Set(entry.selected_bullets.map((b) => b.id));
+            const isExpanded = expandedIds.has(entry.entry_id);
+            return (
+              <div key={entry.entry_id} className={`bullet-entry ${isExpanded ? "expanded" : ""}`} style={{ borderBottom: 'none', marginTop: 32, marginBottom: 16 }}>
+                <div 
+                  className="bullet-entry-header" 
+                  style={{ cursor: 'pointer', padding: '0 0 16px 0', borderBottom: isExpanded ? '1px solid var(--border)' : 'none' }}
+                  onClick={() => toggleExpand(entry.entry_id)}
+                >
+                  <div className="bullet-entry-info">
+                    <span className={`entry-type-pill ${entry.type}`}>{entry.type}</span>
+                    <span className="bullet-entry-name" style={{ fontSize: 18, fontWeight: 800, marginLeft: -4 }}>
+                      {entry.company ? `${entry.company} — ` : ""}
+                      {entry.title}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <div className="bullet-entry-count">
+                      {entry.selected_bullets.length} / {entry.all_bullets.length}
+                    </div>
+                    <span className="entry-chevron">{isExpanded ? "▾" : "▸"}</span>
+                  </div>
+                </div>
+                {isExpanded && (
+                  <div className="bullet-list" style={{ marginLeft: 32, padding: '16px 0 0 0' }}>
+                    {entry.all_bullets.map((bullet) => {
+                      const isChecked = selectedIds.has(bullet.id);
+                      return (
+                        <div
+                          key={bullet.id}
+                          className={`bullet-check-row ${isChecked ? "checked" : ""} ${isReadOnly ? "readonly" : ""}`}
+                          onClick={() => !isReadOnly && toggleBullet(entry.entry_id, bullet.id)}
+                          style={{
+                            padding: '12px 16px',
+                            borderRadius: '8px',
+                            marginBottom: '4px',
+                            background: isChecked ? 'var(--accent-subtle)' : 'transparent',
+                          }}
+                        >
+                          <div className={`check-box ${isChecked ? "checked" : ""}`}>
+                            {isChecked && "✓"}
+                          </div>
+                          <div className="bullet-check-text">
+                            <p>{bullet.text}</p>
+                            {bullet.reason && <span className="bullet-reason">{bullet.reason}</span>}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          };
 
           return (
-            <div
-              key={entry.entry_id}
-              className={`bullet-entry ${isExpanded ? "expanded" : ""}`}
-            >
-              <button
-                className="bullet-entry-header"
-                onClick={() =>
-                  setExpandedEntry(isExpanded ? null : entry.entry_id)
-                }
-              >
-                <div className="bullet-entry-info">
-                  <span className={`entry-type-pill ${entry.type}`}>
-                    {entry.type}
-                  </span>
-                  <span className="bullet-entry-name">
-                    {entry.company ? `${entry.company} — ` : ""}
-                    {entry.title}
-                  </span>
-                </div>
-                <div className="bullet-entry-count">
-                  {entry.selected_bullets.length} / {entry.all_bullets.length}
-                </div>
-                <span className="entry-chevron">{isExpanded ? "▾" : "▸"}</span>
-              </button>
+            <>
+              {/* Mini TOC nav */}
+              <div className="entry-toc-nav" style={{ marginBottom: 20 }}>
+                {jobs.length > 0 && (
+                  <button className="entry-toc-btn" onClick={() => scrollTo("bullet-section-jobs")}>
+                    Experience ({jobs.length})
+                  </button>
+                )}
+                {projects.length > 0 && (
+                  <button className="entry-toc-btn" onClick={() => scrollTo("bullet-section-projects")}>
+                    Projects ({projects.length})
+                  </button>
+                )}
+              </div>
 
-              {isExpanded && (
-                <div className="bullet-list">
-                  {entry.all_bullets.map((bullet) => {
-                    const isChecked = selectedIds.has(bullet.id);
-                    const selectedBullet = entry.selected_bullets.find(
-                      (b) => b.id === bullet.id
-                    );
-                    return (
-                      <div
-                        key={bullet.id}
-                        className={`bullet-check-row ${isChecked ? "checked" : ""} ${isReadOnly ? "readonly" : ""}`}
-                        onClick={() =>
-                          !isReadOnly && toggleBullet(entry.entry_id, bullet.id)
-                        }
-                      >
-                        <div
-                          className={`check-box ${isChecked ? "checked" : ""}`}
-                        >
-                          {isChecked && "✓"}
-                        </div>
-                        <div className="bullet-check-text">
-                          <p>{bullet.text}</p>
-                          {bullet.reason && (
-                            <span className="bullet-reason">
-                              {bullet.reason}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+              <div className="entry-select-list">
+                {jobs.length > 0 && (
+                  <>
+                    <div className="entry-section-header" id="bullet-section-jobs">
+                      <span className="entry-section-label">Experience</span>
+                      <span className="entry-section-count">
+                        {jobs.reduce((sum, e) => sum + e.selected_bullets.length, 0)} bullets selected
+                      </span>
+                    </div>
+                    {jobs.map(renderEntry)}
+                  </>
+                )}
+
+                {projects.length > 0 && (
+                  <>
+                    <div className="entry-section-header" id="bullet-section-projects">
+                      <span className="entry-section-label">Projects</span>
+                      <span className="entry-section-count">
+                        {projects.reduce((sum, e) => sum + e.selected_bullets.length, 0)} bullets selected
+                      </span>
+                    </div>
+                    {projects.map(renderEntry)}
+                  </>
+                )}
+              </div>
+            </>
           );
-        })}
+        })()}
       </div>
     </div>
   );

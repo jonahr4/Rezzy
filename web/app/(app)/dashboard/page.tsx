@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import TutorialModal from '@/components/TutorialModal';
 import { useAuth } from '@/lib/auth-context';
+import { useDataStore } from '@/lib/dataStore';
 import { STATUS_CONFIG, STATUS_ORDER } from '@/components/applications/AppDetailPanel';
 import type { AppStatus } from '@/components/applications/AppDetailPanel';
 
@@ -24,8 +25,8 @@ function formatDate(iso: string) {
 export default function DashboardPage() {
   const { user } = useAuth();
   const firstName = user?.displayName?.split(' ')[0] ?? 'there';
-  const [stats, setStats] = useState<DashStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { stats, setStats } = useDataStore();
+  const [loading, setLoading] = useState(!stats);
   const [showTutorial, setShowTutorial] = useState(false);
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.search.includes('tutorial=true')) {
