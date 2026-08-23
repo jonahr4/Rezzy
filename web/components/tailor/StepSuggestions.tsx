@@ -13,33 +13,57 @@ const API_URL = "/api/pipeline/step";
 function DiffHighlight({
   original,
   suggested,
+  type,
 }: {
   original: string;
   suggested: string;
+  type: "added" | "removed";
 }) {
   const origWords = original.split(/\s+/);
   const sugWords = suggested.split(/\s+/);
 
-  // Simple word-level diff: highlight words in suggested that aren't in original
   const origSet = new Set(origWords.map((w) => w.toLowerCase()));
+  const sugSet = new Set(sugWords.map((w) => w.toLowerCase()));
 
-  return (
-    <span>
-      {sugWords.map((word, i) => {
-        const isNew = !origSet.has(word.toLowerCase());
-        return (
-          <span key={i}>
-            {i > 0 ? " " : ""}
-            {isNew ? (
-              <mark className="diff-highlight">{word}</mark>
-            ) : (
-              word
-            )}
-          </span>
-        );
-      })}
-    </span>
-  );
+  if (type === "added") {
+    // Show green for added words
+    return (
+      <span>
+        {sugWords.map((word, i) => {
+          const isNew = !origSet.has(word.toLowerCase());
+          return (
+            <span key={i}>
+              {i > 0 ? " " : ""}
+              {isNew ? (
+                <mark className="diff-highlight" style={{ background: 'rgba(34, 197, 94, 0.2)', color: '#166534', padding: '0 2px', borderRadius: '2px' }}>{word}</mark>
+              ) : (
+                word
+              )}
+            </span>
+          );
+        })}
+      </span>
+    );
+  } else {
+    // Show red strikethrough for removed words
+    return (
+      <span>
+        {origWords.map((word, i) => {
+          const isRemoved = !sugSet.has(word.toLowerCase());
+          return (
+            <span key={i}>
+              {i > 0 ? " " : ""}
+              {isRemoved ? (
+                <mark className="diff-highlight" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#991b1b', textDecoration: 'line-through', padding: '0 2px', borderRadius: '2px' }}>{word}</mark>
+              ) : (
+                word
+              )}
+            </span>
+          );
+        })}
+      </span>
+    );
+  }
 }
 
 export default function StepSuggestions() {
@@ -55,7 +79,16 @@ export default function StepSuggestions() {
   } = useTailorStore();
   const { user } = useAuth();
 
-  const [activeEntry, setActiveEntry] = useState<string | null>(null);
+  const [collapsedIds, setCollapsedIds] = useState<Set<string>>(new Set());
+
+  const toggleExpand = (id: string) => {
+    setCollapsedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const acceptedCount = suggestions.reduce(
     (sum, es) => sum + es.suggestions.filter((s) => s.accepted).length,
@@ -67,7 +100,6 @@ export default function StepSuggestions() {
   );
 
   const handleContinue = () => {
-    // Merge accepted suggestions into selected_content before advancing to Preview
     const { selectedContent: currentContent, suggestions: currentSugs } = useTailorStore.getState();
     const mergedContent = currentContent.map((entry) => {
       const entrySuggestions = currentSugs.find(
@@ -93,7 +125,7 @@ export default function StepSuggestions() {
     });
 
     setSelectedContent(mergedContent);
-    advanceStep(); // → step 6 (Preview)
+    advanceStep();
   };
 
   if (loading && suggestions.length === 0) {
@@ -106,8 +138,6 @@ export default function StepSuggestions() {
   }
 
   const isReadOnly = currentStep > 6;
-
-  // Build entries that have suggestions
   const entriesWithSuggestions = suggestions.filter(
     (es) => es.suggestions.length > 0
   );
@@ -119,7 +149,7 @@ export default function StepSuggestions() {
           <h2 className="step-title">Review Suggestions</h2>
           <p className="step-desc">
             {acceptedCount} of {totalSuggestions} improvements accepted.
-            Toggle suggestions on the right to apply them.
+            Toggle suggestions to apply them.
           </p>
         </div>
         <div className="step-header-right">
@@ -132,189 +162,178 @@ export default function StepSuggestions() {
         </div>
       </div>
 
-      {/* Entry tabs */}
-      <div className="sug-entry-tabs">
-        {entriesWithSuggestions.map((es) => {
-          const entry = selectedContent.find(
-            (e) => e.entry_id === es.entry_id
-          );
-          const acceptedInEntry = es.suggestions.filter(
-            (s) => s.accepted
-          ).length;
-          const isActive =
-            activeEntry === es.entry_id ||
-            (!activeEntry && entriesWithSuggestions[0]?.entry_id === es.entry_id);
+      <div className="bullet-entries-wrap">
+        {(() => {
+          const jobs = entriesWithSuggestions.map(es => selectedContent.find(e => e.entry_id === es.entry_id)).filter(e => e?.type === "job") as typeof selectedContent;
+          const projects = entriesWithSuggestions.map(es => selectedContent.find(e => e.entry_id === es.entry_id)).filter(e => e?.type === "project") as typeof selectedContent;
+
+          const scrollTo = (id: string) => {
+            const el = document.getElementById(id);
+            if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+          };
+
+          const renderEntry = (entry: typeof selectedContent[0]) => {
+            const isExpanded = !collapsedIds.has(entry.entry_id);
+            const entrySugs = entriesWithSuggestions.find(es => es.entry_id === entry.entry_id);
+            if (!entrySugs) return null;
+            
+            const acceptedInEntry = entrySugs.suggestions.filter((s) => s.accepted).length;
+
+            return (
+              <div key={entry.entry_id} className={`bullet-entry ${isExpanded ? "expanded" : ""}`} style={{ borderBottom: 'none', marginTop: 32, marginBottom: 16 }}>
+                <div 
+                  className="bullet-entry-header" 
+                  style={{ cursor: 'pointer', padding: '0 0 16px 0', borderBottom: isExpanded ? '1px solid var(--border)' : 'none' }}
+                  onClick={() => toggleExpand(entry.entry_id)}
+                >
+                  <div className="bullet-entry-info">
+                    <span className={`entry-type-pill ${entry.type}`}>{entry.type}</span>
+                    <span className="bullet-entry-name" style={{ fontSize: 18, fontWeight: 800, marginLeft: -4 }}>
+                      {entry.company ? `${entry.company} — ` : ""}
+                      {entry.title}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <div className="bullet-entry-count" style={{ background: acceptedInEntry > 0 ? 'var(--accent)' : '', color: acceptedInEntry > 0 ? '#fff' : '', transition: 'all 0.2s' }}>
+                      {acceptedInEntry} / {entrySugs.suggestions.length} accepted
+                    </div>
+                    <span className="entry-chevron">{isExpanded ? "▾" : "▸"}</span>
+                  </div>
+                </div>
+
+                {isExpanded && (
+                  <div className="bullet-list" style={{ marginLeft: 32, padding: '16px 0 0 0' }}>
+                    {(() => {
+                      const renderedSuggestions = new Set<number>();
+
+                      return entry.selected_bullets.map((bullet) => {
+                        const sugIndex = entrySugs.suggestions.findIndex((s) =>
+                          s.replaces_bullet_ids.includes(bullet.id)
+                        );
+                        const suggestion = sugIndex >= 0 ? entrySugs.suggestions[sugIndex] : null;
+
+                        if (!suggestion) {
+                          return null;
+                        }
+
+                        const isMerge = suggestion.replaces_bullet_ids.length > 1;
+                        if (renderedSuggestions.has(sugIndex)) {
+                          return (
+                            <div key={bullet.id} style={{ marginBottom: 24, padding: '16px 20px', borderRadius: 8, border: '1px dashed var(--border)', opacity: 0.6 }}>
+                               <div className="sug-merged-away-text" style={{ fontSize: 13 }}>
+                                 <span className="sug-merged-icon" style={{ marginRight: 8 }}>↑</span>
+                                 <s>{bullet.text}</s>
+                                 <span style={{ marginLeft: 12, fontSize: 11, background: 'var(--bg-card)', padding: '2px 6px', borderRadius: 4 }}>merged above</span>
+                               </div>
+                            </div>
+                          );
+                        }
+
+                        renderedSuggestions.add(sugIndex);
+
+                        return (
+                          <div key={bullet.id} style={{ 
+                            marginBottom: 24, 
+                            padding: '20px', 
+                            borderRadius: '12px', 
+                            border: `1px solid ${suggestion.accepted ? 'var(--accent)' : 'var(--border)'}`,
+                            background: suggestion.accepted ? 'var(--accent-subtle)' : 'var(--bg-card)'
+                          }}>
+                            {/* Side by side columns */}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '16px' }}>
+                              
+                              {/* Left: Original */}
+                              <div>
+                                <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8, letterSpacing: '0.05em' }}>Current</div>
+                                <div style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                                  <DiffHighlight original={bullet.text} suggested={suggestion.text} type="removed" />
+                                </div>
+                              </div>
+
+                              {/* Right: Suggested */}
+                              <div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: suggestion.accepted ? 'var(--accent)' : 'var(--text-muted)', letterSpacing: '0.05em' }}>
+                                    {isMerge ? `MERGED (${suggestion.replaces_bullet_ids.length} BULLETS)` : 'Suggested'}
+                                  </div>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                    <WordDelta originalText={bullet.text} suggestedText={suggestion.text} />
+                                    <div 
+                                      className={`sug-switch ${suggestion.accepted ? "on" : ""}`}
+                                      onClick={() => !isReadOnly && toggleSuggestion(entrySugs.entry_id, sugIndex)}
+                                      style={{ cursor: isReadOnly ? 'default' : 'pointer' }}
+                                    >
+                                      <div className="sug-switch-thumb" />
+                                    </div>
+                                  </div>
+                                </div>
+                                <div style={{ fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.6, fontWeight: 500 }}>
+                                  <DiffHighlight original={bullet.text} suggested={suggestion.text} type="added" />
+                                </div>
+                              </div>
+
+                            </div>
+                            
+                            {/* Full width explanation below */}
+                            <div style={{ 
+                              background: suggestion.accepted ? '#fff' : 'var(--bg-base)', 
+                              padding: '12px 16px', 
+                              borderRadius: '8px', 
+                              fontSize: '12.5px', 
+                              color: 'var(--text-secondary)',
+                              borderLeft: '3px solid var(--accent)'
+                            }}>
+                              <strong>AI Reasoning:</strong> {suggestion.reason}
+                            </div>
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
+                )}
+              </div>
+            );
+          };
 
           return (
-            <button
-              key={es.entry_id}
-              className={`sug-tab ${isActive ? "active" : ""}`}
-              onClick={() => setActiveEntry(es.entry_id)}
-            >
-              <span className={`entry-type-dot ${entry?.type}`} />
-              <span className="sug-tab-name">
-                {entry?.company || entry?.title}
-              </span>
-              <span className="sug-tab-count">
-                {acceptedInEntry}/{es.suggestions.length}
-              </span>
-            </button>
+            <>
+              {/* Mini TOC nav */}
+              <div className="entry-toc-nav" style={{ marginBottom: 20 }}>
+                {jobs.length > 0 && (
+                  <button className="entry-toc-btn" onClick={() => scrollTo("sug-section-jobs")}>
+                    Experience ({jobs.length})
+                  </button>
+                )}
+                {projects.length > 0 && (
+                  <button className="entry-toc-btn" onClick={() => scrollTo("sug-section-projects")}>
+                    Projects ({projects.length})
+                  </button>
+                )}
+              </div>
+
+              <div className="entry-select-list">
+                {jobs.length > 0 && (
+                  <>
+                    <div className="entry-section-header" id="sug-section-jobs">
+                      <span className="entry-section-label">Experience</span>
+                    </div>
+                    {jobs.map(renderEntry)}
+                  </>
+                )}
+
+                {projects.length > 0 && (
+                  <>
+                    <div className="entry-section-header" id="sug-section-projects">
+                      <span className="entry-section-label">Projects</span>
+                    </div>
+                    {projects.map(renderEntry)}
+                  </>
+                )}
+              </div>
+            </>
           );
-        })}
+        })()}
       </div>
-
-      {/* Side-by-side resume columns */}
-      {entriesWithSuggestions.map((entrySugs) => {
-        const entry = selectedContent.find(
-          (e) => e.entry_id === entrySugs.entry_id
-        );
-        const isActive =
-          activeEntry === entrySugs.entry_id ||
-          (!activeEntry &&
-            entriesWithSuggestions[0]?.entry_id === entrySugs.entry_id);
-
-        if (!isActive || !entry) return null;
-
-        return (
-          <div key={entrySugs.entry_id} className="sug-columns">
-            {/* LEFT: Current resume */}
-            <div className="sug-col sug-col-current">
-              <div className="sug-col-header">
-                <span className="sug-col-label">Current</span>
-              </div>
-              <div className="sug-resume-card">
-                <div className="sug-resume-title">{entry.title}</div>
-                <div className="sug-resume-company">
-                  {entry.company}
-                </div>
-                <ul className="sug-resume-bullets">
-                  {entry.selected_bullets.map((bullet) => {
-                    const hasSuggestion = entrySugs.suggestions.some(
-                      (s) => s.replaces_bullet_ids.includes(bullet.id)
-                    );
-                    const isAccepted = entrySugs.suggestions.some(
-                      (s) =>
-                        s.replaces_bullet_ids.includes(bullet.id) &&
-                        s.accepted
-                    );
-
-                    return (
-                      <li
-                        key={bullet.id}
-                        className={`sug-bullet ${
-                          hasSuggestion ? "has-suggestion" : ""
-                        } ${isAccepted ? "replaced" : ""}`}
-                      >
-                        {bullet.text}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            </div>
-
-            {/* RIGHT: Suggested resume */}
-            <div className="sug-col sug-col-suggested">
-              <div className="sug-col-header">
-                <span className="sug-col-label suggested">Suggested</span>
-              </div>
-              <div className="sug-resume-card suggested">
-                <ul className="sug-resume-bullets">
-                  {(() => {
-                    // Track which suggestions we've already rendered (to avoid duplicates on merges)
-                    const renderedSuggestions = new Set<number>();
-
-                    return entry.selected_bullets.map((bullet) => {
-                      const sugIndex = entrySugs.suggestions.findIndex((s) =>
-                        s.replaces_bullet_ids.includes(bullet.id)
-                      );
-                      const suggestion = sugIndex >= 0 ? entrySugs.suggestions[sugIndex] : null;
-
-                      if (!suggestion) {
-                        // No suggestion for this bullet — show as-is
-                        return (
-                          <li key={bullet.id} className="sug-bullet unchanged">
-                            {bullet.text}
-                          </li>
-                        );
-                      }
-
-                      const isMerge = suggestion.replaces_bullet_ids.length > 1;
-                      const isFirstOfMerge = suggestion.replaces_bullet_ids[0] === bullet.id;
-
-                      // If this is a merge and we already rendered this suggestion, show "merged away" indicator
-                      if (renderedSuggestions.has(sugIndex)) {
-                        return (
-                          <li
-                            key={bullet.id}
-                            className={`sug-bullet merged-away ${suggestion.accepted ? "accepted" : "pending"}`}
-                            onClick={() =>
-                              !isReadOnly &&
-                              toggleSuggestion(entrySugs.entry_id, sugIndex)
-                            }
-                          >
-                            <div className="sug-merged-away-text">
-                              <span className="sug-merged-icon">↑</span>
-                              <s>{bullet.text}</s>
-                            </div>
-                            <div className="sug-merged-label">merged above</div>
-                          </li>
-                        );
-                      }
-
-                      // Mark this suggestion as rendered
-                      renderedSuggestions.add(sugIndex);
-
-                      return (
-                        <li
-                          key={bullet.id}
-                          className={`sug-bullet suggestion-item ${
-                            suggestion.accepted ? "accepted" : "pending"
-                          } ${isReadOnly ? "readonly" : ""} ${isMerge ? "is-merge" : ""}`}
-                          onClick={() =>
-                            !isReadOnly &&
-                            toggleSuggestion(entrySugs.entry_id, sugIndex)
-                          }
-                        >
-                          {isMerge && (
-                            <div className="sug-merge-badge">
-                              ⛙ MERGES {suggestion.replaces_bullet_ids.length} BULLETS
-                            </div>
-                          )}
-                          <div className="sug-bullet-row">
-                            <div className="sug-bullet-text">
-                              <DiffHighlight
-                                original={bullet.text}
-                                suggested={suggestion.text}
-                              />
-                            </div>
-                            <div className="sug-bullet-toggle">
-                              <WordDelta
-                                originalText={bullet.text}
-                                suggestedText={suggestion.text}
-                              />
-                              <div
-                                className={`sug-switch ${
-                                  suggestion.accepted ? "on" : ""
-                                }`}
-                              >
-                                <div className="sug-switch-thumb" />
-                              </div>
-                            </div>
-                          </div>
-                          <div className="sug-bullet-reason">
-                            {suggestion.reason}
-                          </div>
-                        </li>
-                      );
-                    });
-                  })()}
-                </ul>
-              </div>
-            </div>
-          </div>
-        );
-      })}
     </div>
   );
 }

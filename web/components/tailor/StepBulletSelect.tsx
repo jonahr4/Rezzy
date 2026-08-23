@@ -22,12 +22,10 @@ export default function StepBulletSelect() {
   } = useTailorStore();
   const { user } = useAuth();
   
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(
-    new Set(selectedContent.map((e) => e.entry_id))
-  );
+  const [collapsedIds, setCollapsedIds] = useState<Set<string>>(new Set());
 
   const toggleExpand = (id: string) => {
-    setExpandedIds((prev) => {
+    setCollapsedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
@@ -112,7 +110,7 @@ export default function StepBulletSelect() {
 
           const renderEntry = (entry: typeof selectedContent[0]) => {
             const selectedIds = new Set(entry.selected_bullets.map((b) => b.id));
-            const isExpanded = expandedIds.has(entry.entry_id);
+            const isExpanded = !collapsedIds.has(entry.entry_id);
             return (
               <div key={entry.entry_id} className={`bullet-entry ${isExpanded ? "expanded" : ""}`} style={{ borderBottom: 'none', marginTop: 32, marginBottom: 16 }}>
                 <div 

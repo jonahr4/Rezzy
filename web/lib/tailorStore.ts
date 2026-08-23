@@ -186,6 +186,21 @@ const initialState = {
   result: null,
 };
 
+const parseDate = (d: string) => {
+  if (!d || d.toLowerCase() === "present") return new Date(8640000000000000).getTime();
+  const parsed = new Date(d).getTime();
+  return isNaN(parsed) ? 0 : parsed;
+};
+
+const sortEntries = <T extends { end_date?: string; start_date?: string }>(entries: T[]) => {
+  return [...entries].sort((a, b) => {
+    const aEnd = parseDate(a.end_date || "");
+    const bEnd = parseDate(b.end_date || "");
+    if (aEnd !== bEnd) return bEnd - aEnd;
+    return parseDate(b.start_date || "") - parseDate(a.start_date || "");
+  });
+};
+
 export const useTailorStore = create<TailorState>((set, get) => ({
   ...initialState,
 
@@ -324,7 +339,7 @@ export const useTailorStore = create<TailorState>((set, get) => ({
 
   // Entry selection
   setEntries: (entries, confirmed) =>
-    set({ allEntries: entries, confirmedEntryIds: confirmed }),
+    set({ allEntries: sortEntries(entries), confirmedEntryIds: confirmed }),
 
   toggleEntry: (id) => {
     const { confirmedEntryIds } = get();
@@ -348,7 +363,7 @@ export const useTailorStore = create<TailorState>((set, get) => ({
         return ab;
       }),
     }));
-    set({ selectedContent: enriched });
+    set({ selectedContent: sortEntries(enriched) });
   },
 
   toggleBullet: (entryId, bulletId) => {
