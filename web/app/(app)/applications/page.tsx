@@ -46,7 +46,7 @@ export default function ApplicationsPage() {
   }, [apps]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function updateStatus(id: string, status: AppStatus) {
-    setApps((prev) => prev.map((a) => (a.id === id ? { ...a, status } : a)));
+    setApps((prev: Application[]) => prev.map((a: Application) => (a.id === id ? { ...a, status } : a)));
     if (selected?.id === id) setSelected((s) => s ? { ...s, status } : s);
     await fetch(`/api/applications/${id}`, {
       method: "PATCH",
@@ -56,12 +56,12 @@ export default function ApplicationsPage() {
   }
 
   function onUpdate(id: string, fields: Partial<Application>) {
-    setApps((prev) => prev.map((a) => (a.id === id ? { ...a, ...fields } : a)));
+    setApps((prev: Application[]) => prev.map((a: Application) => (a.id === id ? { ...a, ...fields } : a)));
     if (selected?.id === id) setSelected((s) => s ? { ...s, ...fields } : s);
   }
 
   function onDelete(id: string) {
-    setApps((prev) => prev.filter((a) => a.id !== id));
+    setApps((prev: Application[]) => prev.filter((a: Application) => a.id !== id));
     setSelected(null);
   }
 

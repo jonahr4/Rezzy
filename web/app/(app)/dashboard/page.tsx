@@ -175,7 +175,7 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="card" style={{ overflow: 'hidden', marginBottom: 40 }}>
-            {stats.recentRuns.map((run, i) => (
+            {stats.recentRuns.map((run: any, i: number) => (
               <div key={run.id} style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '12px 20px',

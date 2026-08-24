@@ -17,11 +17,13 @@ def compile_latex(state: dict) -> dict:
     print("\n🔨 [Node 4: Compile LaTeX] Compiling PDF with Tectonic...")
 
     # Use the run directory, fallback to output/
-    output_dir = get_run_dir() or Path("output")
+    output_dir = Path(state["run_dir"]) if "run_dir" in state else (get_run_dir() or Path("output"))
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Write .tex file
-    tex_path = output_dir / "resume.tex"
+    attempt = state.get("retry_count", 0) + 1
+    
+    # Write .tex file with attempt number
+    tex_path = output_dir / f"resume_attempt_{attempt}.tex"
     tex_path.write_text(latex_source)
     print(f"   ✓ Wrote {tex_path} ({len(latex_source)} chars)")
 
@@ -35,7 +37,7 @@ def compile_latex(state: dict) -> dict:
         )
 
         if result.returncode == 0:
-            pdf_path = output_dir / "resume.pdf"
+            pdf_path = output_dir / f"resume_attempt_{attempt}.pdf"
             if pdf_path.exists():
                 size_kb = pdf_path.stat().st_size / 1024
                 print(f"   ✓ PDF compiled: {pdf_path} ({size_kb:.1f} KB)")

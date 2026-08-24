@@ -189,21 +189,27 @@ export default function EntryModal({ entry, onSave, onClose }: Props) {
             />
           </div>
 
-          {/* Organization */}
-          <div className="input-group">
-            <label className="input-label">
-              {isProject ? 'Organization (optional)' : 'Company'}
-            </label>
-            <input
-              className="input-field"
-              value={org}
-              onChange={e => setOrg(e.target.value)}
-              placeholder={isProject ? 'e.g. BU Spark! (leave blank for personal)' : 'e.g. Major League Baseball'}
-            />
+          {/* Organization + Location row */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div className="input-group">
+              <label className="input-label">
+                {isProject ? 'Organization (optional)' : 'Company'}
+              </label>
+              <input
+                className="input-field"
+                value={org}
+                onChange={e => setOrg(e.target.value)}
+                placeholder={isProject ? 'e.g. BU Spark! (leave blank for personal)' : 'e.g. Major League Baseball'}
+              />
+            </div>
+            <div className="input-group">
+              <label className="input-label">Location (optional)</label>
+              <input className="input-field" value={location} onChange={e => setLocation(e.target.value)} placeholder="New York, NY" />
+            </div>
           </div>
 
-          {/* Dates + Location row */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+          {/* Dates row */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div className="input-group">
               <label className="input-label">Start</label>
               <MonthYearPicker value={startDate} onChange={setStartDate} />
@@ -211,10 +217,6 @@ export default function EntryModal({ entry, onSave, onClose }: Props) {
             <div className="input-group">
               <label className="input-label">End</label>
               <MonthYearPicker value={endDate} onChange={setEndDate} allowPresent />
-            </div>
-            <div className="input-group">
-              <label className="input-label">Location (optional)</label>
-              <input className="input-field" value={location} onChange={e => setLocation(e.target.value)} placeholder="New York, NY" />
             </div>
           </div>
 

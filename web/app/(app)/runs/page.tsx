@@ -39,7 +39,7 @@ function RunDetailPanel({ run, onClose, onTrack, isTracked, isTracking, uid }: {
   const skills = run.parsed_jd
     ? ((run.parsed_jd.required_skills as string[] | undefined) ?? (run.parsed_jd.skills as string[] | undefined) ?? [])
     : [];
-  const bulletTotal = run.selected_content?.reduce((s, e) => s + (e.selected_bullets?.length ?? 0), 0) ?? 0;
+  const bulletTotal = run.selected_content?.reduce((s: number, e: any) => s + (e.selected_bullets?.length ?? 0), 0) ?? 0;
   const qaFailed = (run.page_count ?? 0) > 1;
 
   return (
@@ -279,7 +279,7 @@ export default function RunsPage() {
               const isSelected = selected?.id === run.id;
               const isTracked = trackedRunIds.has(run.id);
               const failed = qaFailed(run);
-              const bulletTotal = run.selected_content?.reduce((s, e) => s + (e.selected_bullets?.length ?? 0), 0) ?? 0;
+              const bulletTotal = run.selected_content?.reduce((s: number, e: any) => s + (e.selected_bullets?.length ?? 0), 0) ?? 0;
 
               return (
                 <div

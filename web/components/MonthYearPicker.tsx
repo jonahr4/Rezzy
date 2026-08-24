@@ -82,10 +82,10 @@ export default function MonthYearPicker({ value, onChange, allowPresent }: Month
   };
 
   return (
-    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+    <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
       <select 
         className="input-field" 
-        style={{ flex: 1, padding: '8px', cursor: isPresent ? 'not-allowed' : 'pointer', opacity: isPresent ? 0.6 : 1 }}
+        style={{ flex: 1, padding: '6px 4px', cursor: isPresent ? 'not-allowed' : 'pointer', opacity: isPresent ? 0.6 : 1, minWidth: 0, textOverflow: 'ellipsis' }}
         value={month}
         onChange={handleMonthChange}
         disabled={isPresent}
@@ -98,7 +98,7 @@ export default function MonthYearPicker({ value, onChange, allowPresent }: Month
 
       <select 
         className="input-field" 
-        style={{ flex: 1, padding: '8px', cursor: isPresent ? 'not-allowed' : 'pointer', opacity: isPresent ? 0.6 : 1 }}
+        style={{ flex: 1, padding: '6px 4px', cursor: isPresent ? 'not-allowed' : 'pointer', opacity: isPresent ? 0.6 : 1, minWidth: 0, textOverflow: 'ellipsis' }}
         value={year}
         onChange={handleYearChange}
         disabled={isPresent}
