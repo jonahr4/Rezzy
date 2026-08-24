@@ -284,7 +284,7 @@ export default function StepSuggestions() {
                                     <WordDelta originalText={bullet.text} suggestedText={suggestion.text} />
                                     <div 
                                       className={`sug-switch ${suggestion.accepted ? "on" : ""}`}
-                                      onClick={() => !isReadOnly && toggleSuggestion(entrySugs.entry_id, sugIndex)}
+                                      onClick={() => !isReadOnly && toggleSuggestion(entry.entry_id, sugIndex)}
                                       style={{ cursor: isReadOnly ? 'default' : 'pointer' }}
                                     >
                                       <div className="sug-switch-thumb" />
