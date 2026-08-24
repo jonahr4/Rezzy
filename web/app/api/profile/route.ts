@@ -45,6 +45,8 @@ export async function PUT(req: NextRequest) {
     }
   }
 
+    await sql`INSERT INTO users (id, email, display_name) VALUES (${userId}, ${email ?? ""}, ${full_name ?? ""}) ON CONFLICT (id) DO NOTHING`;
+
   try {
     const rows = await sql`
       INSERT INTO profiles (user_id, full_name, phone, email, website, linkedin, github, location)

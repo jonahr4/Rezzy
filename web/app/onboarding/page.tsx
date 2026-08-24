@@ -30,8 +30,29 @@ export default function OnboardingPage() {
   const [reviewResult, setReviewResult] = useState<ResumeParseResult | null>(null);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, u => {
-      if (u) setUser(u);
+    const unsub = onAuthStateChanged(auth, async u => {
+      if (u) {
+        setUser(u);
+        try {
+          const token = await u.getIdToken();
+          const res = await fetch('/api/profile', {
+            headers: { 'x-user-id': u.uid, 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setProfileData({
+              full_name: data.full_name || '',
+              email: data.email || u.email || '',
+              phone: data.phone || '',
+              location: data.location || '',
+              linkedin: data.linkedin || '',
+              github: data.github || ''
+            });
+          }
+        } catch (e) {
+          console.error('Failed to load profile', e);
+        }
+      }
       else router.push('/login');
     });
     return unsub;

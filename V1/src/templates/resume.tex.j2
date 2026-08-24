@@ -29,7 +29,7 @@
 
 \urlstyle{same}
 
-\raggedbottom
+% \raggedbottom % disabled so it spreads evenly when sparse
 \raggedright
 \setlength{\tabcolsep}{0in}
 
@@ -60,11 +60,10 @@
     \end{tabular*}\vspace{(% if tier >= 2 %)-8pt(% elif tier >= 1 %)-7pt(% else %)-6pt(% endif %)}
 }
 
-\newcommand{\resumeProjectHeading}[3]{
+\newcommand{\resumeProjectHeading}[2]{
     \item\small
     \begin{tabular*}{0.98\textwidth}{l@{\extracolsep{\fill}}r}
       #1 & #2 \\
-      \textit{#3} & \\
     \end{tabular*}\vspace{(% if tier >= 2 %)-8pt(% elif tier >= 1 %)-7pt(% else %)-6pt(% endif %)}
 }
 
@@ -81,12 +80,15 @@
 
 % ─── HEADER ──────────────────────────────────────
 \begin{center}
-    \textbf{\fontsize{19}{19}\selectfont\scshape (( personal.name | latex ))} \\ \vspace{2pt}
-    \small (( personal.phone | latex )) $|$
-    \href{mailto:(( personal.email ))}{\underline{(( personal.email | latex ))}} $|$
-    \href{https://(( personal.website ))}{\underline{(( personal.website | latex ))}} $|$
-    \href{https://(( personal.linkedin ))}{\underline{(( personal.linkedin | latex ))}} $|$
-    \href{https://(( personal.github ))}{\underline{(( personal.github | latex ))}}
+    \textbf{\Huge \scshape (( personal.name | latex ))} \\ \vspace{1pt}
+    \small 
+    (% set contact_items = [] %)
+    (% if personal.phone %)(% set _ = contact_items.append(personal.phone | latex) %)(% endif %)
+    (% if personal.email %)(% set _ = contact_items.append('\\href{mailto:' ~ personal.email ~ '}{\\underline{' ~ (personal.email | latex) ~ '}}') %)(% endif %)
+    (% if personal.website %)(% set _ = contact_items.append('\\href{https://' ~ personal.website ~ '}{\\underline{' ~ (personal.website | latex) ~ '}}') %)(% endif %)
+    (% if personal.linkedin %)(% set _ = contact_items.append('\\href{https://' ~ personal.linkedin ~ '}{\\underline{' ~ (personal.linkedin | latex) ~ '}}') %)(% endif %)
+    (% if personal.github %)(% set _ = contact_items.append('\\href{https://' ~ personal.github ~ '}{\\underline{' ~ (personal.github | latex) ~ '}}') %)(% endif %)
+    (( contact_items | join(' $|$ ') ))
 \end{center}
 
 % ─── EDUCATION ───────────────────────────────────
@@ -119,6 +121,8 @@
     (% endfor %)
     }}
  \end{itemize}
+
+
 
 % ─── EXPERIENCE ──────────────────────────────────
 (% if jobs %)
@@ -169,7 +173,6 @@
     \resumeProjectHeading
       {(( title_str ))}
       {(( proj.start_date )) -- (( proj.end_date ))}
-      {(( proj.tagline | latex ))}
     \resumeItemListStart
     (% for bullet in proj.selected_bullets %)
       \resumeItem{(( bullet.text | latex ))}

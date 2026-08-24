@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import type { Entry, EntryType, Bullet } from '@/lib/entries';
 import BulletGenerationModal from './BulletGenerationModal';
+import MonthYearPicker from './MonthYearPicker';
 
 interface Props {
   entry?: Entry | null;
@@ -190,7 +191,9 @@ export default function EntryModal({ entry, onSave, onClose }: Props) {
 
           {/* Organization */}
           <div className="input-group">
-            <label className="input-label">{isProject ? 'Organization (optional)' : 'Company'}</label>
+            <label className="input-label">
+              {isProject ? 'Organization (optional)' : 'Company'}
+            </label>
             <input
               className="input-field"
               value={org}
@@ -203,14 +206,14 @@ export default function EntryModal({ entry, onSave, onClose }: Props) {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
             <div className="input-group">
               <label className="input-label">Start</label>
-              <input className="input-field" value={startDate} onChange={e => setStartDate(e.target.value)} placeholder="Jun 2024" />
+              <MonthYearPicker value={startDate} onChange={setStartDate} />
             </div>
             <div className="input-group">
               <label className="input-label">End</label>
-              <input className="input-field" value={endDate} onChange={e => setEndDate(e.target.value)} placeholder="Aug 2024 or Present" />
+              <MonthYearPicker value={endDate} onChange={setEndDate} allowPresent />
             </div>
             <div className="input-group">
-              <label className="input-label">Location</label>
+              <label className="input-label">Location (optional)</label>
               <input className="input-field" value={location} onChange={e => setLocation(e.target.value)} placeholder="New York, NY" />
             </div>
           </div>

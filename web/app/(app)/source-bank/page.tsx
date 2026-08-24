@@ -7,6 +7,7 @@ import EntryModal from '@/components/EntryModal';
 import SkillsEditor, { makeDefaultGroups } from '@/components/SkillsEditor';
 import ResumeReviewModal from '@/components/ResumeReviewModal';
 import BulletGenerationModal from '@/components/BulletGenerationModal';
+import MonthYearPicker from '@/components/MonthYearPicker';
 import type { ImportSelection } from '@/components/ResumeReviewModal';
 import type { ResumeParseResult } from '@/app/api/parse-resume/route';
 import {
@@ -308,14 +309,14 @@ function EducationModal({ edu, onSave, onClose }: {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
             <div className="input-group">
               <label className="input-label">Start</label>
-              <input className="input-field" value={startDate} onChange={e => setStartDate(e.target.value)} placeholder="Sep 2022" />
+              <MonthYearPicker value={startDate} onChange={setStartDate} />
             </div>
             <div className="input-group">
               <label className="input-label">End</label>
-              <input className="input-field" value={endDate} onChange={e => setEndDate(e.target.value)} placeholder="May 2026" />
+              <MonthYearPicker value={endDate} onChange={setEndDate} allowPresent />
             </div>
             <div className="input-group">
-              <label className="input-label">Location</label>
+              <label className="input-label">Location (optional)</label>
               <input className="input-field" value={location} onChange={e => setLocation(e.target.value)} placeholder="Boston, MA" />
             </div>
           </div>
@@ -330,7 +331,7 @@ function EducationModal({ edu, onSave, onClose }: {
             </div>
           </div>
           <div className="input-group">
-            <label className="input-label">Relevant Coursework (comma-separated)</label>
+            <label className="input-label">Relevant Coursework (comma-separated, optional)</label>
             <textarea
               className="input-field"
               value={coursework}

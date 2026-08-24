@@ -312,8 +312,29 @@ def step_select_entries(req: SelectEntriesRequest):
             "selected": is_selected,
             "bullet_count": len(entry["bullets"]),
             "tags": entry.get("tags", []),
-            "summary": rationale,
+            "summary": entry.get("summary", ""),
+            "rationale": rationale,
         })
+
+    # Sort all_entries by end_date descending (newest on top)
+    import calendar as _cal
+    def _parse_date(d):
+        if not d or d.lower() in ("present", "current"):
+            return (9999, 12)
+        parts = d.strip().replace(',', '').split()
+        if len(parts) == 1:
+            try: return (int(parts[0]), 12)
+            except ValueError: return (0, 0)
+        elif len(parts) >= 2:
+            m_str = parts[0][:3].capitalize()
+            try:
+                m = list(_cal.month_abbr).index(m_str)
+                return (int(parts[-1]), m)
+            except (ValueError, IndexError):
+                pass
+        return (0, 0)
+        
+    all_entries.sort(key=lambda x: _parse_date(x.get("end_date", "")), reverse=True)
 
     log_step(
         node="job_selector",
@@ -346,9 +367,24 @@ def step_select_bullets(req: SelectBulletsRequest):
     for sel in result["selected_content"]:
         entry = next((e for e in bank["entries"] if e["id"] == sel["entry_id"]), None)
         if entry:
+            # Build reason map from selected and excluded bullets
+            reason_map = {}
+            for b in sel.get("selected_bullets", []):
+                reason_map[b["id"]] = b.get("reason", "")
+            for b in sel.get("excluded_bullets", []):
+                reason_map[b["id"]] = b.get("reason", "")
+                
+            all_bullets = []
+            for b in entry["bullets"]:
+                all_bullets.append({
+                    "id": b["id"],
+                    "text": b["text"],
+                    "reason": reason_map.get(b["id"], "")
+                })
+                
             entries_with_banks.append({
                 **sel,
-                "all_bullets": [{"id": b["id"], "text": b["text"]} for b in entry["bullets"]],
+                "all_bullets": all_bullets,
             })
 
     total_bullets = sum(len(s["selected_bullets"]) for s in result["selected_content"])

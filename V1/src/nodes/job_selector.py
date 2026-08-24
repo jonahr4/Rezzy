@@ -31,7 +31,7 @@ Rules:
 - Prefer recent entries over older ones when relevance is similar
 - Consider skill overlap, responsibility match, and domain relevance
 - For each selected entry, provide a one-line rationale
-- Also list entries you considered but excluded, with a brief reason
+- You MUST provide a brief reason in the `excluded` object for EVERY SINGLE entry that was not selected. Do not skip any unselected entries.
 
 Return a JSON object:
 {

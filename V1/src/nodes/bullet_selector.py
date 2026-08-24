@@ -60,13 +60,20 @@ Return a JSON object:
       "text": "exact bullet text from bank",
       "reason": "why this matches the JD — cite the specific metric, verb, or keyword"
     }
+  ],
+  "excluded_bullets": [
+    {
+      "id": "bullet_id_from_bank",
+      "reason": "brief reason why this bullet was NOT selected"
+    }
   ]
 }
 
+CRITICAL: You MUST provide a reason in `excluded_bullets` for EVERY SINGLE bullet that you did not select. Do not skip any.
 Return ONLY valid JSON."""
 
 
-def _select_bullets_for_entry(entry: dict, parsed_jd: dict, qa_feedback: str | None) -> list[dict]:
+def _select_bullets_for_entry(entry: dict, parsed_jd: dict, qa_feedback: str | None) -> dict:
     """Call the LLM to pick bullets for a single entry. Returns list of selected bullet dicts."""
     user_payload = {
         "parsed_jd": parsed_jd,
@@ -91,7 +98,10 @@ def _select_bullets_for_entry(entry: dict, parsed_jd: dict, qa_feedback: str | N
     )
 
     result = json.loads(response)
-    return result.get("selected_bullets", [])
+    return {
+        "selected": result.get("selected_bullets", []),
+        "excluded": result.get("excluded_bullets", [])
+    }
 
 
 def bullet_selector(state: dict) -> dict:
@@ -132,9 +142,9 @@ def bullet_selector(state: dict) -> dict:
         # Bypass LLM if bullet bank is completely empty
         if not entry.get("bullets"):
             print(f"   ⚠️ Entry {entry.get('title')} has no bullets. Bypassing AI generation.")
-            selected_bullets = []
+            bullet_selection = {"selected": [], "excluded": []}
         else:
-            selected_bullets = _select_bullets_for_entry(entry, parsed_jd, qa_feedback)
+            bullet_selection = _select_bullets_for_entry(entry, parsed_jd, qa_feedback)
 
         enriched.append({
             "entry_id": entry["id"],
@@ -146,19 +156,24 @@ def bullet_selector(state: dict) -> dict:
             "location": entry.get("location"),
             "tagline": entry.get("tagline", ""),
             "links": entry.get("links", {}),
-            "selected_bullets": selected_bullets,
+            "selected_bullets": bullet_selection.get("selected", []),
+            "excluded_bullets": bullet_selection.get("excluded", []),
         })
 
     # Sort entries reverse-chronologically (most recent first) as default order
     import calendar as _cal
     def _parse_date(d):
-        if not d or d == "Present":
+        if not d or d.lower() in ("present", "current"):
             return (9999, 12)
-        parts = d.strip().split()
-        if len(parts) == 2:
+        parts = d.strip().replace(',', '').split()
+        if len(parts) == 1:
+            try: return (int(parts[0]), 12)
+            except ValueError: return (0, 0)
+        elif len(parts) >= 2:
+            m_str = parts[0][:3].capitalize()
             try:
-                m = list(_cal.month_abbr).index(parts[0])
-                return (int(parts[1]), m)
+                m = list(_cal.month_abbr).index(m_str)
+                return (int(parts[-1]), m)
             except (ValueError, IndexError):
                 pass
         return (0, 0)

@@ -130,7 +130,7 @@ export default function StepEntrySelect() {
         <div className={`entry-rationale ${isSelected ? "selected" : "excluded"}`} style={{ color: isMissingBullets ? 'var(--danger)' : undefined }}>
           {isMissingBullets 
             ? "Cannot select: This entry has no bullet points for the AI to tailor. Add bullets in your Source Bank."
-            : (entry.summary || (isSelected ? "Selected for relevance" : "Less relevant to this role"))}
+            : (entry.rationale || entry.summary || (isSelected ? "Selected for relevance" : "Less relevant to this role"))}
         </div>
       </div>
     );
