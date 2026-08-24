@@ -264,6 +264,37 @@ Return JSON:
     import json as _json
     data = _json.loads(response)
 
+    # STRICT FILTERING: Prevent LLM from hallucinating skills into the main resume
+    all_skills_lower = {s.lower().strip(): s.strip() for s in all_skills}
+    if "suggested_skills" not in data:
+        data["suggested_skills"] = []
+
+    cleaned_rows = []
+    for row in data.get("skill_rows", []):
+        valid_items = []
+        for s in row.get("items", []):
+            sl = s.lower().strip()
+            if sl in all_skills_lower:
+                valid_items.append(all_skills_lower[sl])
+            else:
+                # LLM hallucinated a skill. Move it to suggested instead.
+                if s not in data["suggested_skills"]:
+                    data["suggested_skills"].append(s)
+        row["items"] = valid_items
+        cleaned_rows.append(row)
+    data["skill_rows"] = cleaned_rows
+
+    # Also clean available_skills
+    valid_available = []
+    for s in data.get("available_skills", []):
+        sl = s.lower().strip()
+        if sl in all_skills_lower:
+            valid_available.append(all_skills_lower[sl])
+        else:
+            if s not in data["suggested_skills"]:
+                data["suggested_skills"].append(s)
+    data["available_skills"] = valid_available
+
     log_step(
         node="skills_organizer",
         summary=f"Organized {sum(len(r['items']) for r in data['skill_rows'])} skills into {len(data['skill_rows'])} categories",

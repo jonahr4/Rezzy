@@ -187,7 +187,7 @@ Rules:
 - If two entries are the same role at the same company, merge them into one entry with all unique bullets combined
 - Jobs = work experience, internships, research roles
 - Projects = personal, course, or team projects
-- skills[] at top level = all unique skills from the whole document
+- skills[] at top level = ONLY skills found in the dedicated "Skills" or "Technical Skills" section of the resume. Do NOT extract skills from experience bullets or project descriptions.
 - Generate unique IDs for bullets like "b1", "b2", etc.
 - Return ONLY the JSON, no markdown, no explanation
 

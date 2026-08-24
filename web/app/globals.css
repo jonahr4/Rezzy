@@ -3,7 +3,7 @@
    Design tokens sourced directly from ui-guide/index.html
    ════════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 /* ── THEME: Warm Indigo (DEFAULT) ── */
 :root, [data-theme="warm-indigo"] {
@@ -225,7 +225,7 @@
    ════════════════════════════════════════════════════════ */
 :root {
   --font-ui:     'Inter', system-ui, -apple-system, sans-serif;
-  --font-formal: 'Playfair Display', 'Times New Roman', Georgia, serif;
+  --font-formal: 'Lora', 'Times New Roman', Georgia, serif;
   --font-mono:   'JetBrains Mono', 'SF Mono', monospace;
 
   --radius-sm:   6px;
@@ -313,7 +313,7 @@ img { display: block; max-width: 100%; }
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: var(--font-formal);
+  font-family: var(--font-ui);
   font-size: 18px;
   font-weight: 700;
 }
@@ -361,7 +361,7 @@ img { display: block; max-width: 100%; }
   position: relative;
 }
 .sidebar-brand-name {
-  font-family: var(--font-formal);
+  font-family: var(--font-ui);
   font-size: 18px;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -1147,27 +1147,30 @@ img { display: block; max-width: 100%; }
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  padding: 32px;
+  padding: 24px 32px;
   width: 100%; max-width: 420px;
   box-shadow: var(--shadow-lg);
   position: relative; z-index: 1;
   animation: slideUp 0.35s var(--ease-out);
 }
 .auth-logo {
-  font-family: var(--font-formal);
+  font-family: var(--font-ui);
   font-size: 24px; font-weight: 800;
   letter-spacing: -0.02em;
-  margin-bottom: 28px; text-align: center;
+  margin-bottom: 12px; text-align: center;
 }
 .auth-logo span { color: var(--accent); }
 .auth-title { font-family: var(--font-formal); font-size: 22px; font-weight: 700; margin-bottom: 6px; }
-.auth-subtitle { font-size: 13px; color: var(--text-secondary); margin-bottom: 28px; }
-.auth-divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
+.auth-subtitle { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; }
+.auth-divider { display: flex; align-items: center; gap: 12px; margin: 12px 0; }
 .auth-divider-line { flex: 1; height: 1px; background: var(--border); }
 .auth-divider-text { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; }
-.auth-footer { margin-top: 20px; text-align: center; font-size: 12px; color: var(--text-muted); }
+.auth-footer { margin-top: 16px; text-align: center; font-size: 12px; color: var(--text-muted); }
 .auth-footer a { color: var(--accent); font-weight: 600; }
 .auth-footer a:hover { text-decoration: underline; }
+
+/* Force tighter form spacing */
+.auth-card form { gap: 12px !important; }
 
 /* ════════════════════════════════════════════════════════
    ONBOARDING

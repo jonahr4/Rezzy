@@ -304,7 +304,7 @@ export default function LandingPage() {
           <p className="landing-eyebrow">Resume tailoring, automated</p>
           <h1 className="landing-h1">
             One source of truth.<br />
-            Every resume, tailored.
+            Every resume, <span className="text-formal text-accent" style={{ fontStyle: 'italic' }}>tailored.</span>
           </h1>
           <p className="landing-hero-sub">
             Rezzy stores your complete professional history, then uses AI to select,

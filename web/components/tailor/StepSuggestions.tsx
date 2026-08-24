@@ -138,9 +138,7 @@ export default function StepSuggestions() {
   }
 
   const isReadOnly = currentStep > 6;
-  const entriesWithSuggestions = suggestions.filter(
-    (es) => es.suggestions.length > 0
-  );
+  const entriesToRender = selectedContent;
 
   return (
     <div className="step-inner step-suggestions-v2">
@@ -164,8 +162,8 @@ export default function StepSuggestions() {
 
       <div className="bullet-entries-wrap">
         {(() => {
-          const jobs = entriesWithSuggestions.map(es => selectedContent.find(e => e.entry_id === es.entry_id)).filter(e => e?.type === "job") as typeof selectedContent;
-          const projects = entriesWithSuggestions.map(es => selectedContent.find(e => e.entry_id === es.entry_id)).filter(e => e?.type === "project") as typeof selectedContent;
+          const jobs = entriesToRender.filter(e => e.type === "job");
+          const projects = entriesToRender.filter(e => e.type === "project");
 
           const scrollTo = (id: string) => {
             const el = document.getElementById(id);
@@ -174,10 +172,10 @@ export default function StepSuggestions() {
 
           const renderEntry = (entry: typeof selectedContent[0]) => {
             const isExpanded = !collapsedIds.has(entry.entry_id);
-            const entrySugs = entriesWithSuggestions.find(es => es.entry_id === entry.entry_id);
-            if (!entrySugs) return null;
+            const entrySugs = suggestions.find(es => es.entry_id === entry.entry_id);
             
-            const acceptedInEntry = entrySugs.suggestions.filter((s) => s.accepted).length;
+            const acceptedInEntry = entrySugs ? entrySugs.suggestions.filter((s) => s.accepted).length : 0;
+            const totalInEntry = entrySugs ? entrySugs.suggestions.length : 0;
 
             return (
               <div key={entry.entry_id} className={`bullet-entry ${isExpanded ? "expanded" : ""}`} style={{ borderBottom: 'none', marginTop: 32, marginBottom: 16 }}>
@@ -194,9 +192,11 @@ export default function StepSuggestions() {
                     </span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                    <div className="bullet-entry-count" style={{ background: acceptedInEntry > 0 ? 'var(--accent)' : '', color: acceptedInEntry > 0 ? '#fff' : '', transition: 'all 0.2s' }}>
-                      {acceptedInEntry} / {entrySugs.suggestions.length} accepted
-                    </div>
+                    {totalInEntry > 0 && (
+                      <div className="bullet-entry-count" style={{ background: acceptedInEntry > 0 ? 'var(--accent)' : '', color: acceptedInEntry > 0 ? '#fff' : '', transition: 'all 0.2s' }}>
+                        {acceptedInEntry} / {totalInEntry} accepted
+                      </div>
+                    )}
                     <span className="entry-chevron">{isExpanded ? "▾" : "▸"}</span>
                   </div>
                 </div>
@@ -207,13 +207,37 @@ export default function StepSuggestions() {
                       const renderedSuggestions = new Set<number>();
 
                       return entry.selected_bullets.map((bullet) => {
-                        const sugIndex = entrySugs.suggestions.findIndex((s) =>
+                        const sugIndex = entrySugs ? entrySugs.suggestions.findIndex((s) =>
                           s.replaces_bullet_ids.includes(bullet.id)
-                        );
-                        const suggestion = sugIndex >= 0 ? entrySugs.suggestions[sugIndex] : null;
+                        ) : -1;
+                        const suggestion = sugIndex >= 0 ? entrySugs!.suggestions[sugIndex] : null;
 
                         if (!suggestion) {
-                          return null;
+                          return (
+                            <div key={bullet.id} style={{ 
+                              marginBottom: 24, 
+                              padding: '20px', 
+                              borderRadius: '12px', 
+                              border: '1px solid var(--border)',
+                              background: 'var(--bg-card)',
+                              opacity: 0.7
+                            }}>
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '8px' }}>
+                                <div>
+                                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8, letterSpacing: '0.05em' }}>Current</div>
+                                  <div style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                                    {bullet.text}
+                                  </div>
+                                </div>
+                                <div>
+                                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8, letterSpacing: '0.05em' }}>Suggestion</div>
+                                  <div style={{ fontSize: 14, color: 'var(--text-muted)', fontStyle: 'italic', display: 'flex', alignItems: 'center', height: '100%' }}>
+                                    No suggestions for this bullet point.
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
                         }
 
                         const isMerge = suggestion.replaces_bullet_ids.length > 1;
