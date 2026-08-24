@@ -58,6 +58,12 @@ def latex_assembler(state: dict) -> dict:
     print("\n📄 [Node 3: LaTeX Assembler] Rendering template...")
 
     personal = source_bank["personal"]
+    
+    # Strip protocols so template href formatting works correctly
+    for field in ['website', 'linkedin', 'github']:
+        if personal.get(field):
+            personal[field] = personal[field].replace('https://', '').replace('http://', '').strip('/')
+            
     education = source_bank.get("education", [])
     skills = source_bank.get("skills", [])
 
@@ -86,7 +92,9 @@ def latex_assembler(state: dict) -> dict:
         ]
     else:
         skills = source_bank.get("skills", [])
-        skill_categories = _categorize_skills(skills)
+        parsed_jd = state.get("parsed_jd") or {}
+        jd_skills = parsed_jd.get("required_skills") or parsed_jd.get("skills") or []
+        skill_categories = _categorize_skills(skills, jd_skills)
 
     # Determine spacing tier based on retry count
     # Tier 0 = default spacing, Tier 1 = tighter, Tier 2 = maximum compression
@@ -132,8 +140,22 @@ def latex_assembler(state: dict) -> dict:
     }
 
 
-def _categorize_skills(skills: list[str]) -> list[dict]:
-    """Group skills into resume categories. Hardcoded for Phase 1."""
+def _categorize_skills(skills: list[str], jd_skills: list[str] = None) -> list[dict]:
+    """Group skills into resume categories, prioritizing JD matches and capping line length."""
+    jd_skills_lower = [s.lower() for s in (jd_skills or [])]
+
+    def _sort_and_limit(matched: list[str], target_len: int = 80) -> list[str]:
+        # Sort so JD matching skills appear first
+        sorted_skills = sorted(matched, key=lambda x: 0 if x.lower() in jd_skills_lower else 1)
+        selected = []
+        current_len = 0
+        for s in sorted_skills:
+            selected.append(s)
+            current_len += len(s) + 2  # account for ", "
+            if current_len >= target_len:
+                break
+        return selected
+
     categories = {
         "Languages": [
             "Java", "Python", "C/C++", "JavaScript", "TypeScript",
@@ -165,12 +187,14 @@ def _categorize_skills(skills: list[str]) -> list[dict]:
     for label, known in categories.items():
         matched = [s for s in skills if s in known]
         if matched:
-            result.append({"label": label, "items": matched})
-            categorized.update(matched)
+            selected = _sort_and_limit(matched)
+            result.append({"label": label, "items": selected})
+            categorized.update(matched)  # mark all known as categorized so they don't leak into Other
 
     # Catch anything not categorized
     uncategorized = [s for s in skills if s not in categorized]
     if uncategorized:
-        result.append({"label": "Other", "items": uncategorized})
+        selected = _sort_and_limit(uncategorized)
+        result.append({"label": "Other", "items": selected})
 
     return result

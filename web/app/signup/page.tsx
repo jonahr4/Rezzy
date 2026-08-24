@@ -61,7 +61,7 @@ export default function SignupPage() {
   async function onSubmit(data: FormData) {
     setError('');
     try {
-      await signUpWithEmail(data.email, data.password);
+      await signUpWithEmail(data.email, data.password, data.name);
       waitForCookieThenRedirect();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : '';

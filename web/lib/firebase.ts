@@ -56,8 +56,12 @@ export async function signInWithEmail(email: string, password: string) {
   return result.user;
 }
 
-export async function signUpWithEmail(email: string, password: string) {
+export async function signUpWithEmail(email: string, password: string, name?: string) {
   const result = await createUserWithEmailAndPassword(auth, email, password);
+  if (name) {
+    const { updateProfile } = await import('firebase/auth');
+    await updateProfile(result.user, { displayName: name });
+  }
   return result.user;
 }
 

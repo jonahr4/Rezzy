@@ -225,7 +225,10 @@ do THREE things:
 
 1. **Categorize** the candidate's existing skills into 4-5 resume categories (e.g., "Languages", "Frameworks & Libraries", "Tools & DevOps", "Cloud & Databases", "AI/ML").
    - Sort skills within each category by relevance to the job description (most relevant first).
-   - Only include skills that are RELEVANT to this role. Leave irrelevant ones out (they'll go to the "available" pool).
+   - IMPORTANT: Aim to select enough skills so that the total character length of the skills in EACH category is roughly 75-90 characters. This fills the line beautifully on the resume.
+   - Do NOT select too few skills (e.g., under 60 characters) if the candidate has enough available skills for that category to fill the line. Keep adding relevant or semi-relevant skills until you hit the target length.
+   - It is OK to go slightly over 90 characters if necessary.
+   - Leave the rest of the skills out (they'll go to the "available" pool).
 
 2. **Identify available skills** — skills from the candidate's bank that you did NOT place into any category. These are less relevant but the user can manually add them.
 

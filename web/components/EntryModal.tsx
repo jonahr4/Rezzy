@@ -32,7 +32,15 @@ export default function EntryModal({ entry, onSave, onClose }: Props) {
   const [bullets, setBullets]         = useState<Bullet[]>(entry?.bullets?.length ? entry.bullets : [newBullet()]);
   const [skillInput, setSkillInput]   = useState('');
   const [skills, setSkills]           = useState<string[]>(entry?.skills ?? []);
-  const [url, setUrl]                 = useState(entry?.links?.live ?? entry?.links?.repo ?? '');
+
+  // Map existing entry.links to our new custom links array
+  const initialLinks = Object.entries(entry?.links || {})
+    .filter(([_, v]) => !!v)
+    .map(([k, v]) => ({ id: crypto.randomUUID(), label: k, url: v }));
+  if (initialLinks.length === 0) {
+    initialLinks.push({ id: crypto.randomUUID(), label: '', url: '' });
+  }
+  const [projectLinks, setProjectLinks] = useState(initialLinks);
 
   const [saving, setSaving]           = useState(false);
   const [generating, setGenerating]   = useState(false);
@@ -112,7 +120,18 @@ export default function EntryModal({ entry, onSave, onClose }: Props) {
     setError('');
     try {
       const links: Record<string, string> = {};
-      if (url.trim()) links[type === 'project' ? 'live' : 'link'] = url.trim();
+      if (type === 'project') {
+        projectLinks.forEach(pl => {
+          if (pl.label.trim() && pl.url.trim()) {
+            links[pl.label.trim()] = pl.url.trim();
+          }
+        });
+      } else {
+        // If it's a job, fallback to the first link if available
+        const firstLink = projectLinks.find(pl => pl.url.trim());
+        if (firstLink) links['link'] = firstLink.url.trim();
+      }
+
       await onSave({
         type,
         title: title.trim(),
@@ -220,11 +239,52 @@ export default function EntryModal({ entry, onSave, onClose }: Props) {
             </div>
           </div>
 
-          {/* URL (project) */}
+          {/* URLs (project) */}
           {isProject && (
             <div className="input-group">
-              <label className="input-label">URL (optional)</label>
-              <input className="input-field" value={url} onChange={e => setUrl(e.target.value)} placeholder="https://..." type="url" />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <label className="input-label" style={{ marginBottom: 0 }}>Project Links (Up to 3)</label>
+                {projectLinks.length < 3 && (
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => setProjectLinks([...projectLinks, { id: crypto.randomUUID(), label: '', url: '' }])}
+                    style={{ fontSize: 12 }}
+                  >
+                    + Add link
+                  </button>
+                )}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {projectLinks.map((pl, i) => (
+                  <div key={pl.id} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                    <input
+                      className="input-field"
+                      value={pl.label}
+                      onChange={e => setProjectLinks(links => links.map(l => l.id === pl.id ? { ...l, label: e.target.value } : l))}
+                      placeholder="Label (e.g. Web Repo)"
+                      style={{ width: '140px', flexShrink: 0 }}
+                    />
+                    <input
+                      className="input-field"
+                      value={pl.url}
+                      onChange={e => setProjectLinks(links => links.map(l => l.id === pl.id ? { ...l, url: e.target.value } : l))}
+                      placeholder="https://..."
+                      type="url"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setProjectLinks(links => links.filter(l => l.id !== pl.id))}
+                      style={{ padding: '8px 4px', color: 'var(--text-muted)', flexShrink: 0 }}
+                      aria-label="Remove link"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

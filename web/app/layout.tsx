@@ -22,7 +22,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: '(function(){try{var t=localStorage.getItem("rezzy_theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}})()' }}
         />
       </head>
-      <body>
+      <body suppressHydrationWarning={true}>
         <AuthProvider>
           {/* Wake up ACA container immediately on any page load */}
           <ContainerWakeup />

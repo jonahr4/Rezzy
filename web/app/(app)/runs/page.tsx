@@ -28,13 +28,14 @@ function formatDate(iso: string) {
   });
 }
 
-function RunDetailPanel({ run, onClose, onTrack, isTracked, isTracking, uid }: {
+function RunDetailPanel({ run, onClose, onTrack, isTracked, isTracking, uid, userName }: {
   run: Run;
   onClose: () => void;
   onTrack: (run: Run) => void;
   isTracked: boolean;
   isTracking: boolean;
   uid: string | undefined;
+  userName: string | null | undefined;
 }) {
   const skills = run.parsed_jd
     ? ((run.parsed_jd.required_skills as string[] | undefined) ?? (run.parsed_jd.skills as string[] | undefined) ?? [])
@@ -74,13 +75,17 @@ function RunDetailPanel({ run, onClose, onTrack, isTracked, isTracking, uid }: {
         {(run.has_pdf || run.pdf_url) && (() => {
           // Always serve via our API route (blob store is private, needs proxy)
           const pdfSrc = `/api/pipeline/${run.id}/pdf${uid ? `?uid=${uid}` : ''}`;
+          const safeName = userName ? userName.trim().replace(/\s+/g, '_') : 'Resume';
+          const safeCo = run.company ? run.company.trim().replace(/[^a-zA-Z0-9]/g, '_') : 'Company';
+          const filename = `${safeName}_Resume_${safeCo}.pdf`;
+          
           return (
             <div className="detail-section">
               <div className="detail-section-label">
                 Resume PDF
                 <div className="detail-pdf-actions">
                   <a href={pdfSrc} target="_blank" rel="noopener noreferrer" className="detail-pdf-action-btn">View</a>
-                  <a href={pdfSrc} download="resume.pdf" className="detail-pdf-action-btn">Download</a>
+                  <a href={pdfSrc} download={filename} className="detail-pdf-action-btn">Download</a>
                 </div>
               </div>
               <div className="detail-pdf-frame">
@@ -331,6 +336,7 @@ export default function RunsPage() {
             isTracked={trackedRunIds.has(selected.id)}
             isTracking={tracking === selected.id}
             uid={uid}
+            userName={user?.displayName}
           />
         )}
       </div>
