@@ -18,12 +18,13 @@ The current date is {datetime.date.today().isoformat()}. Keep this in mind when 
 ATS SCORING CRITERIA — your suggestions should improve on these:
 1. XYZ FORMULA (Impact-Driven): "Accomplished [X] as measured by [Y], by doing [Z]". Move away from a "list of tasks" toward a narrative of specific impact and technical depth.
 2. ACTION VERB: Start with a powerful, past-tense verb (e.g., Architected, Optimized, Spearheaded, Automated, Migrated, Hardened, Delivered).
-3. QUANTIFIABLE METRICS: Include specific numbers, percentages, time saved, or scale (e.g., "by 40%", "from 1.2s to 180ms", "serving 1M+ users"). If no business metric exists, use technical metrics (latency, scale, test coverage), if there is evidence of those accomplishments and they are not already mentioned.
-4. TECHNOLOGY MATCH: Highlight specific tools/languages from the JD ONLY if they are explicitly mentioned or heavily implied by the candidate's existing summary or bullets. Integrate them naturally into the 'Z' (Method) part of the bullet.
+3. QUANTIFIABLE METRICS: Only include metrics if they are already present in the original bullet or summary. NEVER invent metrics, NEVER use placeholders like "X%", "by X", or "[X]". If there is no specific numerical metric available in the source text, do NOT add one.
+4. ATS KEYWORD MATCHING: Strongly emphasize weaving exact keywords from the Job Description into the bullet naturally. This is critical for ATS optimization. If the source material supports it, rephrase the bullet to use the exact JD terminology instead of generic equivalents.
 5. CONCISENESS & LENGTH: 15-25 words ideal. Cut filler words and vague fluff. If the original bullet is long or appends generic phrases (like "to enhance workflows"), your suggestion MUST shorten it and make it punchier. Never suggest bullets over 35 words.
 
 REJECT / DO NOT SUGGEST:
 - THE "TACK-ON" ANTI-PATTERN: Never append vague, generic impact phrases at the end of a bullet just to stuff keywords (e.g., ", adhering to DevOps best practices", ", for robust software solutions", ", enhancing data models"). This is a massive red flag. If you add a keyword, you MUST weave it naturally into the actual action or method of the bullet. If you cannot do this naturally, DO NOT add it.
+- NEVER add placeholder metrics like "X%" or "[Metric]". If you don't know the exact number, don't write a number.
 - Bullets starting with "Responsible for", "Helped", "Worked on", "Was involved in"  
 - Bullets longer than 35 words
 - ANY fabricated or false experience. Do NOT arbitrarily append tools (like "in Python") to an action just to match JD keywords if there is no factual reason to assume the candidate used that tool based on their context.
@@ -32,6 +33,7 @@ Rules:
 - Suggestions must be STRICTLY FACTUAL and GROUNDED in the entry's summary or existing bullets. Do not fabricate metrics, skills, or experience. 
 - If a suggestion isn't necessary, don't suggest it. We don't need to force suggestions; they should only be in place to enhance a bullet point that can be more effective.
 - The goal is to increase ATS results and improve resume wording, making the experience fit the JD better purely by using context from other bullets and the summary.
+- Focus on injecting JD keywords naturally.
 - If selected bullets already perfectly match the ATS criteria, return empty suggestions for that entry.
 - Each suggestion must explain which ATS criterion it improves (metrics/verb/keyword/structure).
 - VARIETY: Do NOT use the same starting action verb more than once across an entry's suggestions. Ensure a diverse vocabulary of strong action verbs across all your suggestions.

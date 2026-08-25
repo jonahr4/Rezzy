@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
       location: e.location || '',
       pinned: e.pinned || false,
       summary: e.summary || '',
-      tagline: '',
+      tagline: row.tagline ?? '',
       links: typeof e.links === 'string' ? JSON.parse(e.links) : (e.links || {}),
       skills: typeof e.skills === 'string' ? JSON.parse(e.skills) : (e.skills || []),
       bullets: (typeof e.bullets === 'string' ? JSON.parse(e.bullets) : (e.bullets || [])).map(

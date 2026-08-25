@@ -21,6 +21,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         location     = COALESCE(${location ?? null}, location),
         pinned       = COALESCE(${pinned ?? null}, pinned),
         summary      = COALESCE(${summary ?? null}, summary),
+        tagline      = COALESCE(${tagline !== undefined ? tagline : null}, tagline),
         bullets      = COALESCE(${bullets != null ? JSON.stringify(bullets) : null}::jsonb, bullets),
         skills       = COALESCE(${skills != null ? JSON.stringify(skills) : null}::jsonb, skills),
         links        = COALESCE(${links != null ? JSON.stringify(links) : null}::jsonb, links),

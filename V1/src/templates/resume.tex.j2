@@ -163,7 +163,7 @@
     (% if proj.links %)
       (% for link_label, link_url in proj.links.items() %)
         (% if link_url %)
-          (% set _ = link_parts.append('\\href{' ~ link_url ~ '}{\\underline{' ~ (link_label | latex) ~ '}}') %)
+          (% set _ = link_parts.append('\\href{' ~ (link_url | replace('%', '\\%') | replace('#', '\\#') | replace('&', '\\&')) ~ '}{\\underline{' ~ (link_label | latex) ~ '}}') %)
         (% endif %)
       (% endfor %)
     (% endif %)
