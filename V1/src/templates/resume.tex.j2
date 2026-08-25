@@ -67,6 +67,14 @@
     \end{tabular*}\vspace{(% if tier >= 2 %)-8pt(% elif tier >= 1 %)-7pt(% else %)-6pt(% endif %)}
 }
 
+\newcommand{\resumeProjectHeadingWithTagline}[3]{
+    \item\small
+    \begin{tabular*}{0.98\textwidth}{l@{\extracolsep{\fill}}r}
+      #1 & #2 \\
+      \textit{#3} & \\
+    \end{tabular*}\vspace{(% if tier >= 2 %)-8pt(% elif tier >= 1 %)-7pt(% else %)-6pt(% endif %)}
+}
+
 \newcommand{\resumeItemListStart}{\begin{itemize}}
 \newcommand{\resumeItemListEnd}{\end{itemize}\vspace{(% if tier >= 2 %)-4pt(% elif tier >= 1 %)-3pt(% else %)-2pt(% endif %)}}
 \newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
@@ -161,9 +169,16 @@
     (% endif %)
     (% set link_str = ' $|$ '.join(link_parts) if link_parts else '' %)
     (% set title_str = '\\textbf{' ~ (proj.title | latex) ~ '}' ~ (' $|$ ' ~ link_str if link_str else '') %)
+    (% if proj.tagline %)
+    \resumeProjectHeadingWithTagline
+      {(( title_str ))}
+      {(( proj.start_date )) -- (( proj.end_date ))}
+      {(( proj.tagline | latex ))}
+    (% else %)
     \resumeProjectHeading
       {(( title_str ))}
       {(( proj.start_date )) -- (( proj.end_date ))}
+    (% endif %)
     \resumeItemListStart
     (% for bullet in proj.selected_bullets %)
       \resumeItem{(( bullet.text | latex ))}

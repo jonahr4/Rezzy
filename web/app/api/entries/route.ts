@@ -21,12 +21,12 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const userId = uid(req);
   const body = await req.json();
-  const { type, title, organization, start_date, end_date, location, pinned, summary, bullets, skills, links } = body;
+  const { type, title, organization, start_date, end_date, location, pinned, summary, tagline, bullets, skills, links } = body;
   try {
     const [row] = await sql`
-      INSERT INTO entries (user_id, type, title, organization, start_date, end_date, location, pinned, summary, bullets, skills, links)
+      INSERT INTO entries (user_id, type, title, organization, start_date, end_date, location, pinned, summary, tagline, bullets, skills, links)
       VALUES (${userId}, ${type}, ${title}, ${organization ?? null}, ${start_date ?? null}, ${end_date ?? null},
-              ${location ?? null}, ${pinned ?? false}, ${summary ?? null},
+              ${location ?? null}, ${pinned ?? false}, ${summary ?? null}, ${tagline ?? null},
               ${JSON.stringify(bullets ?? [])}::jsonb,
               ${JSON.stringify(skills ?? [])}::jsonb,
               ${JSON.stringify(links ?? {})}::jsonb)

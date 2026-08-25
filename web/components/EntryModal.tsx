@@ -29,6 +29,7 @@ export default function EntryModal({ entry, onSave, onClose }: Props) {
   const [location, setLocation]       = useState(entry?.location ?? '');
   const [pinned, setPinned]           = useState(entry?.pinned ?? false);
   const [summary, setSummary]         = useState(entry?.summary ?? '');
+  const [tagline, setTagline]         = useState(entry?.tagline ?? '');
   const [bullets, setBullets]         = useState<Bullet[]>(entry?.bullets?.length ? entry.bullets : [newBullet()]);
   const [skillInput, setSkillInput]   = useState('');
   const [skills, setSkills]           = useState<string[]>(entry?.skills ?? []);
@@ -141,6 +142,7 @@ export default function EntryModal({ entry, onSave, onClose }: Props) {
         location: location.trim() || null,
         pinned,
         summary: summary.trim() || null,
+        tagline: tagline.trim() || null,
         bullets: bullets.filter(b => b.text.trim()),
         skills,
         links,
@@ -208,6 +210,25 @@ export default function EntryModal({ entry, onSave, onClose }: Props) {
             />
           </div>
 
+
+          {/* Tagline (projects only) */}
+          {isProject && (
+            <div className="input-group">
+              <label className="input-label" style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                <span>Tagline (optional)</span>
+                <span style={{ color: tagline.length >= 105 ? 'var(--danger)' : 'var(--text-muted)', fontSize: 11, fontWeight: 'normal' }}>
+                  {tagline.length}/105
+                </span>
+              </label>
+              <input
+                className="input-field"
+                value={tagline}
+                onChange={e => setTagline(e.target.value.slice(0, 105))}
+                placeholder="Brief one-liner describing the project"
+                maxLength={105}
+              />
+            </div>
+          )}
           {/* Organization + Location row */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div className="input-group">

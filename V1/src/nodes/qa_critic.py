@@ -61,22 +61,18 @@ def qa_critic(state: dict) -> dict:
         if retry >= 3:
             feedback = (
                 f"Resume is {page_count} pages on attempt {retry}/3. "
-                "Final attempt — tightening spacing to maximum compression. "
-                "If still overflowing, consider reducing to 2-3 bullets per entry "
-                "or shortening the longest bullets."
+                "Final attempt — applying maximum layout compression. "
+                "If it still overflows after this, you may need to go back and manually select fewer bullets."
             )
         elif retry >= 2:
             feedback = (
                 f"Resume is {page_count} pages on attempt {retry}/3. "
-                "Increasing layout compression. Reduce bullet count by 2-3 more total. "
-                "Aim for 3 bullets max per job and 2 per project. "
-                "Prefer concise 1-line bullets."
+                "Increasing layout compression to squeeze content onto 1 page..."
             )
         else:
             feedback = (
                 f"Resume is {page_count} pages — adjusting to fit 1 page. "
-                "Tightening spacing and reducing total bullet count by 2-3. "
-                "Drop to the lower end of each range: 3-4 bullets for jobs, 2 for projects."
+                "Tightening LaTeX spacing margins and line heights..."
             )
         print(f"   ✗ FAIL — {feedback}")
         log_step(
@@ -169,6 +165,7 @@ def _visual_inspect(pdf_path: str) -> str | None:
                         "or where section headers meet content. Even 1px overlap is a FAIL.\n"
                         "2. TEXT CUT OFF: Content cut off at page margins (left, right, or bottom).\n"
                         "3. OVERFLOW: Content clearly extends beyond where the page should end.\n"
+                        "5. UNDER-UTILIZED SPACE: If the resume only uses the top half or top 2/3 of the page, leaving a massive blank space at the bottom. This is a CRITICAL failure. Report it specifically including the phrase 'TOO SHORT' so the system knows to add more content.\n"
                         "4. UNEVEN SECTION SPACING: The vertical gap between sections (Education→Skills, "
                         "Skills→Experience, Experience→Projects) must be visually equal. If one section "
                         "header is noticeably closer to the content above it than the others, that is a "

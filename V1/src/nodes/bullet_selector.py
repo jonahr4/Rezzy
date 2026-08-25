@@ -118,7 +118,15 @@ def bullet_selector(state: dict) -> dict:
         print(f"   ⚠ QA feedback (retry {retry_count}/3): {qa_feedback[:120]}...")
     
     # On retries, prepend explicit bullet count caps to qa_feedback
-    if retry_count >= 2:
+    is_too_short = "TOO SHORT" in (qa_feedback or "").upper()
+    if is_too_short:
+        cap_msg = (
+            "IMPORTANT: This is a retry — the previous selection was TOO SHORT and left too much empty space on the page. "
+            "Return MORE bullets per entry. Aim for 4-5 bullets for jobs and 3-4 for projects. "
+            "Do NOT cut down on bullets. We need to fill the page properly. "
+        )
+        qa_feedback = cap_msg + (qa_feedback or "")
+    elif retry_count >= 2:
         cap_msg = (
             "HARD LIMIT: You are on retry 3 — maximum compression. "
             "Return AT MOST 2 bullets per entry. Prefer the shortest bullets (under 20 words). "

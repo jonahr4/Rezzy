@@ -9,7 +9,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const { id } = await params;
   const userId = uid(req);
   const body = await req.json();
-  const { type, title, organization, start_date, end_date, location, pinned, summary, bullets, skills, links } = body;
+  const { type, title, organization, start_date, end_date, location, pinned, summary, tagline, bullets, skills, links } = body;
   try {
     const [row] = await sql`
       UPDATE entries SET

@@ -102,7 +102,9 @@ def latex_assembler(state: dict) -> dict:
     # Determine spacing tier based on retry count
     # Tier 0 = default spacing, Tier 1 = tighter, Tier 2 = maximum compression
     retry_count = state.get("retry_count", 0)
-    spacing_tier = min(retry_count, 2)  # 0, 1, or 2
+    qa_feedback = state.get("qa_feedback", "")
+    is_too_short = "TOO SHORT" in (qa_feedback or "").upper()
+    spacing_tier = 0 if is_too_short else min(retry_count, 2)
     if spacing_tier > 0:
         print(f"   ⚡ Spacing tier {spacing_tier} (retry {retry_count}) — tightening layout")
 

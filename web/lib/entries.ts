@@ -20,6 +20,7 @@ export interface Entry {
   location: string | null;
   pinned: boolean;
   summary: string | null;
+  tagline?: string | null;
   bullets: Bullet[];
   skills: string[];
   links: Record<string, string>;
