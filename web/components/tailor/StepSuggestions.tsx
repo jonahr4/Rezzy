@@ -152,9 +152,26 @@ export default function StepSuggestions() {
         </div>
         <div className="step-header-right">
           {!isReadOnly && (
-            <button className="step-cta" onClick={handleContinue}>
-              Continue to Preview →
-            </button>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button 
+                className="btn btn-ghost" 
+                style={{ padding: '8px 16px', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                onClick={() => {
+                  useTailorStore.setState(s => {
+                    const newSugs = s.suggestions.map(entrySug => ({
+                      ...entrySug,
+                      suggestions: entrySug.suggestions.map(sg => ({ ...sg, accepted: true }))
+                    }));
+                    return { suggestions: newSugs };
+                  });
+                }}
+              >
+                Accept All
+              </button>
+              <button className="step-cta" onClick={handleContinue}>
+                Continue to Preview →
+              </button>
+            </div>
           )}
           <PageGauge />
         </div>

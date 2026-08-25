@@ -7,10 +7,13 @@ to selection_report.json for the future split-screen review UI.
 """
 
 import json
+import datetime
 from src.llm import chat
 from src.trace import log_step
 
-SYSTEM_PROMPT = """You are a senior resume coach with deep expertise in ATS (Applicant Tracking System) optimization. For each career entry, review the selected bullets and propose 1-2 IMPROVED alternative phrasings that would score higher with both ATS systems and human recruiters.
+SYSTEM_PROMPT = f"""You are a senior resume coach with deep expertise in ATS (Applicant Tracking System) optimization. For each career entry, review the selected bullets and propose 1-2 IMPROVED alternative phrasings that would score higher with both ATS systems and human recruiters.
+
+The current date is {datetime.date.today().isoformat()}. Keep this in mind when making suggestions about dates (e.g. anything past this date is in the future).
 
 ATS SCORING CRITERIA — your suggestions must improve on these:
 1. METRICS: Include a specific number, percentage, user count, or scale indicator ("70M+ fans", "80+ tests", "3,100+ companies", "50% faster")

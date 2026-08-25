@@ -70,13 +70,16 @@ def latex_assembler(state: dict) -> dict:
     # Split selected content into jobs and projects (preserving user-arranged order)
     # Filter out empty/placeholder bullets that would render as lone dots in LaTeX
     def _clean_bullets(entries):
+        cleaned = []
         for e in entries:
             e["selected_bullets"] = [
                 b for b in e["selected_bullets"]
                 if b.get("text", "").strip()
                 and b["text"].strip() != "New bullet point — click to edit"
             ]
-        return entries
+            if len(e["selected_bullets"]) > 0:
+                cleaned.append(e)
+        return cleaned
 
     jobs = _clean_bullets([s for s in selected_content if s["type"] == "job"])
     projects = _clean_bullets([s for s in selected_content if s["type"] == "project"])

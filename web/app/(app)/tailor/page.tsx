@@ -112,7 +112,29 @@ export default function TailorPage() {
   }
 
   return (
-    <div className="tailor-page">
+    <div className="tailor-page" style={{ position: 'relative' }}>
+      <button 
+        onClick={() => {
+          if (confirm('Are you sure you want to start over? All current progress will be lost.')) {
+            useTailorStore.getState().reset();
+          }
+        }}
+        className="btn btn-ghost"
+        style={{
+          position: 'absolute',
+          top: '24px',
+          right: '24px',
+          zIndex: 50,
+          color: 'var(--text-secondary)',
+          fontSize: '14px',
+          padding: '6px 12px',
+          background: 'var(--bg-secondary)',
+          borderRadius: '6px'
+        }}
+      >
+        Start Over
+      </button>
+      
       {/* ── Top progress bar ── */}
       <div className="tailor-progress">
         {STEP_LABELS.map((label, i) => (
